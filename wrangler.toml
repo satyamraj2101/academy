@@ -1,0 +1,73 @@
+name = "spotclm-academy"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "dist"
+
+# ──────────────────────────────────────────────────────────────────────
+# DEV ENVIRONMENT — Satyam's own CF account (satyamraj620@gmail.com)
+# Deploy: $env:CLOUDFLARE_API_TOKEN="<your-token>" (PowerShell)
+#         npm run deploy:dev
+# ──────────────────────────────────────────────────────────────────────
+
+[[kv_namespaces]]
+binding = "ENQUIRY_KV"
+id = "5601977573b14c2f8e0c11edfeb64e32"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "spotclm-academy-dev"
+database_id = "2ab33547-d4ea-4452-9976-096d84182ab2"
+
+[[r2_buckets]]
+binding = "ASSETS_BUCKET"
+bucket_name = "spotclm-assets"
+
+[vars]
+RESEND_TO_EMAIL = "info@spotclm.com"
+RESEND_FROM_EMAIL = "info@spotclm.com"
+ENV = "development"
+# REQUIRED for admin API auth — your Cloudflare Zero Trust team domain, e.g.
+# "spotclm.cloudflareaccess.com" (find it in the Zero Trust dashboard URL).
+# Until this is set to your real team domain, all admin API requests are
+# rejected (fail-closed) rather than trusting an unverified token.
+CF_ACCESS_TEAM_DOMAIN = "spotclm-academy-pages.cloudflareaccess.com"
+# TAWK_WEBHOOK_SECRET = set via: wrangler pages secret put TAWK_WEBHOOK_SECRET
+# RESEND_API_KEY = set via: wrangler pages secret put RESEND_API_KEY
+# ADMIN_JWT_AUDIENCE = set via: wrangler pages secret put ADMIN_JWT_AUDIENCE (CF Access audience tag)
+# ACADEMY_JWT_SECRET = set via: wrangler pages secret put ACADEMY_JWT_SECRET (HS256 secret for academy student tokens)
+# RAZORPAY_KEY_ID = set via: wrangler pages secret put RAZORPAY_KEY_ID
+# RAZORPAY_KEY_SECRET = set via: wrangler pages secret put RAZORPAY_KEY_SECRET
+# STRIPE_SECRET_KEY = set via: wrangler pages secret put STRIPE_SECRET_KEY
+# STRIPE_WEBHOOK_SECRET = set via: wrangler pages secret put STRIPE_WEBHOOK_SECRET
+
+# ──────────────────────────────────────────────────────────────────────
+# PROD ENVIRONMENT — New CF Account (spotclm.com)
+# Deploy: $env:CLOUDFLARE_API_TOKEN="<prod-token>" (PowerShell)
+#         npm run deploy:prod
+# ──────────────────────────────────────────────────────────────────────
+[env.production]
+
+[[env.production.kv_namespaces]]
+binding = "ENQUIRY_KV"
+id = "5601977573b14c2f8e0c11edfeb64e32"
+
+# Create D1: CLOUDFLARE_API_TOKEN=<prod-token> npx wrangler d1 create spotclm-admin
+# Then paste the returned database_id below:
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "spotclm-admin"
+database_id = "23e5d70f-3187-4837-95b1-3a8d6c629940"
+
+[[env.production.r2_buckets]]
+binding = "ASSETS_BUCKET"
+bucket_name = "spotclm-assets"
+
+[env.production.vars]
+RESEND_TO_EMAIL = "info@spotclm.com"
+RESEND_FROM_EMAIL = "info@spotclm.com"
+ENV = "production"
+# REQUIRED for admin API auth — see comment in [vars] above.
+CF_ACCESS_TEAM_DOMAIN = "spotclm-academy-pages.cloudflareaccess.com"
+# TAWK_WEBHOOK_SECRET = set via: wrangler pages secret put TAWK_WEBHOOK_SECRET --env production
+# RESEND_API_KEY = set via: wrangler pages secret put RESEND_API_KEY --env production
+# ADMIN_JWT_AUDIENCE = set via: wrangler pages secret put ADMIN_JWT_AUDIENCE --env production

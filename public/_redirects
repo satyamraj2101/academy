@@ -1,0 +1,24 @@
+# ── Canonical domain: non-www → www (301 permanent) ──────────────────────────
+https://spotclm.com/ https://www.spotclm.com/ 301
+https://spotclm.com/* https://www.spotclm.com/:splat 301
+
+# ── Old nested service routes → flat routes with trailing slash (single hop) ──
+# Point directly to trailing-slash URLs to avoid Cloudflare's 308 double-redirect
+/services/implementation    /implementation/    301
+/services/integrations      /integrations/      301
+/services/support           /support/           301
+/services/training          /training/          301
+/services/corporate-training  /training/  301
+/services/individual-training /training/ 301
+
+# ── Training pages were merged into a single page ─────────────────────────────
+/corporate-training          /training/          301
+/individual-training         /training/          301
+
+# ── Legacy / alternate slugs ──────────────────────────────────────────────────
+/clm-implementation         /implementation/    301
+/clm-integrations           /integrations/      301
+/clm-support                /support/           301
+/clm-training               /training/ 301
+/consulting                 /services/          301
+/blog/*                     /blog               301

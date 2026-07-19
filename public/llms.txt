@@ -1,0 +1,59 @@
+# SpotCLM — Contract Lifecycle Management Consulting
+
+> SpotCLM is an India-based CLM consulting agency that implements, integrates, and trains teams on enterprise Contract Lifecycle Management platforms: Leah (ContractPodAI), Ironclad, Sirion, and Icertis. We deliver 30–40% faster than traditional consulting agencies using AI-accelerated methodology.
+
+## What We Do
+
+SpotCLM provides four core services:
+
+1. **CLM Implementation** — End-to-end deployment of Leah, Ironclad, Sirion, and Icertis platforms. Packages from $18,000 (Starter, 6–10 weeks) to $95,000+ (Enterprise, 18–36 weeks). Includes discovery, configuration, data migration, UAT, training, and 3-month hypercare.
+
+2. **CLM Integrations** — Connecting CLM platforms with CRM (Salesforce, HubSpot, Microsoft Dynamics), ERP (SAP, Oracle, NetSuite, Workday), e-signature (DocuSign, Adobe Sign), HR systems, and custom APIs. 100+ live connector configurations. Lifetime Maintenance Guarantee.
+
+3. **Managed CLM Support** — On-demand certified CLM engineers. Hourly from $150/hr, monthly retainer from $5,000/month. Covers workflow optimization, system audits, configuration updates, template management.
+
+4. **CLM Training** — Corporate role-based training programs ($4,000–$20,000) and individual certification programs ($1,500–$4,000) for Leah, Ironclad, Sirion, and Icertis.
+
+## Platforms We Implement
+
+- **Leah (ContractPodAI)** — AI-first CLM, best for legal teams and legal operations
+- **Ironclad** — Fastest-growing CLM, best for SaaS, tech, and high-growth companies
+- **Sirion** — Specialises in supplier management and procurement contracts
+- **Icertis** — Enterprise-grade, multi-region, complex compliance environments
+
+## Key Facts
+
+- Based in India, serving clients globally
+- 20+ years combined team experience
+- AI-accelerated delivery: 30–40% faster than traditional agencies
+- 90%+ user adoption within 3 months of go-live
+- Email: advisory@spotclm.com
+- Website: https://www.spotclm.com
+
+## Common Questions Answered
+
+**What is CLM?** Contract Lifecycle Management (CLM) is software that manages contracts from creation, negotiation, and execution through renewal and expiry. CLM platforms automate approval workflows, reduce contract cycle time, ensure compliance, and provide visibility into obligations.
+
+**Why do CLM implementations fail?** Most failures happen because consultancies focus on software go-live instead of user adoption. SpotCLM builds adoption into every phase: discovery, design, training, and 3-month hypercare post-launch.
+
+**How long does CLM implementation take?** Starter: 6–10 weeks. Professional: 10–18 weeks. Enterprise: 18–36 weeks.
+
+**What does CLM implementation cost?** Starter from $18,000. Professional from $40,000. Enterprise from $95,000.
+
+**What is hypercare?** Hypercare is a 3-month dedicated post-launch support period where the implementation team stays available for configuration adjustments, user questions, and issue resolution.
+
+**Can you integrate CLM with Salesforce?** Yes. SpotCLM builds bidirectional integrations between CLM platforms and Salesforce (CRM), SAP, Oracle, NetSuite, DocuSign, and custom systems.
+
+## Pages
+
+- Homepage: https://www.spotclm.com/
+- Services overview: https://www.spotclm.com/services
+- CLM Implementation: https://www.spotclm.com/implementation
+- CLM Integrations: https://www.spotclm.com/integrations
+- Managed Support: https://www.spotclm.com/support
+- Corporate Training: https://www.spotclm.com/corporate-training
+- Individual Certification: https://www.spotclm.com/individual-training
+- About: https://www.spotclm.com/about
+- Pricing: https://www.spotclm.com/pricing
+- FAQ: https://www.spotclm.com/faq
+- Contact: https://www.spotclm.com/contact

@@ -1,0 +1,24 @@
+﻿<USER_REQUEST>
+
+**Role & Context:**
+Act as an Expert Instructional Designer and Senior Technical Educator. I am building a comprehensive, robust course on "Workflow" based on the source material I have provided below.
+
+**The Task:**
+Analyze the provided source material deeply and transform it into a highly structured, engaging, and professional course curriculum. Your goal is to break down the raw information into a logical learning path that takes a student from fundamental concepts to advanced practical applications.
+
+
+
+**Constraints & Requirements:**
+
+1. **Logical Progression:** Sequence the course logically (e.g., Introduction → Core Concepts → Advanced Techniques → Real-world Implementation).
+2. **Actionable Learning:** Include practical exercises, coding/technical scenarios, or workflow diagrams where applicable.
+3. **No Fluff:** Ensure the content is dense with value, accurate to the source material, and professionally toned.
+4. **Comprehensiveness:** Do not skip crucial data from the source material. Synthesize complex topics into digestible lessons.
+
+
+
+
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-07-05T18:28:39+05:30.
+</ADDITIONAL_METADATA>

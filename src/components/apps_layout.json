@@ -1,0 +1,366 @@
+[
+  {
+    "name": "Salesforce",
+    "icon": "/logos/salesforce.svg",
+    "x": "40.42",
+    "y": "50.00",
+    "ring": 1
+  },
+  {
+    "name": "DocuSign",
+    "icon": "/logos/docusign.png",
+    "x": "59.58",
+    "y": "50.00",
+    "ring": 1
+  },
+  {
+    "name": "HubSpot",
+    "icon": "/logos/hubspot.svg",
+    "x": "35.63",
+    "y": "36.25",
+    "ring": 2
+  },
+  {
+    "name": "Jira",
+    "icon": "/logos/jira.svg",
+    "x": "64.38",
+    "y": "36.25",
+    "ring": 2
+  },
+  {
+    "name": "Box",
+    "icon": "/logos/box.svg",
+    "x": "35.63",
+    "y": "63.75",
+    "ring": 2
+  },
+  {
+    "name": "Dropbox",
+    "icon": "/logos/dropbox.svg",
+    "x": "64.38",
+    "y": "63.75",
+    "ring": 2
+  },
+  {
+    "name": "GitHub",
+    "icon": "/logos/github.svg",
+    "x": "30.83",
+    "y": "50.00",
+    "ring": 2
+  },
+  {
+    "name": "Slack",
+    "icon": "/logos/slack.svg",
+    "x": "69.17",
+    "y": "50.00",
+    "ring": 2
+  },
+  {
+    "name": "SAP",
+    "icon": "/logos/sap.svg",
+    "x": "50.00",
+    "y": "22.50",
+    "ring": 1
+  },
+  {
+    "name": "ADP",
+    "icon": "/logos/adp.svg",
+    "x": "50.00",
+    "y": "77.50",
+    "ring": 1
+  },
+  {
+    "name": "Workday",
+    "icon": "/logos/workday.png",
+    "x": "40.42",
+    "y": "22.50",
+    "ring": 1
+  },
+  {
+    "name": "NetSuite",
+    "icon": "/logos/netsuite.svg",
+    "x": "59.58",
+    "y": "22.50",
+    "ring": 1
+  },
+  {
+    "name": "Pipedrive",
+    "icon": "/logos/pipedrive.svg",
+    "x": "40.42",
+    "y": "77.50",
+    "ring": 1
+  },
+  {
+    "name": "Trello",
+    "icon": "/logos/trello.svg",
+    "x": "59.58",
+    "y": "77.50",
+    "ring": 1
+  },
+  {
+    "name": "PandaDoc",
+    "icon": "/logos/pandadoc.png",
+    "x": "26.04",
+    "y": "36.25",
+    "ring": 2
+  },
+  {
+    "name": "Zoho",
+    "icon": "/logos/zoho.svg",
+    "x": "73.96",
+    "y": "36.25",
+    "ring": 2
+  },
+  {
+    "name": "Teams",
+    "icon": "/logos/teams.png",
+    "x": "26.04",
+    "y": "63.75",
+    "ring": 2
+  },
+  {
+    "name": "Xero",
+    "icon": "/logos/xero.svg",
+    "x": "73.96",
+    "y": "63.75",
+    "ring": 2
+  },
+  {
+    "name": "Zendesk",
+    "icon": "/logos/zendesk.svg",
+    "x": "21.25",
+    "y": "50.00",
+    "ring": 3
+  },
+  {
+    "name": "QuickBooks",
+    "icon": "/logos/quickbooks.svg",
+    "x": "78.75",
+    "y": "50.00",
+    "ring": 3
+  },
+  {
+    "name": "Oracle",
+    "icon": "/logos/oracle.svg",
+    "x": "30.83",
+    "y": "22.50",
+    "ring": 2
+  },
+  {
+    "name": "Snowflake",
+    "icon": "/logos/snowflake.svg",
+    "x": "69.17",
+    "y": "22.50",
+    "ring": 2
+  },
+  {
+    "name": "Tableau",
+    "icon": "/logos/tableau.png",
+    "x": "30.83",
+    "y": "77.50",
+    "ring": 2
+  },
+  {
+    "name": "Dynamics365",
+    "icon": "/logos/dynamics365.png",
+    "x": "69.17",
+    "y": "77.50",
+    "ring": 2
+  },
+  {
+    "name": "BambooHR",
+    "icon": "/logos/bamboohr.png",
+    "x": "16.46",
+    "y": "36.25",
+    "ring": 3
+  },
+  {
+    "name": "Shopify",
+    "icon": "/logos/shopify.svg",
+    "x": "83.54",
+    "y": "36.25",
+    "ring": 3
+  },
+  {
+    "name": "Power BI",
+    "icon": "/logos/powerbi.svg",
+    "x": "16.46",
+    "y": "63.75",
+    "ring": 3
+  },
+  {
+    "name": "ServiceNow",
+    "icon": "/logos/servicenow.png",
+    "x": "83.54",
+    "y": "63.75",
+    "ring": 3
+  },
+  {
+    "name": "Asana",
+    "icon": "/logos/asana.svg",
+    "x": "45.21",
+    "y": "8.75",
+    "ring": 2
+  },
+  {
+    "name": "Airtable",
+    "icon": "/logos/airtable.svg",
+    "x": "54.79",
+    "y": "8.75",
+    "ring": 2
+  },
+  {
+    "name": "Figma",
+    "icon": "/logos/figma.svg",
+    "x": "45.21",
+    "y": "91.25",
+    "ring": 2
+  },
+  {
+    "name": "Stripe",
+    "icon": "/logos/stripe.svg",
+    "x": "54.79",
+    "y": "91.25",
+    "ring": 2
+  },
+  {
+    "name": "Splunk",
+    "icon": "/logos/splunk.svg",
+    "x": "21.25",
+    "y": "22.50",
+    "ring": 3
+  },
+  {
+    "name": "Datadog",
+    "icon": "/logos/datadog.svg",
+    "x": "78.75",
+    "y": "22.50",
+    "ring": 3
+  },
+  {
+    "name": "New Relic",
+    "icon": "/logos/newrelic.svg",
+    "x": "21.25",
+    "y": "77.50",
+    "ring": 3
+  },
+  {
+    "name": "AWS",
+    "icon": "/logos/aws.png",
+    "x": "78.75",
+    "y": "77.50",
+    "ring": 3
+  },
+  {
+    "name": "GCP",
+    "icon": "/logos/gcp.svg",
+    "x": "35.63",
+    "y": "8.75",
+    "ring": 2
+  },
+  {
+    "name": "Azure",
+    "icon": "/logos/azure.png",
+    "x": "64.38",
+    "y": "8.75",
+    "ring": 2
+  },
+  {
+    "name": "Mailchimp",
+    "icon": "/logos/mailchimp.svg",
+    "x": "35.63",
+    "y": "91.25",
+    "ring": 2
+  },
+  {
+    "name": "Miro",
+    "icon": "/logos/miro.svg",
+    "x": "64.38",
+    "y": "91.25",
+    "ring": 2
+  },
+  {
+    "name": "GitLab",
+    "icon": "/logos/gitlab.svg",
+    "x": "11.67",
+    "y": "50.00",
+    "ring": 4
+  },
+  {
+    "name": "Bitbucket",
+    "icon": "/logos/bitbucket.svg",
+    "x": "88.33",
+    "y": "50.00",
+    "ring": 4
+  },
+  {
+    "name": "Confluence",
+    "icon": "/logos/confluence.svg",
+    "x": "26.04",
+    "y": "8.75",
+    "ring": 3
+  },
+  {
+    "name": "Databricks",
+    "icon": "/logos/databricks.svg",
+    "x": "73.96",
+    "y": "8.75",
+    "ring": 3
+  },
+  {
+    "name": "Looker",
+    "icon": "/logos/looker.svg",
+    "x": "26.04",
+    "y": "91.25",
+    "ring": 3
+  },
+  {
+    "name": "Zoom",
+    "icon": "/logos/zoom.svg",
+    "x": "73.96",
+    "y": "91.25",
+    "ring": 3
+  },
+  {
+    "name": "RingCentral",
+    "icon": "/logos/ringcentral.png",
+    "x": "6.88",
+    "y": "36.25",
+    "ring": 4
+  },
+  {
+    "name": "Calendly",
+    "icon": "/logos/calendly.svg",
+    "x": "93.13",
+    "y": "36.25",
+    "ring": 4
+  },
+  {
+    "name": "Typeform",
+    "icon": "/logos/typeform.svg",
+    "x": "6.88",
+    "y": "63.75",
+    "ring": 4
+  },
+  {
+    "name": "Intercom",
+    "icon": "/logos/intercom.svg",
+    "x": "93.13",
+    "y": "63.75",
+    "ring": 4
+  },
+  {
+    "name": "Freshdesk",
+    "icon": "/logos/freshdesk.svg",
+    "x": "11.67",
+    "y": "22.50",
+    "ring": 4
+  },
+  {
+    "name": "Okta",
+    "icon": "/logos/okta.svg",
+    "x": "88.33",
+    "y": "22.50",
+    "ring": 4
+  }
+]

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="SpotCLM">
+  <defs>
+    <linearGradient id="mk_comet" x1="145" y1="200" x2="270" y2="96" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0a2a6a"></stop>
+      <stop offset="0.42" stop-color="#1460c8"></stop>
+      <stop offset="1" stop-color="#5bc8f5"></stop>
+    </linearGradient>
+  </defs>
+  
+  <path d="&#xA;    M 256 100&#xA;    A 156 156 0 1 1 127 169&#xA;    C 136 175 154 187 163 193&#xA;    A 112 112 0 1 0 256 144&#xA;    A 22 22 0 0 1 256 100&#xA;    Z&#xA;  " fill="url(#mk_comet)"></path>
+  
+  <circle cx="256" cy="256" r="40" fill="none" stroke="#0a2a63" stroke-width="3.5" stroke-opacity="0.38"></circle>
+  <circle cx="256" cy="256" r="23" fill="#0a2a63"></circle>
+</svg>

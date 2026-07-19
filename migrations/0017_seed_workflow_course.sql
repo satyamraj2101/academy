@@ -1,0 +1,38 @@
+-- SpotCLM Academy - Seed Workflow Templates Course
+-- 0017_seed_workflow_course.sql
+
+-- Insert the Course
+INSERT OR IGNORE INTO academy_courses (id, title, description, long_description, level, duration, price_usd, price_inr, category, platforms, status, created_at, updated_at) 
+VALUES 
+('workflow-templates', 'Mastering Workflow Management & Templates in Vault', 'Learn to navigate, utilize, and create custom workflow templates in ContractPodAi CLOUD 1.14.', 'This comprehensive course takes users from basic navigation of the Vault Workflow interface to the advanced creation and management of custom workflow templates. Equip yourself with the practical skills required to streamline workflow management, leverage out-of-the-box templates, and design custom architectures.', 'Advanced', '3 Hours', 14900, 1200000, 'Masterclass', '["CLOUD 1.14"]', 'published', datetime('now'), datetime('now'));
+
+-- Insert Modules
+INSERT OR IGNORE INTO academy_modules (id, course_id, title, description, sort_order) 
+VALUES 
+('mod-wf-1', 'workflow-templates', 'Introduction to Workflow Management', 'Understand the core philosophy and architecture.', 1),
+('mod-wf-2', 'workflow-templates', 'Mastering the Workflow Interface', 'Efficiently search, filter, and manage existing workflows.', 2),
+('mod-wf-3', 'workflow-templates', 'Leveraging Out-of-the-Box Templates', 'Evaluate and implement pre-configured templates.', 3),
+('mod-wf-4', 'workflow-templates', 'Designing Custom Templates', 'Create proprietary, reusable workflow architectures.', 4);
+
+-- Insert Lessons
+INSERT OR IGNORE INTO academy_lessons (id, module_id, title, content_type, video_url, video_duration_minutes, content_body, sort_order) 
+VALUES 
+('les-wf-1', 'mod-wf-1', 'The Value of Workflow Templates', 'text', NULL, NULL, '<h3>Introduction to Workflow Management</h3><p>The new streamlined workflow management experience in Vault increases control and flexibility for users.</p><p>Key takeaways:</p><ul><li>Templates offer massive time savings and compliance enforcement.</li><li>Understand the distinction between <b>out-of-the-box templates</b> (managed by ContractPodAi) and user-generated <b>custom templates</b>.</li></ul><p>did-you-know</p>', 1),
+
+('les-wf-2', 'mod-wf-1', 'Navigating the Workflow Ecosystem', 'text', NULL, NULL, '<h3>Pathways to Workflows</h3><p>Understanding the primary interface and pathways to access workflows is critical.</p><p><b>Path:</b> <code>Home &gt; Vault &gt; Workflow Management</code></p><h4>Practical Exercise</h4><p>Log into the Vault environment, navigate using the breadcrumbs to the Workflow Management section, and locate both the <b>Workflows</b> and <b>Workflow Templates</b> links.</p>', 2),
+
+('les-wf-3', 'mod-wf-2', 'Advanced Searching and Filtering', 'text', NULL, NULL, '<h3>Finding Workflows Rapidly</h3><p>The improved Workflow page provides easy access to launched or created workflows.</p><ul><li><b>Keyword Search Bar:</b> For direct queries.</li><li><b>Application &amp; Type Selection:</b> Filter by specific contract types.</li><li><b>Status Filters:</b> View only active, inactive, etc.</li><li><b>Usage Status Icons:</b> Visual indicators of a workflow state.</li></ul><p><b>Scenario:</b> You are a Legal Ops manager who needs to find all currently "Active" workflows related to "Contract Management." Use the Application and Status filters to narrow down the view.</p>', 1),
+
+('les-wf-4', 'mod-wf-2', 'The Action Menu', 'text', NULL, NULL, '<h3>Executing Commands</h3><p>The Action Menu (the ellipsis icon) on the Workflow page has been updated. Available actions include:</p><ul><li><b>View</b></li><li><b>Edit</b></li><li><b>Duplicate</b></li><li><b>Archive</b></li><li><b>Create Custom Template</b> (New!)</li></ul><h4>Practical Exercise</h4><p>Locate a test workflow, access the ellipsis action menu, and identify the available commands without executing them.</p>', 2),
+
+('les-wf-5', 'mod-wf-3', 'The Workflow Templates Tab', 'text', NULL, NULL, '<h3>Exploring the Repository</h3><p>The Workflow Templates tab allows users to manage out-of-the-box templates created and managed solely by ContractPodAi.</p><p><b>Categories Include:</b> All, General, Human Resources, Process Oriented, Procurement, Sales, Self-service, and Custom.</p><p>Hover over any <b>Template Card</b> to view a short description and access the "View Details" or "Select Template" buttons.</p>', 1),
+
+('les-wf-6', 'mod-wf-3', 'Deep Dive: The "View Details" Panel', 'text', NULL, NULL, '<h3>Analyzing a Template</h3><p>Before launching a template, analyze its specifications using the slide-out panel from the right side of the page.</p><ul><li><b>Status &amp; Actions:</b> A status bar (e.g., Request Submitted &rarr; Negotiation Stage &rarr; Awaiting Signature) showing configured actions.</li><li><b>Description:</b> Detailed use cases and key features.</li><li><b>Approvals:</b> Overview of manual vs. final approvals.</li><li><b>Configuration Required:</b> An overview of the configurations (e.g., routing based on country or value) required to implement the workflow.</li></ul><p><b>Scenario:</b> Open the "Non-Disclosure Agreement" template card. Review the required configurations and document what internal data you will need before launching it.</p>', 2),
+
+('les-wf-7', 'mod-wf-3', 'Selecting and Launching a Template', 'text', NULL, NULL, '<h3>Deploying a Template</h3><p>Click on <b>Select Template</b> to apply the workflow to an Application Type.</p><p><b>Mandatory Fields:</b></p><ul><li><b>Name:</b> Title of the new workflow.</li><li><b>Status Toggle:</b> Activates or deactivates the User Field.</li><li><b>Description:</b> Purpose of the new workflow.</li><li><b>Application &amp; Application Type:</b> Where the workflow will apply.</li></ul><p>You can choose to <b>Create</b> (to make it available in Vault) or <b>Create and Launch Designer</b> (to make immediate edits to the newly created Workflow).</p>', 3),
+
+('les-wf-8', 'mod-wf-4', 'The Architecture of Custom Templates', 'text', NULL, NULL, '<h3>Proprietary Workflows</h3><p>Users now have the option to create custom templates derived from existing workflows.</p><p>This is crucial when your organization requires a reusable workflow architecture that deviates significantly from the out-of-the-box options provided by ContractPodAi, but you don''t want to start completely from scratch every time.</p>', 1),
+
+('les-wf-9', 'mod-wf-4', 'Creating a Custom Template', 'text', NULL, NULL, '<h3>Step-by-Step Implementation</h3><ol><li>Navigate to the <b>Workflows</b> page in Vault.</li><li>Locate the desired baseline workflow.</li><li>Click the ellipses action button and select <b>Create Template</b>.</li><li>The Create Template panel will slide out. Complete the fields: <b>Title</b> and <b>Description</b>.</li><li>Click <b>Create</b>.</li></ol><p><b>Verification:</b> Your custom template will now appear in the Workflow Templates tab under the <b>Custom</b> category, allowing further editing and configuration.</p>', 2),
+
+('les-wf-10', 'mod-wf-4', 'Lifecycle Management of Custom Templates', 'text', NULL, NULL, '<h3>Maintaining Environment Hygiene</h3><p>Obsolete or test custom templates should be deleted to keep your workspace clean.</p><p><b>Deletion Protocol:</b> Access the <b>Custom</b> category on the Workflow Templates page, click the ellipses menu on the template card, and select <b>Delete</b>.</p><h4>Capstone Exercise</h4><p>1. Take a dummy NDA workflow and convert it into a Custom Template titled "Demo Workflow Template".<br/>2. Navigate to the Custom category to verify its creation.<br/>3. Delete the custom template.</p>', 3);

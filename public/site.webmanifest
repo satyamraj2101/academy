@@ -1,0 +1,48 @@
+{
+  "name": "SpotCLM",
+  "short_name": "SpotCLM",
+  "description": "Expert CLM Implementation & Consulting — Leah, Ironclad, Sirion, Icertis",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#4648d4",
+  "background_color": "#faf8ff",
+  "categories": ["business", "productivity"],
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/favicon-mark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Free CLM Assessment",
+      "short_name": "Assessment",
+      "description": "Start your free CLM readiness assessment",
+      "url": "/?action=assess",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "CLM Pricing",
+      "short_name": "Pricing",
+      "description": "View transparent CLM consulting pricing",
+      "url": "/pricing",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
