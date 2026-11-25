@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import DOMPurify from 'dompurify';
 import { academyAPI } from '../../academy/api';
 import { HapticButton } from '../../components/HapticButton';
 import { toast } from '../../lib/toast';
@@ -46,9 +47,20 @@ function FullscreenMediaFrame({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Older lessons were authored as HTML. ReactMarkdown escapes HTML, which printed raw tags
+// like "<h3>…</h3><p>…" to students. Content that opens with a block-level HTML tag is
+// rendered through DOMPurify instead; everything else stays Markdown.
+const HTML_CONTENT = /^\s*<(?:h[1-6]|p|div|ul|ol|table|section|article|blockquote|figure)[\s>]/i;
+
+const PROSE_CLASSES =
+  'prose prose-slate dark:prose-invert prose-lg max-w-none text-slate-700 dark:text-slate-300 prose-headings:font-black prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-img:rounded-xl prose-img:shadow-lg';
+
 export function MarkdownSection({ content }: { content: string }) {
+  if (HTML_CONTENT.test(content)) {
+    return <div className={PROSE_CLASSES} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }} />;
+  }
   return (
-    <div className="prose prose-slate dark:prose-invert prose-lg max-w-none text-slate-700 dark:text-slate-300 prose-headings:font-black prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-img:rounded-xl prose-img:shadow-lg">
+    <div className={PROSE_CLASSES}>
       <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{content}</ReactMarkdown>
     </div>
   );

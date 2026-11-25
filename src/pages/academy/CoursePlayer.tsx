@@ -267,11 +267,11 @@ export function CoursePlayerComponent() {
   const knowledgeCheckSatisfied = !knowledgeCheck || !!checkResult;
   const canMarkComplete = engagedEnough && knowledgeCheckSatisfied && embeddedBlocksSatisfied;
   const markCompleteBlockedReason = !knowledgeCheckSatisfied
-    ? 'Answer the Knowledge Check below to unlock this'
+    ? 'Answer the Knowledge Check below to unlock Mark Complete'
     : !embeddedBlocksSatisfied
-    ? 'Complete the quiz/assignment in this lesson to unlock this'
+    ? 'Complete the quiz or assignment in this lesson to unlock Mark Complete'
     : !engagedEnough
-    ? 'Keep engaging with the lesson a little longer to unlock this'
+    ? 'Spend a little more time on this lesson to unlock Mark Complete'
     : '';
 
   const totalLessons = allLessons.length;
@@ -661,9 +661,10 @@ export function CoursePlayerComponent() {
           <button
             disabled={!prevLessonInfo}
             onClick={() => prevLessonInfo && navigate(`/course-player/${courseId}/lesson/${prevLessonInfo.id}`)}
-            className={`flex items-center gap-2 text-sm font-bold transition-colors hidden sm:flex ${prevLessonInfo ? 'text-slate-600 dark:text-slate-400 hover:text-indigo-600' : 'text-slate-300 dark:text-slate-700 cursor-not-allowed'}`}
+            aria-label="Previous lesson"
+            className={`flex items-center gap-2 text-sm font-bold transition-colors ${prevLessonInfo ? 'text-slate-600 dark:text-slate-400 hover:text-indigo-600' : 'text-slate-300 dark:text-slate-700 cursor-not-allowed'}`}
           >
-            <ChevronLeft className="w-5 h-5" /> Previous
+            <ChevronLeft className="w-5 h-5" /> <span className="hidden sm:inline">Previous</span>
           </button>
 
           <div className="flex gap-3 ml-auto sm:ml-0">
@@ -677,12 +678,13 @@ export function CoursePlayerComponent() {
                   onClick={() => markCompleteMutation.mutate()}
                   disabled={markCompleteMutation.isPending || !canMarkComplete}
                   title={markCompleteBlockedReason || undefined}
+                  aria-describedby={!canMarkComplete ? 'mark-complete-hint' : undefined}
                   className="px-5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-bold tracking-tight flex items-center gap-2 transition-all text-sm"
                 >
                   {markCompleteMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle2 className="w-4 h-4" /> Mark Complete</>}
                 </HapticButton>
                 {!canMarkComplete && (
-                  <p className="text-[11px] font-semibold text-slate-400 hidden sm:block">{markCompleteBlockedReason}</p>
+                  <p id="mark-complete-hint" className="text-[11px] leading-snug font-semibold text-slate-500 dark:text-slate-400 text-right max-w-[13rem] sm:max-w-none">{markCompleteBlockedReason}</p>
                 )}
               </div>
             )}
@@ -693,7 +695,7 @@ export function CoursePlayerComponent() {
                 if (nextLessonInfo) navigate(`/course-player/${courseId}/lesson/${nextLessonInfo.id}`);
                 else navigate(`/courses/${courseId}`);
               }}
-              className={`px-5 py-2.5 rounded-lg font-bold tracking-tight flex items-center gap-2 transition-all text-sm ${nextLessonInfo || lesson.completed ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'}`}
+              className={`px-5 py-2.5 rounded-lg font-bold tracking-tight flex items-center gap-2 transition-all text-sm whitespace-nowrap shrink-0 ${nextLessonInfo || lesson.completed ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'}`}
             >
               {nextLessonInfo ? 'Next Lesson' : 'Finish Course'} <ChevronRight className="w-4 h-4" />
             </HapticButton>
