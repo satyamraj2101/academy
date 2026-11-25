@@ -15,13 +15,17 @@ Jobs wait in D1 if the runner is down; a job whose runner dies is retried (3 att
 ## Multiple AI providers
 `src/ai.mjs` routes each step by role through `AI_DRAFT` / `AI_REVIEW` (see `.env.example`). Supported: `gemini`, `anthropic`, `openai` (and OpenAI-compatible hosts), `cloudflare` (Workers AI). A provider without a key is skipped; on 429/5xx it retries with backoff, then falls through to the next. When `AI_REVIEW` is set, every lesson gets a second-opinion pass by that model, which returns corrections that replace the draft (a failed review never fails the job). Unit tests: `npm test`.
 
-## Lesson videos (faceless robot narrator)
-`src/video/` turns a scene script into an MP4 with no GPU and no paid service: Kokoro voice, a drawn robot whose chest sound bars follow the audio (so no lip-sync is needed), a slide beside it that reveals bullets and diagram steps as they are spoken, and captions burned in (plus `.srt` and `.vtt` files).
+## Lesson videos (the SpotCLM counsel robot)
+`src/video/` turns a scene script into an MP4 with no GPU and no paid service. A faceless robot lawyer narrates (its visor draws the real audio waveform, so there is no lip-sync to get wrong; the pocket badge says SpotCLM), a slide beside it builds up as each point is spoken, and captions are burned in.
 ```bash
-npm run video -- samples/contract-lifecycle.json out/contract   # writes out/contract/video.mp4 and timings.json
+npm run video -- samples/what-is-clm.json out/clm --voice am_puck --fx subtle   # video.mp4, captions, chapters.json
+node src/video/voice-demo.mjs out/voices                                          # short clips to pick a voice by ear
 ```
-Script format: `{ "scenes": [ { "narration": "...", "slide": { "title": "...", "bullets": [], "steps": [] } } ] }`.
-`timings.json` reports render speed; measure it on the Oracle VM before planning a large batch. On a 16-thread desktop the voice is the slow step (about real time), the rest is quick.
+- **Layouts:** `hook`, `bullets`, `steps` (highlights the current step with a description), `compare` (two columns), `quiz` (question, options, think countdown, answer reveal) and `recap`. Items name the words they should appear on (`"at"`), so visuals land with the narration.
+- **Quiz pause:** put `||` in the spoken text with `thinkSeconds`; `chapters.json` lists `pauseAt` and `revealAt` so the course player can pause and ask the student.
+- **Voice:** Kokoro (`--voice am_puck`, `am_michael`, `am_fenrir`, `bm_george`...) plus `--fx none|subtle|robot` (pitch, a slight buzz and a short metallic echo via ffmpeg).
+- **Captions vs speech:** `narration` is what is shown, `spoken` is what is read aloud (e.g. "CLM" vs "C L M").
+- `timings.json` reports render speed; measure it on the Oracle VM before planning a large batch.
 
 ## 1. Create the Oracle VM (one time, in the Oracle Cloud console)
 1. Compute > Instances > Create instance. Image: **Ubuntu 24.04** (aarch64). Shape: **VM.Standard.A1.Flex**, 2 OCPU, **12 GB** RAM. That is now the whole Always Free Ampere allowance (Oracle reduced it from 4 OCPU / 24 GB), so use all of it on one VM; creating more than the allowance can get instances disabled.

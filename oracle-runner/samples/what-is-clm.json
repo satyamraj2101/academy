@@ -1,0 +1,67 @@
+{
+  "title": "What is CLM?",
+  "scenes": [
+    {
+      "gesture": "raise",
+      "narration": "Quick question. Where do your company's contracts live right now? In inboxes, shared drives, a drawer somewhere? Today you will learn how to fix that. Welcome to Contract Lifecycle Management, or CLM.",
+      "spoken": "Quick question. Where do your company's contracts live right now? In inboxes, shared drives, a drawer somewhere? Today you will learn how to fix that. Welcome to Contract Lifecycle Management, or C L M.",
+      "slide": { "layout": "hook", "kicker": "Quick question: where do your contracts live?", "title": "What is CLM?", "subtitle": "Contract Lifecycle Management", "subAt": "welcome to contract lifecycle" }
+    },
+    {
+      "gesture": "point",
+      "narration": "CLM is how a business manages every contract, from the first request, through signature, all the way to renewal. It keeps contracts, key dates, and obligations together in one place, instead of scattered everywhere.",
+      "spoken": "C L M is how a business manages every contract, from the first request, through signature, all the way to renewal. It keeps contracts, key dates, and obligations together in one place, instead of scattered everywhere.",
+      "slide": { "layout": "bullets", "title": "CLM in one sentence", "bullets": [
+        { "text": "Manages every contract", "at": "manages every contract" },
+        { "text": "From first request to renewal", "at": "from the first request" },
+        { "text": "Dates and obligations in one place", "at": "key dates" } ] }
+    },
+    {
+      "gesture": "present",
+      "narration": "Let's follow one contract. It starts as a request. Then it is drafted, reviewed by legal, approved by the right people, and signed. Signing is not the end: the contract is then tracked, and renewed or closed.",
+      "spoken": "Let's follow one contract. It starts as a request. Then it is drafted, reviewed by legal, approved by the right people, and signed. Signing is not the end: the contract is then tracked, and renewed or closed.",
+      "slide": { "layout": "steps", "title": "One contract, start to finish", "steps": [
+        { "text": "Request", "at": "starts as a request", "desc": "The business says what it needs, who it is with, and by when." },
+        { "text": "Draft", "at": "drafted", "desc": "A first version is created, usually from an approved template." },
+        { "text": "Review", "at": "reviewed by legal", "desc": "Legal checks the risk and suggests changes." },
+        { "text": "Approve", "at": "approved", "desc": "The right people sign off before anything goes out." },
+        { "text": "Sign", "at": "and signed", "desc": "Both parties sign, most often electronically." },
+        { "text": "Track", "at": "tracked", "desc": "Key dates and duties are watched, then the contract is renewed or closed." } ] }
+    },
+    {
+      "gesture": "present",
+      "narration": "Without CLM, contracts hide in email, renewals slip by, and nobody is sure which version is final. With CLM, every contract has one home, a clear trail of who changed what, and reminders before key dates.",
+      "spoken": "Without C L M, contracts hide in email, renewals slip by, and nobody is sure which version is final. With C L M, every contract has one home, a clear trail of who changed what, and reminders before key dates.",
+      "slide": { "layout": "compare", "title": "Why it matters", "compare": {
+        "left": { "title": "Without CLM", "items": [
+          { "text": "Contracts hide in email", "at": "hide in email" },
+          { "text": "Renewals slip by", "at": "renewals slip" },
+          { "text": "Which version is final?", "at": "which version" } ] },
+        "right": { "title": "With CLM", "items": [
+          { "text": "One home for every contract", "at": "one home" },
+          { "text": "A clear trail of changes", "at": "clear trail" },
+          { "text": "Reminders before key dates", "at": "reminders" } ] } } }
+    },
+    {
+      "gesture": "raise",
+      "thinkSeconds": 4,
+      "narration": "Quick check. A contract was signed last year, and its renewal date is coming up. Which part of CLM helps you most? A, a shared folder. B, automatic date reminders. Or C, a bigger inbox. Think about it. || The answer is B. Automatic date reminders make sure no renewal is missed.",
+      "spoken": "Quick check. A contract was signed last year, and its renewal date is coming up. Which part of C L M helps you most? A, a shared folder. B, automatic date reminders. Or C, a bigger inbox. Think about it. || The answer is B. Automatic date reminders make sure no renewal is missed.",
+      "slide": { "layout": "quiz", "title": "Quick check", "quiz": {
+        "question": "A contract was signed last year and renewal is coming up. What helps most?",
+        "options": ["A shared folder", "Automatic date reminders", "A bigger inbox"],
+        "optionsAt": ["a, a shared folder", "b, automatic date", "or c, a bigger"],
+        "answer": 1, "answerAt": "the answer is b" } }
+    },
+    {
+      "gesture": "point",
+      "narration": "To recap. CLM keeps every contract in one place. It follows the full lifecycle, from request to renewal. And it turns dates and approvals into reminders, not surprises. In the next lesson, we open a real CLM system and create our first contract.",
+      "spoken": "To recap. C L M keeps every contract in one place. It follows the full lifecycle, from request to renewal. And it turns dates and approvals into reminders, not surprises. In the next lesson, we open a real C L M system and create our first contract.",
+      "slide": { "layout": "recap", "title": "Recap", "takeaways": [
+        { "text": "One place for every contract", "at": "one place" },
+        { "text": "Covers the full lifecycle", "at": "full lifecycle" },
+        { "text": "Dates and approvals become reminders", "at": "reminders, not" } ],
+        "next": "create your first contract", "nextAt": "in the next lesson" }
+    }
+  ]
+}
