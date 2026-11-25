@@ -184,7 +184,7 @@ function CertificationSection({ course, modules, enrollment, isLoggedIn }: { cou
             <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">{percent}%</span>
           </div>
           <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-5">
-            <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-700" style={{ width: `${percent}%` }} />
+            <div className="h-full bg-gradient-to-r from-indigo-500 to-sky-500 rounded-full transition-all duration-700" style={{ width: `${percent}%` }} />
           </div>
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Milestones</p>
           <div className="space-y-2">

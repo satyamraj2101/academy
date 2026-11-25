@@ -86,7 +86,7 @@ export function LoginComponent() {
         
         <div className="relative z-10 max-w-lg text-white">
           <h1 className="text-4xl md:text-5xl font-black mb-6 leading-tight tracking-tight">
-            Master the Future of <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-sky-400">Enterprise CLM</span>
+            Master the Future of <span className="text-sky-400">Enterprise CLM</span>
           </h1>
           <p className="text-lg text-slate-300 mb-10 leading-relaxed">
             SpotCLM Academy is the premiere destination for learning contract lifecycle management. Join thousands of professionals accelerating their careers.
@@ -112,7 +112,7 @@ export function LoginComponent() {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-fuchsia-500/10 border border-fuchsia-500/20 rounded-xl text-fuchsia-400">
+              <div className="p-3 bg-blue-400/10 border border-blue-400/20 rounded-xl text-blue-300">
                 <Zap className="w-6 h-6" />
               </div>
               <div>

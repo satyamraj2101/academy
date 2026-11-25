@@ -137,7 +137,7 @@ export function CertificationsComponent() {
             SpotCLM Credentials
           </span>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight mb-6">
-            Stand Out With <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-sky-500">Official Certifications</span>
+            Stand Out With <span className="text-indigo-600 dark:text-sky-400">Official Certifications</span>
           </h1>
           <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
             Validate your expertise and advance your career with industry-recognized credentials from SpotCLM Academy.

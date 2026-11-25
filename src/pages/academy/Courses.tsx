@@ -125,7 +125,7 @@ export function CoursesComponent({ onOpenProposalModal }: { onOpenProposalModal:
                 value={selectedCategory}
                 onChange={e => setSelectedCategory(e.target.value)}
                 aria-label="Filter by category"
-                className="flex-1 md:w-48 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-control px-4 py-2 text-sm font-semibold outline-none focus:border-indigo-500 transition-colors"
+                className="flex-1 min-w-0 md:w-48 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-control px-4 py-2 text-sm font-semibold outline-none focus:border-indigo-500 transition-colors"
               >
                 {categories.map(c => <option key={c} value={c}>{c === 'All' ? 'All categories' : c}</option>)}
               </select>
@@ -133,7 +133,7 @@ export function CoursesComponent({ onOpenProposalModal }: { onOpenProposalModal:
                 value={selectedLevel}
                 onChange={e => setSelectedLevel(e.target.value)}
                 aria-label="Filter by level"
-                className="flex-1 md:w-48 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-control px-4 py-2 text-sm font-semibold outline-none focus:border-indigo-500 transition-colors"
+                className="flex-1 min-w-0 md:w-48 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-control px-4 py-2 text-sm font-semibold outline-none focus:border-indigo-500 transition-colors"
               >
                 {levels.map(l => <option key={l} value={l}>{l === 'All' ? 'All levels' : l}</option>)}
               </select>

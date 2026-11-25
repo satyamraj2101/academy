@@ -117,7 +117,7 @@ export function AcademyHomeComponent({ onNavigate, onOpenProposalModal }: any) {
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-tight mb-6">
               Master Contract <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-sky-500">Lifecycle Management.</span>
+              <span className="text-indigo-600 dark:text-sky-400">Lifecycle Management.</span>
             </h1>
             <p className="text-sm md:text-lg text-slate-600 dark:text-slate-400 leading-relaxed font-light mb-8">
               The premier training destination for enterprise professionals. Go from beginner to Certified Architect with our interactive live sessions, job-ready bootcamps, and role-based upskilling.

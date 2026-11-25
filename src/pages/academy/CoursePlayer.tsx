@@ -292,7 +292,7 @@ export function CoursePlayerComponent() {
   const totalLessons = allLessons.length;
   const completedLessons = allLessons.filter((l: any) => l.completed).length;
   const progressPercent = totalLessons === 0 ? 0 : Math.round((completedLessons / totalLessons) * 100);
-  const progressColor = progressPercent === 100 ? 'from-emerald-500 to-teal-500' : progressPercent >= 50 ? 'from-indigo-500 to-purple-500' : 'from-amber-400 to-orange-500';
+  const progressColor = progressPercent === 100 ? 'from-emerald-500 to-teal-500' : progressPercent >= 50 ? 'from-indigo-500 to-sky-400' : 'from-amber-400 to-orange-500';
 
   const toggleModule = (modId: string) => {
     setCollapsedModules(prev => {
@@ -419,7 +419,7 @@ export function CoursePlayerComponent() {
 
       {/* Mobile Header Nav (since main nav is hidden on player) */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 z-30 flex items-center justify-between px-2 sm:px-4">
-        <HapticButton onClick={() => setMobileMenuOpen(true)} className="p-2 text-slate-700 dark:text-slate-300 shrink-0">
+        <HapticButton onClick={() => setMobileMenuOpen(true)} aria-label="Open lesson list" className="p-2.5 text-slate-700 dark:text-slate-300 shrink-0">
           <Menu className="w-6 h-6" />
         </HapticButton>
         <span className="font-bold text-sm truncate px-2 hidden sm:block">{course?.title}</span>
@@ -610,7 +610,7 @@ export function CoursePlayerComponent() {
                 </div>
 
                 <div className="relative group perspective-1000">
-                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-fuchsia-500 rounded-3xl blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-700" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-sky-400 rounded-3xl blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-700" />
                   <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-xl">
                     <p className="font-black text-slate-900 dark:text-white mb-6 text-xl leading-tight">{knowledgeCheck.question_text}</p>
                     <div className="space-y-4 mb-8">
@@ -678,7 +678,7 @@ export function CoursePlayerComponent() {
             disabled={!prevLessonInfo}
             onClick={() => prevLessonInfo && navigate(`/course-player/${courseId}/lesson/${prevLessonInfo.id}`)}
             aria-label="Previous lesson"
-            className={`flex items-center gap-2 text-sm font-bold transition-colors ${prevLessonInfo ? 'text-slate-600 dark:text-slate-400 hover:text-indigo-600' : 'text-slate-300 dark:text-slate-700 cursor-not-allowed'}`}
+            className={`flex items-center justify-center gap-2 min-h-[44px] min-w-[44px] text-sm font-bold transition-colors ${prevLessonInfo ? 'text-slate-600 dark:text-slate-400 hover:text-indigo-600' : 'text-slate-300 dark:text-slate-700 cursor-not-allowed'}`}
           >
             <ChevronLeft className="w-5 h-5" /> <span className="hidden sm:inline">Previous</span>
           </button>

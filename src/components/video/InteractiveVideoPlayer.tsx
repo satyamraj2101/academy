@@ -166,7 +166,7 @@ export function InteractiveVideoPlayer({ content, lessonId, initial, tracking, o
           <div role="status" className="absolute left-3 bottom-16 max-w-[min(26rem,85%)] bg-white text-slate-800 rounded-2xl shadow-xl p-3 flex gap-3 items-start text-sm">
             <IndooFace className="w-9 h-9 shrink-0" />
             <div className="min-w-0"><p className="text-[11px] font-black uppercase tracking-wide text-indigo-600 mb-0.5">Indoo says</p>{hint}</div>
-            <button onClick={() => setHint(null)} aria-label="Close hint" className="text-slate-400 hover:text-slate-700 text-lg leading-none -mt-1">×</button>
+            <button onClick={() => setHint(null)} aria-label="Close hint" className="text-slate-400 hover:text-slate-700 text-xl leading-none min-h-[32px] min-w-[32px] -mt-1 -mr-1">×</button>
           </div>
         )}
         {quiz && (
@@ -201,15 +201,15 @@ export function InteractiveVideoPlayer({ content, lessonId, initial, tracking, o
 
       <div className="p-4 sm:p-5 space-y-4">
         <nav aria-label="Campus map">
-          <ol className="flex items-start overflow-x-auto pb-1">
+          <ol className="flex items-start overflow-x-auto scrollbar-none pb-1">
             {stops.map((s, i) => {
               const done = i < stopIdx, on = i === stopIdx;
               return (
-                <li key={`${s.station}-${s.start}`} className="flex-1 min-w-[88px] relative text-center">
+                <li key={`${s.station}-${s.start}`} className="flex-1 min-w-[56px] sm:min-w-[88px] relative text-center">
                   {i > 0 && <span aria-hidden="true" className={`absolute top-[13px] right-1/2 w-full h-1 ${done || on ? 'bg-indigo-600' : 'bg-indigo-100 dark:bg-slate-700'}`} />}
                   <button onClick={() => jump(s.start)} aria-current={on ? 'step' : undefined} aria-label={`Jump to ${s.name}`} className="relative z-10 group w-full focus:outline-none">
                     <span className={`block mx-auto w-[30px] h-[30px] rounded-full border-[3px] border-indigo-600 transition-shadow ${done ? 'bg-indigo-600' : 'bg-white dark:bg-slate-900'} ${on ? 'ring-4 ring-indigo-200 dark:ring-indigo-900' : ''} group-focus-visible:ring-4 group-focus-visible:ring-indigo-400`} />
-                    <span className={`block mt-1.5 text-xs leading-tight px-1 ${on ? 'font-bold text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>{s.name}</span>
+                    <span className={`block mt-1.5 text-[11px] sm:text-xs leading-tight px-0.5 sm:px-1 break-words ${on ? 'font-bold text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>{s.name}</span>
                   </button>
                 </li>
               );
@@ -218,13 +218,13 @@ export function InteractiveVideoPlayer({ content, lessonId, initial, tracking, o
         </nav>
 
         <div className="flex flex-wrap items-center gap-2">
-          <button onClick={askIndoo} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-sm font-bold">
+          <button onClick={askIndoo} className="inline-flex items-center gap-2 px-3 min-h-[44px] rounded-lg border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-sm font-bold">
             <Lightbulb className="w-4 h-4" /> Ask Indoo for a hint
           </button>
-          <button onClick={toggleSounds} aria-pressed={soundsOn} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold">
+          <button onClick={toggleSounds} aria-pressed={soundsOn} className="inline-flex items-center gap-2 px-3 min-h-[44px] rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold">
             {soundsOn ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />} Hint sounds {soundsOn ? 'on' : 'off'}
           </button>
-          <button onClick={toggleFullscreen} aria-label={fullscreen ? 'Exit full screen' : 'Full screen'} className="ml-auto p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">
+          <button onClick={toggleFullscreen} aria-label={fullscreen ? 'Exit full screen' : 'Full screen'} className="ml-auto min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">
             {fullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
           </button>
         </div>

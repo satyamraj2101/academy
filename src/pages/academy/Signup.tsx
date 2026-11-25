@@ -78,7 +78,7 @@ export function SignupComponent() {
         
         <div className="relative z-10 max-w-lg text-white">
           <h1 className="text-4xl md:text-5xl font-black mb-6 leading-tight tracking-tight">
-            Accelerate Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-indigo-400">Career Growth</span>
+            Accelerate Your <span className="text-sky-400">Career Growth</span>
           </h1>
           <p className="text-lg text-slate-300 mb-10 leading-relaxed">
             Create your free account today and get access to world-class training materials, expert-led courses, and a thriving community of professionals.
@@ -86,7 +86,7 @@ export function SignupComponent() {
           
           <div className="space-y-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400">
+              <div className="p-3 bg-sky-500/10 border border-sky-500/20 rounded-xl text-sky-400">
                 <ShieldCheck className="w-6 h-6" />
               </div>
               <div>

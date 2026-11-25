@@ -122,7 +122,7 @@ export function QuizSection({ content }: { content: string }) {
   const bestAttempt = attempts.find((a: any) => a.passed) || attempts[0];
 
   return (
-    <div className="rounded-2xl border-2 border-indigo-200 dark:border-indigo-800/50 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/20 p-6 md:p-8">
+    <div className="rounded-2xl border-2 border-indigo-200 dark:border-indigo-800/50 bg-gradient-to-br from-indigo-50 to-sky-50 dark:from-indigo-950/30 dark:to-sky-950/20 p-6 md:p-8">
       <div className="flex items-start gap-4">
         <div className="p-3 rounded-xl bg-indigo-600 text-white shadow-md shrink-0"><ClipboardCheck className="w-6 h-6" /></div>
         <div className="flex-1 min-w-0">

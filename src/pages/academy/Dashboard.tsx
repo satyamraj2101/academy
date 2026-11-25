@@ -177,7 +177,7 @@ export function DashboardComponent() {
                   <section className="bg-white/80 dark:bg-surface-900/40 border border-slate-200/50 dark:border-slate-800/50 rounded-card p-6 md:p-8 backdrop-blur-md shadow-raised">
                     <div className="flex items-center justify-between mb-6">
                       <h2 className="text-xl font-black text-slate-900 dark:text-white">In Progress</h2>
-                      <button onClick={() => navigate('/courses')} className="text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:underline">View All</button>
+                      <button onClick={() => navigate('/courses')} className="text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:underline min-h-[44px] px-2 -mx-2">View All</button>
                     </div>
                     
                     {loadingEnrollments ? (
@@ -461,7 +461,7 @@ export function DashboardComponent() {
                   <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400 tracking-wider truncate mr-2 text-xs">
                     {window.location.origin}/signup?ref={user.referralCode}
                   </span>
-                  <HapticButton className="p-1.5 text-slate-400 hover:text-indigo-600 bg-white dark:bg-slate-900 shadow-sm rounded border border-slate-200 dark:border-slate-800 shrink-0" onClick={copyReferralLink}>
+                  <HapticButton aria-label="Copy referral link" className="p-2.5 text-slate-400 hover:text-indigo-600 bg-white dark:bg-slate-900 shadow-sm rounded border border-slate-200 dark:border-slate-800 shrink-0" onClick={copyReferralLink}>
                     <Copy className="w-4 h-4" />
                   </HapticButton>
                 </div>
@@ -619,13 +619,13 @@ function GamificationCard() {
         <p className="text-xs text-slate-400 italic mb-4">Complete a lesson to earn your first badge.</p>
       )}
       <div className="flex items-center gap-4 flex-wrap">
-        <Link to="/leaderboard" className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
+        <Link to="/leaderboard" className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center min-h-[44px]">
           View Leaderboard &rarr;
         </Link>
-        <Link to="/peer-reviews" className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
+        <Link to="/peer-reviews" className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center min-h-[44px]">
           Peer Reviews &rarr;
         </Link>
-        <Link to="/instructor" className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
+        <Link to="/instructor" className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center min-h-[44px]">
           {user?.role === 'instructor' ? 'Instructor Dashboard' : 'Become an Instructor'} &rarr;
         </Link>
       </div>

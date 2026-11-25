@@ -156,12 +156,12 @@ export function SettingsComponent({ onOpenProposalModal }: { onOpenProposalModal
               </div>
               <div className="grid grid-cols-2 gap-6">
                 <div className="col-span-2">
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Full Name</label>
-                  <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 outline-none" />
+                  <label htmlFor="settings-full-name" className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Full Name</label>
+                  <input id="settings-full-name" type="text" autoComplete="name" value={fullName} onChange={e => setFullName(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 outline-none" />
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Bio</label>
-                  <textarea rows={4} value={bio} onChange={e => setBio(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 outline-none" placeholder="Tell us a little about yourself..."></textarea>
+                  <label htmlFor="settings-bio" className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Bio</label>
+                  <textarea id="settings-bio" rows={4} value={bio} onChange={e => setBio(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 outline-none" placeholder="Tell us a little about yourself..."></textarea>
                 </div>
               </div>
               <div className="flex justify-end">

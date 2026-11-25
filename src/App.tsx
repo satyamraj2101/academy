@@ -134,6 +134,8 @@ function AppLayout() {
 
   // Skip header/footer on routes that render their own full-page chrome (see BARE_LAYOUT_ROUTES above)
   const isBareLayout = BARE_LAYOUT_ROUTES.some(pattern => matchPath(pattern, location.pathname));
+  // The login/signup screens put a dark panel under the fixed header; a see-through header turned that into a muddy grey bar.
+  const isAuthSplit = location.pathname === '/login' || location.pathname === '/signup';
 
 
 
@@ -141,14 +143,15 @@ function AppLayout() {
     <div className={`min-h-screen transition-colors duration-500 font-sans flex flex-col justify-between ${getThemeClasses()}`}>
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute -top-1/4 -left-1/4 w-[70vw] h-[70vw] rounded-full bg-indigo-500/[0.04] dark:bg-indigo-500/[0.07] filter blur-[100px]" />
-        <div className="absolute -bottom-1/4 -right-1/4 w-[60vw] h-[60vw] rounded-full bg-fuchsia-500/[0.04] dark:bg-fuchsia-500/[0.06] filter blur-[100px]" />
+        <div className="absolute -bottom-1/4 -right-1/4 w-[60vw] h-[60vw] rounded-full bg-sky-500/[0.05] dark:bg-sky-500/[0.06] filter blur-[100px]" />
         <div className="absolute inset-0 bg-noise mix-blend-overlay"></div>
       </div>
 
       {!isBareLayout && (
         <div className="fixed top-0 z-50 w-full flex flex-col">
           <header className={`w-full transition-all duration-300 border-b ${
-            scrolled ? 'py-1.5 md:py-2 bg-white/85 dark:bg-slate-950/85 backdrop-blur-2xl border-indigo-100/40 dark:border-slate-800' 
+            isAuthSplit ? 'py-1.5 md:py-3.5 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800'
+            : scrolled ? 'py-1.5 md:py-2 bg-white/85 dark:bg-slate-950/85 backdrop-blur-2xl border-indigo-100/40 dark:border-slate-800' 
                      : 'py-1.5 md:py-3.5 bg-white/60 dark:bg-slate-950/50 backdrop-blur-xl border-indigo-100/15 dark:border-slate-900/30'
           }`}>
             <div className="absolute bottom-[-1px] left-0 h-[1.5px] bg-gradient-to-r from-indigo-500 to-sky-400 transition-all duration-75" style={{ width: `${scrollPercentage}%` }} />
@@ -186,7 +189,7 @@ function AppLayout() {
                 </nav>
 
                 <div className="flex items-center gap-2">
-                  <HapticButton onClick={toggleTheme} className="p-1.5 border border-slate-200 dark:border-slate-800 rounded-control hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-200 transition-all cursor-pointer">
+                  <HapticButton onClick={toggleTheme} aria-label={themeMode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'} className="p-1.5 border border-slate-200 dark:border-slate-800 rounded-control hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-200 transition-all cursor-pointer">
                     {themeMode === 'dark' ? <Moon className="w-4 h-4 text-indigo-400" /> : <Sun className="w-4 h-4 text-amber-500" />}
                   </HapticButton>
                 </div>
@@ -194,7 +197,7 @@ function AppLayout() {
 
               {/* Mobile menu trigger is handled by the bottom bar now, but we keep the theme toggle visible on top */}
               <div className="lg:hidden flex items-center gap-2">
-                <HapticButton onClick={toggleTheme} className="p-1.5 text-slate-700 dark:text-slate-200">
+                <HapticButton onClick={toggleTheme} aria-label={themeMode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'} className="p-2.5 text-slate-700 dark:text-slate-200">
                   {themeMode === 'dark' ? <Moon className="w-5 h-5 text-indigo-400" /> : <Sun className="w-5 h-5 text-amber-500" />}
                 </HapticButton>
               </div>
@@ -342,7 +345,7 @@ function AppLayout() {
           <SpotLogoLight className="h-8 w-auto mx-auto mb-4 block dark:hidden" />
           <p className="text-xs font-semibold text-slate-500 mb-2">© 2026 SpotCLM Academy. All rights reserved.</p>
           <div className="flex justify-center gap-4 text-xs font-bold uppercase tracking-widest text-slate-400">
-            <Link to="/admin" className="hover:text-indigo-500 transition-colors">Admin Panel</Link>
+            <Link to="/admin" className="inline-block py-3 px-3 hover:text-indigo-500 transition-colors">Admin Panel</Link>
           </div>
         </footer>
       )}
