@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "npx wrangler pages dev -- npx vite",
+    "dev": "node scripts/dev.mjs",
     "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "build:pages": "vite build && node scripts/prerender.mjs",
     "deploy:dev": "npx wrangler pages deploy dist --project-name spotclm",

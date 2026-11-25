@@ -12,6 +12,13 @@ export default defineConfig(() => {
       },
     },
     server: {
+      // Local dev (`npm run dev`): Vite serves the UI with hot reload on :3000 and forwards
+      // /api/* to `wrangler pages dev` (Pages Functions + local D1) on :8788.
+      port: 3000,
+      strictPort: true,
+      proxy: {
+        '/api': 'http://127.0.0.1:8788',
+      },
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
