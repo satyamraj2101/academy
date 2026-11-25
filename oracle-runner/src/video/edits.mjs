@@ -13,6 +13,7 @@ const SHAPE = `A scene is JSON:
 { "id": "<keep unchanged>", "gesture": "point|raise|present",
   "narration": "text shown as captions", "spoken": "text read aloud (write CLM as 'C L M'; use '||' only in quiz scenes)",
   "station": "frontdesk|hub|draft|review|approve|sign|track|checkpoint" (the place behind Soomy; changing it adds a ship ride),
+  "hint": "one friendly sentence Indoo says when a student asks for help on this scene (max 160 chars; a nudge, never the full answer)",
   "thinkSeconds": <quiz only>,
   "sfx": [{"sound": "happy|curious|oops|celebrate|notice|nudge", "at": "phrase in spoken"}]  (Indoo, the mop-bot, chirps and reacts),
   "slide": { "layout": "hook|bullets|steps|compare|quiz|recap", "title": "...",
@@ -37,6 +38,8 @@ export function validateScene(next, original) {
   const said = String(scene.spoken || scene.narration || '').toLowerCase();
   if (!String(scene.narration || '').trim()) problems.push('narration is empty');
   if (!scene.slide || !LAYOUTS.includes(scene.slide.layout)) problems.push(`layout must be one of ${LAYOUTS.join(', ')}`);
+  if (scene.hint !== undefined && typeof scene.hint !== 'string') delete scene.hint;
+  if (typeof scene.hint === 'string') scene.hint = scene.hint.slice(0, 160);
   if (scene.gesture && !GESTURES.includes(scene.gesture)) scene.gesture = original.gesture || 'point';
   if (problems.length) return { scene: null, problems };
 

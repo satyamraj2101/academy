@@ -31,7 +31,8 @@
         "subtitle": "Your guides through every course",
         "subAt": "wherever i go"
       },
-      "station": "frontdesk"
+      "station": "frontdesk",
+      "hint": "Say hi! Soomy teaches, I tidy up and light up what matters."
     },
     {
       "id": "hook",
@@ -55,7 +56,8 @@
           "at": "or c l m"
         }
       ],
-      "station": "frontdesk"
+      "station": "frontdesk",
+      "hint": "Think of one contract your team signed. Can you find it in under a minute?"
     },
     {
       "id": "definition",
@@ -87,7 +89,8 @@
           "at": "scattered everywhere"
         }
       ],
-      "station": "frontdesk"
+      "station": "frontdesk",
+      "hint": "CLM is one place for the whole life of a contract, not just the signing."
     },
     {
       "id": "lifecycle",
@@ -137,7 +140,8 @@
           "at": "signing is not the end"
         }
       ],
-      "station": "hub"
+      "station": "hub",
+      "hint": "Watch the highlighted step. Each stage hands the contract to the next one."
     },
     {
       "id": "why",
@@ -194,7 +198,8 @@
           "at": "before key dates"
         }
       ],
-      "station": "review"
+      "station": "review",
+      "hint": "Compare the two columns: which problem hurts your team most?"
     },
     {
       "id": "check",
@@ -227,7 +232,8 @@
           "at": "think about it"
         }
       ],
-      "station": "checkpoint"
+      "station": "checkpoint",
+      "hint": "Which option would remind you before a date, without you having to remember?"
     },
     {
       "id": "recap",
@@ -260,7 +266,8 @@
           "at": "in the next lesson"
         }
       ],
-      "station": "frontdesk"
+      "station": "frontdesk",
+      "hint": "Three ideas: one place, the full lifecycle, and reminders instead of surprises."
     }
   ],
   "campus": [

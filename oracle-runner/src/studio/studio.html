@@ -54,6 +54,20 @@
   .warn { color:var(--warn); font-size:13px; margin-top:6px; }
   .mute { color:var(--mute); font-size:13px; }
   .err { color:var(--bad); font-size:14px; margin:6px 0; }
+  .map { display:flex; align-items:flex-start; gap:0; overflow-x:auto; padding:6px 2px 10px; }
+  .stop { flex:1 0 96px; min-width:96px; text-align:center; background:none; border:0; padding:0; cursor:pointer; position:relative; color:var(--mute); }
+  .stop::before { content:""; position:absolute; top:13px; left:-50%; width:100%; height:4px; background:#dbeafe; z-index:0; }
+  .stop:first-child::before { display:none; }
+  .stop.done::before, .stop.on::before { background:var(--blue); }
+  .stop i { position:relative; z-index:1; display:block; width:30px; height:30px; margin:0 auto 6px; border-radius:50%; border:3px solid var(--blue); background:#fff; }
+  .stop.done i { background:var(--blue); }
+  .stop.on i { background:#fff; box-shadow:0 0 0 5px #bfdbfe; }
+  .stop span { display:block; font-size:12.5px; line-height:1.25; padding:0 4px; }
+  .stop.on span { color:var(--ink); font-weight:600; }
+  .stop:focus-visible i { outline:3px solid var(--blue); outline-offset:3px; }
+  .bubble { position:absolute; left:14px; bottom:62px; max-width:min(420px,80%); background:#fff; border-radius:16px; padding:12px 14px; display:flex; gap:10px; align-items:flex-start; box-shadow:0 8px 24px rgba(15,23,42,.35); font-size:15px; }
+  .bubble::after { content:""; position:absolute; left:26px; bottom:-8px; width:16px; height:16px; background:#fff; transform:rotate(45deg); }
+  .bubble b { display:block; font-size:12px; color:var(--blue); margin-bottom:2px; }
 </style>
 </head>
 <body>
@@ -70,6 +84,12 @@
     <div class="stage" id="stage">
       <video id="video" controls playsinline preload="metadata"></video>
       <div class="overlay" id="quiz" hidden></div>
+      <div class="bubble" id="bubble" hidden role="status"></div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <h2>Campus map <span class="mute">(click a stop to jump there)</span></h2>
+      <div class="map" id="map" role="list" aria-label="Campus map"></div>
+      <div class="row" style="margin-top:6px"><button id="hintBtn">Ask Indoo for a hint</button><button id="soundBtn" aria-pressed="true">Sounds on</button></div>
     </div>
     <div class="card" style="margin-top:12px">
       <h2>Chapters</h2>
@@ -97,6 +117,13 @@
     <div class="card" id="proposalCard" style="margin-top:12px" hidden>
       <h2>Proposed changes</h2>
       <div id="proposal"></div>
+    </div>
+    <div class="card" id="pubCard" style="margin-top:12px" hidden>
+      <h2>Publish to the Academy</h2>
+      <p class="mute" id="pubNote" style="margin:0 0 8px">Uploads this version's video and adds it to a lesson as an interactive video (students must watch it and answer its questions).</p>
+      <div class="row" style="margin-bottom:8px"><select id="pubCourse" aria-label="Course"><option value="">Choose a course</option></select><select id="pubLesson" aria-label="Lesson" disabled><option value="">Choose a lesson</option></select></div>
+      <div class="row"><button class="primary" id="pubBtn" disabled>Publish this version</button><label class="mute" id="pubReplaceWrap" hidden><input type="checkbox" id="pubReplace"> replace the video already in this lesson</label></div>
+      <div id="pubMsg" class="mute" style="margin-top:8px"></div>
     </div>
     <div class="card" id="jobCard" style="margin-top:12px" hidden>
       <h2>Rendering</h2>
@@ -151,11 +178,14 @@ function draw() {
   document.querySelector('.stage .empty')?.remove();
   if (!v.rendered) $('stage').insertAdjacentHTML('afterbegin', `<div class="empty"><div>This version has not been rendered yet.</div><div class="mute">Press "Render this version". The first render takes a few minutes.</div></div>`);
   $('renderBtn').hidden = v.rendered; $('renderBtn').disabled = P.job?.status === 'running';
+  drawMap();
   $('chapters').innerHTML = chapters().map((c) => `<button data-t="${c.start}" data-id="${c.id}">${c.index + 1}. ${esc(c.title)}</button>`).join('') || '<span class="mute">Render to see chapters.</span>';
   drawNotes();
   drawProposal();
   drawJob();
   updateAt();
+  const pubs = cur().published || [];
+  if ($('pubMsg') && pubs.length && !$('pubMsg').textContent.startsWith('Published')) $('pubMsg').innerHTML = `Already published ${pubs.length} time${pubs.length > 1 ? 's' : ''}; last on ${new Date(pubs.at(-1).at).toLocaleString()}.`;
 }
 function drawNotes() {
   const notes = P.notes.filter((n) => n.version === ver);
@@ -201,7 +231,56 @@ function poll() {
     if (fresh.job?.status !== 'running') { clearInterval(pollTimer); await load(ver); } else drawJob();
   }, 1000);
 }
+// Indoo's chirps in the browser (same idea as the video: soft sine tones, no noise).
+let soundsOn = true;
+try { soundsOn = localStorage.getItem('studio:sounds') !== 'off'; } catch {}
+let audioCtx = null;
+function chirp(kind) {
+  if (!soundsOn) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const shapes = { curious: [[940, 0], [1300, 0.16], [900, 0.3]], happy: [[1000, 0], [1560, 0.17]], oops: [[900, 0], [440, 0.34]] }[kind] || [[1000, 0], [1400, 0.15]];
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain(), t0 = audioCtx.currentTime, end = shapes[shapes.length - 1][1] + 0.08;
+    o.type = 'sine';
+    shapes.forEach(([f, t], i) => (i ? o.frequency.linearRampToValueAtTime(f, t0 + t) : o.frequency.setValueAtTime(f, t0)));
+    g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(0.12, t0 + 0.015); g.gain.linearRampToValueAtTime(0.0001, t0 + end);
+    o.connect(g).connect(audioCtx.destination); o.start(t0); o.stop(t0 + end + 0.02);
+  } catch {}
+}
+function visits() {
+  // consecutive chapters at the same station are one stop on the route
+  const out = [];
+  for (const c of chapters()) {
+    const last = out[out.length - 1];
+    if (last && last.station === c.station && c.station) { last.end = c.end; last.ids.push(c.id); } else out.push({ station: c.station, name: c.station ? (cur().chapters.stations || []).find((s) => s.id === c.station)?.name || c.station : c.title, start: c.start, end: c.end, ids: [c.id] });
+  }
+  return out;
+}
+function drawMap() {
+  const v = visits();
+  $('map').innerHTML = v.length ? v.map((s, i) => `<button class="stop" role="listitem" data-t="${s.start}" data-i="${i}" aria-label="Jump to ${esc(s.name)}"><i></i><span>${esc(s.name)}</span></button>`).join('') : '<span class="mute">Render this version to see the map.</span>';
+  updateMap();
+}
+function updateMap() {
+  const t = video.currentTime || 0, v = visits();
+  document.querySelectorAll('#map .stop').forEach((b, i) => {
+    const s = v[i]; if (!s) return;
+    const nextStart = v[i + 1] ? v[i + 1].start : Infinity; // a ship ride belongs to the stop it is leaving
+    b.classList.toggle('on', t >= s.start && t < nextStart);
+    b.classList.toggle('done', t >= nextStart);
+    if (b.classList.contains('on')) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+  });
+}
+let bubbleTimer = null;
+function showHint() {
+  const c = sceneAt(video.currentTime || 0);
+  const text = c?.hint || c?.keyPoint || 'Nothing to add here yet. Watch for the highlighted points.';
+  $('bubble').innerHTML = `<svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect x="3" y="9" width="28" height="18" rx="9" fill="#e8f0fa" stroke="#9fb3cc"/><rect x="7" y="13" width="20" height="10" rx="5" fill="#0b1220"/><circle cx="13" cy="18" r="2.6" fill="#8fe3ff"/><circle cx="21" cy="18" r="2.6" fill="#8fe3ff"/></svg><div><b>Indoo says</b>${esc(text)}</div>`;
+  $('bubble').hidden = false; chirp('curious');
+  clearTimeout(bubbleTimer); bubbleTimer = setTimeout(() => { $('bubble').hidden = true; }, 8000);
+}
 function updateAt() {
+  updateMap();
   $('at').textContent = fmt(video.currentTime || 0);
   $('atScene').textContent = chapters().length ? `· ${sceneAt(video.currentTime || 0)?.title || ''}` : '';
   document.querySelectorAll('#chapters button').forEach((b) => b.classList.toggle('on', b.dataset.id === sceneAt(video.currentTime || 0)?.id));
@@ -225,7 +304,7 @@ function showQuiz(cp) {
     const b = e.target.closest('.opt');
     if (!b || box.querySelector('.right')) return;
     const i = Number(b.dataset.i), ok = i === cp.answer;
-    b.classList.add(ok ? 'right' : 'wrong');
+    b.classList.add(ok ? 'right' : 'wrong'); chirp(ok ? 'happy' : 'oops');
     box.querySelectorAll('.opt')[cp.answer].classList.add('right');
     answered[cp.sceneId] = { choice: i, correct: ok, at: new Date().toISOString() };
     try { localStorage.setItem(answersKey(), JSON.stringify(answered)); } catch {}
@@ -237,6 +316,46 @@ function showQuiz(cp) {
 $('project').onchange = (e) => { slug = e.target.value; load(); };
 $('version').onchange = (e) => { ver = Number(e.target.value); video.pause(); draw(); };
 $('renderBtn').onclick = async () => { try { await api(`/projects/${slug}/render`, { method: 'POST', body: { version: ver } }); await load(ver); } catch (e) { $('status').textContent = e.message; } };
+$('map').onclick = (e) => { const b = e.target.closest('.stop'); if (b) { video.currentTime = Number(b.dataset.t); video.play(); $('bubble').hidden = true; } };
+$('hintBtn').onclick = showHint;
+$('soundBtn').textContent = soundsOn ? 'Sounds on' : 'Sounds off'; $('soundBtn').setAttribute('aria-pressed', String(soundsOn));
+$('soundBtn').onclick = () => { soundsOn = !soundsOn; try { localStorage.setItem('studio:sounds', soundsOn ? 'on' : 'off'); } catch {} $('soundBtn').textContent = soundsOn ? 'Sounds on' : 'Sounds off'; $('soundBtn').setAttribute('aria-pressed', String(soundsOn)); if (soundsOn) chirp('happy'); };
+let academy = null, structure = [];
+async function initPublish() {
+  try { academy = await api('/academy/status'); } catch { academy = { configured: false }; }
+  $('pubCard').hidden = false;
+  if (!academy.configured) { $('pubNote').textContent = 'Not connected. Add ACADEMY_ADMIN_BASE_URL and ACADEMY_SERVICE_API_KEY to the runner .env, then restart the Studio.'; $('pubCourse').disabled = true; return; }
+  try {
+    const r = await api('/academy/courses');
+    $('pubCourse').innerHTML = '<option value="">Choose a course</option>' + r.courses.map((c) => `<option value="${c.id}">${esc(c.title)}</option>`).join('');
+  } catch (e) { $('pubMsg').textContent = e.message; }
+}
+$('pubCourse').onchange = async (e) => {
+  $('pubLesson').innerHTML = '<option value="">Choose a lesson</option>'; $('pubLesson').disabled = true; $('pubBtn').disabled = true;
+  if (!e.target.value) return;
+  try {
+    structure = (await api(`/academy/courses/${e.target.value}/structure`)).structure;
+    $('pubLesson').innerHTML = '<option value="">Choose a lesson</option>' + structure.flatMap((m) => m.lessons.map((l) => `<option value="${l.id}">${esc(m.title)} - ${esc(l.title)}${l.videos.length ? ' (has video)' : ''}</option>`)).join('');
+    $('pubLesson').disabled = false;
+  } catch (err) { $('pubMsg').textContent = err.message; }
+};
+$('pubLesson').onchange = (e) => {
+  const lesson = structure.flatMap((m) => m.lessons).find((l) => l.id === e.target.value);
+  $('pubBtn').disabled = !lesson && !e.target.value;
+  $('pubReplaceWrap').hidden = !lesson || !lesson.videos.length;
+  $('pubReplace').checked = false;
+};
+$('pubBtn').onclick = async () => {
+  const lessonId = $('pubLesson').value, lesson = structure.flatMap((m) => m.lessons).find((l) => l.id === lessonId);
+  if (!lessonId) return;
+  $('pubBtn').disabled = true; $('pubMsg').textContent = 'Uploading and attaching...';
+  try {
+    const r = await api(`/projects/${slug}/publish`, { method: 'POST', body: { version: ver, lessonId, replaceVideoId: $('pubReplace').checked ? lesson?.videos[0]?.videoId : undefined } });
+    $('pubMsg').innerHTML = `Published. Students will see it in that lesson now. <span class="mute">(video ${esc(r.videoId.slice(0, 8))})</span>`;
+    await load(ver);
+  } catch (err) { $('pubMsg').textContent = err.message; }
+  $('pubBtn').disabled = false;
+};
 $('chapters').onclick = (e) => { const b = e.target.closest('button'); if (b) { video.currentTime = Number(b.dataset.t); video.play(); } };
 $('notes').onclick = async (e) => {
   const s = e.target.closest('[data-seek]'); if (s) { video.currentTime = Number(s.dataset.seek); return; }
@@ -264,6 +383,7 @@ $('proposal').onclick = async (e) => {
   }
 };
 loadProjects();
+initPublish();
 </script>
 </body>
 </html>

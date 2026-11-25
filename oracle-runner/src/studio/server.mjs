@@ -10,6 +10,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
 import { proposeEdits, applyChanges, NOTE_KINDS } from '../video/edits.mjs';
+import { api } from '../api.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
@@ -27,6 +28,38 @@ const pdir = (slug) => join(DATA, 'projects', slug);
 const readJson = (p, d) => { try { return JSON.parse(readFileSync(p, 'utf8')); } catch { return d; } };
 const writeJson = (p, v) => writeFileSync(p, JSON.stringify(v, null, 2));
 const projectMeta = (slug) => readJson(join(pdir(slug), 'project.json'), null);
+
+// ---- Publish to Academy: upload the rendered MP4 and attach it to a lesson through the admin API (service key).
+const ACADEMY_BASE = (process.env.ACADEMY_ADMIN_BASE_URL || '').replace(/\/$/, '');
+const academyConfigured = () => !!(ACADEMY_BASE && process.env.ACADEMY_SERVICE_API_KEY);
+const MAX_UPLOAD = 95 * 1024 * 1024; // Pages Functions accept request bodies up to 100 MB
+
+async function uploadAsset(path, name, type) {
+  const bytes = readFileSync(path);
+  if (bytes.length > MAX_UPLOAD) throw Object.assign(new Error(`This render is ${(bytes.length / 1048576).toFixed(0)} MB; the upload limit is 95 MB. Shorten the lesson or lower the quality.`), { status: 413 });
+  const form = new FormData();
+  form.append('file', new Blob([bytes], { type }), name);
+  const headers = { Authorization: `Bearer ${process.env.ACADEMY_SERVICE_API_KEY}` };
+  if (process.env.CF_ACCESS_CLIENT_ID && process.env.CF_ACCESS_CLIENT_SECRET) { headers['CF-Access-Client-Id'] = process.env.CF_ACCESS_CLIENT_ID; headers['CF-Access-Client-Secret'] = process.env.CF_ACCESS_CLIENT_SECRET; }
+  const res = await fetch(`${ACADEMY_BASE}/academy/upload`, { method: 'POST', headers, body: form });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw Object.assign(new Error(`Upload failed (${res.status}): ${data.error || 'unknown error'}`), { status: 502 });
+  return data.url;
+}
+
+async function publishToAcademy(slug, n, lessonId, replaceVideoId) {
+  const dir = join(pdir(slug), 'renders', `v${n}`);
+  const chapters = readJson(join(dir, 'chapters.json'), null);
+  if (!chapters || !existsSync(join(dir, 'video.mp4'))) throw Object.assign(new Error('Render this version before publishing it'), { status: 409 });
+  const src = await uploadAsset(join(dir, 'video.mp4'), `${slug}-v${n}.mp4`, 'video/mp4');
+  const captionsSrc = existsSync(join(dir, 'captions.vtt')) ? await uploadAsset(join(dir, 'captions.vtt'), `${slug}-v${n}.vtt`, 'text/vtt') : null;
+  const result = await api('/academy/lesson-videos', { method: 'POST', body: { lessonId, replaceVideoId: replaceVideoId || undefined, video: { src, captionsSrc, title: chapters.title || projectMeta(slug).title, duration: chapters.duration, stations: chapters.stations || [], chapters: chapters.chapters, checkpoints: chapters.checkpoints } } });
+  const m = projectMeta(slug), v = m.versions.find(x => x.n === n);
+  v.published = [...(v.published || []), { lessonId, sectionId: result.sectionId, videoId: result.videoId, src, at: new Date().toISOString(), replaced: replaceVideoId || null }];
+  writeJson(join(pdir(slug), 'project.json'), m);
+  return { ...result, src };
+}
+
 const jobs = new Map(); // slug -> { status: 'running'|'done'|'failed', step, done, total, error, version }
 
 function json(res, status, body) { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(body)); }
@@ -109,6 +142,14 @@ const server = http.createServer(async (req, res) => {
       return json(res, 201, projectState(b.slug));
     }
 
+
+    if (parts[1] === 'academy' && req.method === 'GET') {
+      if (!academyConfigured()) return json(res, 200, { configured: false });
+      if (parts[2] === 'status') return json(res, 200, { configured: true, base: ACADEMY_BASE });
+      if (parts[2] === 'courses' && parts.length === 3) { const r = await api('/academy/courses'); return json(res, 200, { configured: true, courses: (Array.isArray(r) ? r : r.courses || r.data || []).map(c => ({ id: c.id, title: c.title, status: c.status })) }); }
+      if (parts[2] === 'courses' && parts[4] === 'structure' && /^[\w-]+$/.test(parts[3])) { const r = await api(`/academy/courses/${parts[3]}/structure`); return json(res, 200, { structure: (r.structure || []).map(m => ({ id: m.id, title: m.title, lessons: (m.lessons || []).map(l => ({ id: l.id, title: l.title, videos: (l.sections || []).filter(x => x.section_type === 'interactive_video').map(x => { try { const c = JSON.parse(x.content); return { videoId: c.videoId, title: c.title }; } catch { return null; } }).filter(Boolean) })) })) }); }
+    }
+
     const slug = parts[2];
     if (parts[1] !== 'projects' || !SLUG.test(slug || '') || !projectMeta(slug)) return json(res, 404, { error: 'Project not found' });
     const action = parts[3];
@@ -129,6 +170,15 @@ const server = http.createServer(async (req, res) => {
       const notes = readJson(join(pdir(slug), 'notes.json'), []).filter(n => n.id !== parts[4]);
       writeJson(join(pdir(slug), 'notes.json'), notes);
       return json(res, 200, { ok: true });
+    }
+
+
+    if (action === 'publish' && req.method === 'POST') {
+      if (!academyConfigured()) return json(res, 400, { error: 'Set ACADEMY_ADMIN_BASE_URL and ACADEMY_SERVICE_API_KEY in .env to publish to the Academy.' });
+      const b = await body(req);
+      if (!/^[\w-]{8,64}$/.test(String(b.lessonId || ''))) return json(res, 400, { error: 'Choose a lesson first' });
+      const out = await publishToAcademy(slug, Number(b.version) || projectMeta(slug).current, String(b.lessonId), b.replaceVideoId ? String(b.replaceVideoId) : null);
+      return json(res, 201, out);
     }
 
     if (action === 'render' && req.method === 'POST') {

@@ -14,6 +14,7 @@ import { voiceFilter } from './voicefx.mjs';
 import { sceneEvents, placeEvents, mixSfx, whoosh } from './sfx.mjs';
 import { travelSvg, TRAVEL_SECONDS } from './travel.mjs';
 import { stationName, STATIONS } from './stations.mjs';
+import { highlights } from './scene.mjs';
 
 export const RENDER_VERSION = 13; // bump when visuals or audio processing change, so stale cache is not reused
 export const GAP = 0.5; // seconds of silence after each scene
@@ -22,7 +23,7 @@ const FONT_FILES = ['400Regular', '600SemiBold', '700Bold', '800ExtraBold'].map(
 const CAPTION_STYLE = 'FontName=Inter,FontSize=11,PrimaryColour=&H3B2F1E&,OutlineColour=&HFFFFFF&,BorderStyle=1,Outline=2,Shadow=0,MarginV=22,Alignment=2';
 
 export const sceneKey = (scene, { voice, fx, fps }) => {
-  const { id, ...content } = scene;
+  const { id, hint, ...content } = scene; // id and hint are metadata, not picture or sound
   return createHash('sha1').update(JSON.stringify({ v: RENDER_VERSION, content, voice, fx, fps, dtype: process.env.KOKORO_DTYPE || 'q8' })).digest('hex').slice(0, 16);
 };
 
@@ -180,7 +181,7 @@ export async function buildVideo(script, outDir, { cacheRoot = join(outDir, '..'
   rendered.forEach((r, i) => {
     const s = timeline[i];
     if (s.travel) { cursor += r.total; return; }
-    chapters.push({ index: chapters.length, id: s.id, title: s.slide?.title || `Scene ${chapters.length + 1}`, layout: s.slide?.layout || 'bullets', station: s.station || null, start: +cursor.toFixed(2), end: +(cursor + r.dur).toFixed(2) });
+    chapters.push({ index: chapters.length, id: s.id, title: s.slide?.title || `Scene ${chapters.length + 1}`, layout: s.slide?.layout || 'bullets', station: s.station || null, hint: s.hint || null, keyPoint: highlights(s, r.dur).find(h => h.note)?.note || null, start: +cursor.toFixed(2), end: +(cursor + r.dur).toFixed(2) });
     r.cues.forEach(c => cues.push({ start: cursor + c.start, end: cursor + c.end, text: c.text }));
     if (s.slide?.layout === 'quiz') {
       const q = s.slide.quiz, sc = { ...s, parts: r.parts }, opts = q.options.map((text, k) => ({ text, at: q.optionsAt?.[k] }));
@@ -201,7 +202,8 @@ export async function buildVideo(script, outDir, { cacheRoot = join(outDir, '..'
     videoSeconds: +cursor.toFixed(1), voice, fx, fps, scenes: scenes.length, shipRides: timeline.length - scenes.length, reusedScenes: rendered.length - fresh.length, renderedScenes: fresh.length,
     voiceSeconds: +fresh.reduce((n, r) => n + r.stats.voiceSeconds, 0).toFixed(1), frameSeconds: +fresh.reduce((n, r) => n + r.stats.frameSeconds, 0).toFixed(1), encodeSeconds: +fresh.reduce((n, r) => n + r.stats.encodeSeconds, 0).toFixed(1),
   };
-  const meta = { title: script.title, duration: +cursor.toFixed(1), chapters, checkpoints, timings };
+  const stationsUsed = [...new Set(chapters.map(c => c.station).filter(Boolean))].map(id => ({ id, name: stationName(id) }));
+  const meta = { title: script.title, duration: +cursor.toFixed(1), stations: stationsUsed, chapters, checkpoints, timings };
   writeFileSync(join(outDir, 'chapters.json'), JSON.stringify(meta, null, 2));
   onProgress?.({ step: 'Done', done: timeline.length, total: timeline.length });
   return meta;
