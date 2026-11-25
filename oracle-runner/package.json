@@ -1,0 +1,17 @@
+{
+  "name": "spotclm-oracle-runner",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Long-running AI authoring jobs for SpotCLM Academy. Runs on an Oracle Always Free VM, pulls jobs from the Cloudflare admin API.",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node src/index.mjs",
+    "test": "node --test test/"
+  },
+  "dependencies": {
+    "jszip": "^3.10.1",
+    "mammoth": "^1.8.0",
+    "pdf-parse": "^1.1.1"
+  }
+}
