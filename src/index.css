@@ -1,6 +1,9 @@
 /* Fonts load via <link> in index.html (non-render-blocking) — a CSS @import here
    would delay first paint until the font CSS round-trips. */
 @import "tailwindcss";
+/* Powers the `prose` classes used for lesson bodies and long-form content. Without this plugin
+   those classes do nothing and headings, lists and links render unstyled. */
+@plugin "@tailwindcss/typography";
 
 @theme {
   --font-sans: "Inter", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
