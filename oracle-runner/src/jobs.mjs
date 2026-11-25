@@ -38,7 +38,7 @@ Module: ${mod.title} — ${mod.description}
 Lesson: ${lesson.title}
 Covers: ${lesson.summary}
 
-Write the full lesson in Markdown, 600-900 words: a short intro stating what the learner will be able to do, 3-5 sections with ## headings, a concrete worked example or realistic scenario, and a "Key takeaways" list at the end. Practical and specific, no filler, no title heading (the platform shows it), and do not mention that you are an AI.${source ? `\n\nGround every factual claim in the SOURCE below. Do not invent facts, figures or policies that it does not support.\n\nSOURCE:\n${source}` : ''}`;
+Write the full lesson in Markdown, 600-900 words: a short intro stating what the learner will be able to do, 3-5 sections with ## headings, a concrete worked example or realistic scenario, and a "Key takeaways" list at the end. Practical and specific, no filler, no title heading (the platform shows it), and do not mention that you are an AI. Stay vendor-neutral: do not state statistics, studies, laws, prices or product features unless they are widely established, and prefer general, widely accepted practice to specifics you cannot be sure of.${source ? `\n\nGround every factual claim in the SOURCE below. Do not invent facts, figures or policies that it does not support.\n\nSOURCE:\n${source}` : ''}`;
 }
 
 function reviewPrompt(course, lesson, draft, source) {

@@ -22,6 +22,9 @@ database_id = "2ab33547-d4ea-4452-9976-096d84182ab2"
 binding = "ASSETS_BUCKET"
 bucket_name = "spotclm-assets"
 
+[ai]
+binding = "AI"
+
 [vars]
 RESEND_TO_EMAIL = "info@spotclm.com"
 RESEND_FROM_EMAIL = "info@spotclm.com"
@@ -61,6 +64,9 @@ database_id = "23e5d70f-3187-4837-95b1-3a8d6c629940"
 [[env.production.r2_buckets]]
 binding = "ASSETS_BUCKET"
 bucket_name = "spotclm-assets"
+
+[env.production.ai]
+binding = "AI"
 
 [env.production.vars]
 RESEND_TO_EMAIL = "info@spotclm.com"

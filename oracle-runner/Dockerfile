@@ -3,7 +3,8 @@ FROM node:22-slim
 RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg fontconfig && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY package.json ./
-RUN npm install --omit=dev
+# The voice engine would try to download GPU files (not used here, and they 404 on some platforms).
+RUN npm install --omit=dev --onnxruntime-node-install-cuda=skip
 COPY src ./src
 COPY samples ./samples
 COPY assets ./assets

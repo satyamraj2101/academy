@@ -4,6 +4,7 @@ import { Sparkles, Loader2, ArrowLeft, ArrowRight, CheckCircle2, BookOpen, Chevr
 import { adminFetch } from '../../hooks/useD1Query';
 import { useGeminiModels } from '../../hooks/useGeminiModels';
 import { toast } from '../../../lib/toast';
+import { PromptImprover, type Applied } from '../../components/PromptImprover';
 
 interface OutlineLesson { title: string; summary: string }
 interface OutlineQuizQuestion { question_text: string; options: string[]; correct_answer: string; explanation?: string }
@@ -44,6 +45,15 @@ export default function CourseWizardPage() {
   const [thumbnailUrl, setThumbnailUrl] = useState('');
 
   const canGenerate = topic.trim() && audience.trim() && goal.trim();
+
+  // The improver hands back the brief's fields; the level and tone boxes only accept their listed choices.
+  const applyBrief = (r: Applied) => {
+    const f = r.improvedFields;
+    if (!f) return;
+    setTopic(f.topic ?? ''); setAudience(f.audience ?? ''); setGoal(f.goal ?? ''); if (f.duration) setDuration(f.duration);
+    const lv = LEVELS.find(l => l.toLowerCase() === (f.level || '').toLowerCase()); if (lv) setLevel(lv);
+    const tn = TONES.find(t => t.toLowerCase() === (f.tone || '').toLowerCase()); if (tn) setTone(tn);
+  };
 
   const generate = async () => {
     if (!canGenerate) {
@@ -237,6 +247,8 @@ export default function CourseWizardPage() {
               className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-base sm:text-sm text-slate-800 focus:outline-none focus:border-indigo-500"
             />
           </div>
+
+          <PromptImprover kind="course_brief" fields={{ topic, audience, level, goal, duration, tone }} onApply={applyBrief} />
 
           <div className="grid grid-cols-2 gap-4">
             <div>

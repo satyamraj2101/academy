@@ -149,10 +149,9 @@ export async function renderTravel(item, { cacheRoot, fps }) {
 
 export const stamp = (s, sep) => { const ms = Math.round(s * 1000); const p = (n, w = 2) => String(n).padStart(w, '0'); return `${p(Math.floor(ms / 3600000))}:${p(Math.floor(ms / 60000) % 60)}:${p(Math.floor(ms / 1000) % 60)}${sep}${p(ms % 1000, 3)}`; };
 
-// Builds <outDir>/video.mp4 + captions + chapters.json. Unchanged scenes come from cache.
-export async function buildVideo(script, outDir, { cacheRoot = join(outDir, '..', '.cache'), voice = 'am_puck', fx = 'clean', fps = 12, onProgress } = {}) {
-  mkdirSync(outDir, { recursive: true });
-  mkdirSync(cacheRoot, { recursive: true });
+// The ordered list of things to render: the scenes, with a ship ride in front of any scene that changes station.
+// Pure (no rendering), so a cloud coordinator can plan the work and hand each item to a different machine.
+export function planTimeline(script) {
   const scenes = script.scenes.map((s, i) => ({ ...s, id: s.id || `s${i + 1}` }));
   for (const sc of scenes) if (sc.station && !STATIONS[sc.station]) throw new Error(`Scene "${sc.id}" uses unknown station "${sc.station}" (use ${Object.keys(STATIONS).join(', ')})`);
 
@@ -169,12 +168,35 @@ export async function buildVideo(script, outDir, { cacheRoot = join(outDir, '..'
     }
     timeline.push(sc);
   });
+  return { scenes, timeline };
+}
 
-  const rendered = [];
-  for (const [i, item] of timeline.entries()) {
-    onProgress?.({ step: item.travel ? `Rendering ship ride ${i + 1} of ${timeline.length}` : `Rendering scene ${i + 1} of ${timeline.length}`, done: i, total: timeline.length });
-    rendered.push(item.travel ? await renderTravel(item, { cacheRoot, fps }) : await renderScene(item, { cacheRoot, voice, fx, fps }));
-  }
+// The cache key an item will render under (so a coordinator can tell what is already done).
+export const itemKey = (item, { voice, fx, fps }) => item.travel
+  ? createHash('sha1').update(JSON.stringify({ v: RENDER_VERSION, travel: item.travel, stops: item.stops, fps })).digest('hex').slice(0, 16)
+  : sceneKey(item, { voice, fx, fps });
+
+// Builds <outDir>/video.mp4 + captions + chapters.json. Unchanged scenes come from cache.
+// `renderItem(item, opts)` may replace the local renderer (the cloud build renders each item on its own machine) and
+// `concurrency` renders that many items at once; both default to the original one-at-a-time local behaviour.
+export async function buildVideo(script, outDir, { cacheRoot = join(outDir, '..', '.cache'), voice = 'am_puck', fx = 'clean', fps = 12, onProgress, renderItem, concurrency = 1 } = {}) {
+  mkdirSync(outDir, { recursive: true });
+  mkdirSync(cacheRoot, { recursive: true });
+  const { scenes, timeline } = planTimeline(script);
+
+  const local = (item) => (item.travel ? renderTravel(item, { cacheRoot, fps }) : renderScene(item, { cacheRoot, voice, fx, fps }));
+  const rendered = new Array(timeline.length);
+  let next = 0, done = 0;
+  const worker = async () => {
+    while (next < timeline.length) {
+      const i = next++, item = timeline[i];
+      rendered[i] = await (renderItem ? renderItem(item, { cacheRoot, voice, fx, fps }) : local(item));
+      done++;
+      onProgress?.({ step: `Rendered ${done} of ${timeline.length}`, done, total: timeline.length });
+    }
+  };
+  onProgress?.({ step: `Rendering ${timeline.length} items`, done: 0, total: timeline.length });
+  await Promise.all(Array.from({ length: Math.max(1, Math.min(concurrency, timeline.length)) }, worker));
 
   let cursor = 0;
   const cues = [], chapters = [], checkpoints = [];

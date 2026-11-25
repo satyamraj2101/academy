@@ -1,3 +1,4 @@
+import { PromptImprover } from '../PromptImprover';
 import { useState, useEffect } from 'react';
 import { Sparkles, Loader2, FileText, ClipboardCheck, ClipboardList, Copy, Check, PlusCircle, Cpu, Trash2 } from 'lucide-react';
 import { adminFetch } from '../../hooks/useD1Query';
@@ -247,6 +248,7 @@ export function AiStudioTab({ courseId }: { courseId: string }) {
             placeholder={mode === 'lesson' ? 'e.g. How AI accelerates contract review' : mode === 'quiz' ? 'e.g. Key clauses in vendor contracts' : 'e.g. Applying redlining best practices'}
             className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 focus:outline-none focus:border-indigo-500"
           />
+          <PromptImprover kind={mode === 'lesson' ? 'lesson_topic' : mode === 'quiz' ? 'quiz_topic' : 'assignment'} text={topic} onApply={r => { if (r.improved) setTopic(r.improved); }} />
         </div>
         <div>
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Extra Context <span className="normal-case text-slate-400 font-medium">(optional)</span></label>

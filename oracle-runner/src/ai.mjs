@@ -29,11 +29,16 @@ export function isConfigured(provider, env = process.env) {
   }
 }
 
+// A request that never answers must not stall a whole job (or burn cloud credit while it waits): give up after AI_TIMEOUT_MS
+// (default 2 minutes) and let the normal retry / fallback handle it.
+const timed = (env) => ({ signal: AbortSignal.timeout(Number(env.AI_TIMEOUT_MS) || 120_000) });
+
 const adapters = {
   async gemini({ model, prompt, json }, env) {
     const base = env.GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta';
     const res = await fetch(`${base}/models/${model}:generateContent`, {
       method: 'POST',
+      ...timed(env),
       headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: json ? { response_mime_type: 'application/json' } : {} }),
     });
@@ -44,6 +49,7 @@ const adapters = {
     const base = env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com';
     const res = await fetch(`${base}/v1/messages`, {
       method: 'POST',
+      ...timed(env),
       headers: { 'Content-Type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({ model, max_tokens: 8192, messages: [{ role: 'user', content: prompt }] }),
     });
@@ -54,6 +60,7 @@ const adapters = {
     const base = env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
     const res = await fetch(`${base}/chat/completions`, {
       method: 'POST',
+      ...timed(env),
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.OPENAI_API_KEY}` },
       body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], ...(json ? { response_format: { type: 'json_object' } } : {}) }),
     });
@@ -64,6 +71,7 @@ const adapters = {
     const base = env.CF_API_BASE || 'https://api.cloudflare.com/client/v4';
     const res = await fetch(`${base}/accounts/${env.CF_ACCOUNT_ID}/ai/run/${model}`, {
       method: 'POST',
+      ...timed(env),
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.CF_API_TOKEN}` },
       body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] }),
     });
