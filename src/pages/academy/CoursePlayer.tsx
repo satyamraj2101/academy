@@ -13,14 +13,29 @@ import {
   Loader2, ArrowLeft, CheckCircle2, PlayCircle, FileText, ChevronRight,
   ChevronLeft, ChevronDown, ChevronUp, StickyNote, X,
   AlertCircle, CheckCheck, Lightbulb, Menu, MessageCircle, Sun, Moon,
-  Maximize, Minimize, MonitorPlay, Timer
+  Maximize, Minimize, MonitorPlay, Timer, ListChecks
 } from 'lucide-react';
 import 'katex/dist/katex.min.css';
 import { MarkdownSection, VideoSection, ImageSection, PptSection, QuizSection, AssignmentSection, InteractiveVideoSection, VIDEO_PROGRESS_KEY, type VideoProgressData } from './LessonSectionBlocks';
-import { parseContent } from '../../lib/interactiveVideo';
+import { parseContent, type IVContent } from '../../lib/interactiveVideo';
+import { OPEN_VIDEO_QUESTION } from '../../components/video/InteractiveVideoPlayer';
+import { LessonPath } from './LessonPath';
 import { DiscussionPanel } from './DiscussionPanel';
 import { AIAssistantPanel } from './AIAssistantPanel';
 import { useTheme } from '../../hooks/useTheme';
+
+// A tool in the lesson's right-hand rail: an icon with its name written under it.
+function RailButton({ icon: Icon, label, active, onClick }: { icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean }>; label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick} aria-pressed={active} aria-label={label}
+      className={`flex flex-col items-center justify-center gap-1 w-16 min-h-[56px] rounded-xl text-[11px] leading-none font-semibold transition-colors ${active ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-700 dark:hover:text-indigo-300'}`}
+    >
+      <Icon className="w-5 h-5" aria-hidden={true} />
+      {label}
+    </button>
+  );
+}
 
 export function CoursePlayerComponent() {
   const { courseId, lessonId } = useParams();
@@ -41,6 +56,7 @@ export function CoursePlayerComponent() {
   const notesTimerRef = useRef<any>(null);
   const autoplayTimerRef = useRef<any>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auth is enforced by <ProtectedRoute> at the route level (App.tsx).
 
@@ -219,10 +235,11 @@ export function CoursePlayerComponent() {
     .filter((s: any) => (s.section_type === 'interactive_video' || s.type === 'interactive_video') && s.is_mandatory !== 0 && s.is_mandatory !== false)
     .map((s: any) => parseContent(s.content || '')?.videoId)
     .filter(Boolean) as string[];
+  const hasInteractiveVideo = embeddedLessonBlocks.some((s: any) => s.section_type === 'interactive_video' || s.type === 'interactive_video');
   const videoProgressQuery = useQuery({
     queryKey: VIDEO_PROGRESS_KEY(lessonId || ''),
     queryFn: () => academyAPI.lessons.videoProgress.get(lessonId!) as Promise<VideoProgressData>,
-    enabled: !!lessonId && mandatoryVideoIds.length > 0,
+    enabled: !!lessonId && hasInteractiveVideo,
   });
   const videosSatisfied = mandatoryVideoIds.length === 0 || (!videoProgressQuery.isLoading && mandatoryVideoIds.every(id => videoProgressQuery.data?.videos.find(v => v.videoId === id)?.completed));
 
@@ -241,6 +258,7 @@ export function CoursePlayerComponent() {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ignore if typing in an input or textarea
       if (['TEXTAREA', 'INPUT'].includes((e.target as HTMLElement).tagName)) return;
+      if ((e.target as HTMLElement).closest?.('[data-video-stage]')) return; // arrows seek the video, they do not change lesson
 
       if (e.code === 'ArrowRight' && nextLessonInfo) {
         navigate(`/course-player/${courseId}/lesson/${nextLessonInfo.id}`);
@@ -325,6 +343,21 @@ export function CoursePlayerComponent() {
       blocks = JSON.parse(lesson.content_body);
     } catch {}
   }
+
+  // How the lesson is laid out: the video first, then the notes, then the checks.
+  const sectionsList: any[] = Array.isArray(lesson?.sections) ? lesson.sections : [];
+  const ivSections = sectionsList.filter((x: any) => x.section_type === 'interactive_video');
+  const readSections = sectionsList.filter((x: any) => x.section_type !== 'interactive_video');
+  const ivContents = ivSections.map((x: any) => parseContent(x.content || '')).filter(Boolean) as IVContent[];
+  const ivProgress = ivContents.map(c => ({ c, p: videoProgressQuery.data?.videos.find(v => v.videoId === c.videoId) }));
+  const totalCheckpoints = ivContents.reduce((n, c) => n + c.checkpoints.length, 0);
+  const answeredCheckpoints = ivProgress.reduce((n, { c, p }) => n + c.checkpoints.filter(cp => p?.answers && p.answers[cp.sceneId]).length, 0);
+  const hasTopVideo = lesson?.content_type === 'video' && !!videoSrc;
+  const hasWatch = hasTopVideo || ivSections.length > 0;
+  const hasRead = readSections.length > 0 || (sectionsList.length === 0 && (blocks.length > 0 || !!cleanContent));
+  const hasCheck = !!knowledgeCheck || totalCheckpoints > 0;
+  const watchDone = ivSections.length > 0 ? ivProgress.length > 0 && ivProgress.every(({ p }) => !!p?.completed) : !!lesson?.completed;
+  const checkDone = (!knowledgeCheck || !!checkResult) && answeredCheckpoints >= totalCheckpoints;
 
   const CurriculumSidebar = () => (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900/50">
@@ -422,19 +455,19 @@ export function CoursePlayerComponent() {
         <HapticButton onClick={() => setMobileMenuOpen(true)} aria-label="Open lesson list" className="p-2.5 text-slate-700 dark:text-slate-300 shrink-0">
           <Menu className="w-6 h-6" />
         </HapticButton>
-        <span className="font-bold text-sm truncate px-2 hidden sm:block">{course?.title}</span>
+        <span className="font-bold text-sm truncate px-2 hidden sm:block text-slate-900 dark:text-white">{course?.title}</span>
         <div className="flex items-center gap-1 sm:gap-2 ml-auto shrink-0">
-          <HapticButton onClick={() => setSidePanel(sidePanel === 'ai' ? 'none' : 'ai')} title="AI Tutor" className={`p-1.5 sm:p-2 rounded-lg transition-colors ${sidePanel === 'ai' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'text-slate-500 dark:text-slate-400'}`}>
+          <HapticButton onClick={() => setSidePanel(sidePanel === 'ai' ? 'none' : 'ai')} aria-label="AI tutor" title="AI tutor" className={`p-1.5 sm:p-2 rounded-lg transition-colors ${sidePanel === 'ai' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'text-slate-500 dark:text-slate-400'}`}>
             <Lightbulb className="w-5 h-5" />
           </HapticButton>
-          <HapticButton onClick={() => setSidePanel(sidePanel === 'notes' ? 'none' : 'notes')} title="Notes" className={`p-1.5 sm:p-2 rounded-lg transition-colors ${sidePanel === 'notes' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'text-slate-500 dark:text-slate-400'}`}>
+          <HapticButton onClick={() => setSidePanel(sidePanel === 'notes' ? 'none' : 'notes')} aria-label="Notes" title="Notes" className={`p-1.5 sm:p-2 rounded-lg transition-colors ${sidePanel === 'notes' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'text-slate-500 dark:text-slate-400'}`}>
             <StickyNote className="w-5 h-5" />
           </HapticButton>
-          <HapticButton onClick={() => setSidePanel(sidePanel === 'discussion' ? 'none' : 'discussion')} title="Discussion" className={`p-1.5 sm:p-2 rounded-lg transition-colors ${sidePanel === 'discussion' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'text-slate-500 dark:text-slate-400'}`}>
+          <HapticButton onClick={() => setSidePanel(sidePanel === 'discussion' ? 'none' : 'discussion')} aria-label="Q&A" title="Q&A" className={`p-1.5 sm:p-2 rounded-lg transition-colors ${sidePanel === 'discussion' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'text-slate-500 dark:text-slate-400'}`}>
             <MessageCircle className="w-5 h-5" />
           </HapticButton>
           <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-0.5" />
-          <HapticButton onClick={toggleTheme} title="Toggle light/dark mode" className="p-1.5 sm:p-2 text-slate-500 dark:text-slate-400">
+          <HapticButton onClick={toggleTheme} aria-label="Toggle light or dark mode" title="Toggle light or dark mode" className="p-1.5 sm:p-2 min-h-[44px] min-w-[44px] text-slate-500 dark:text-slate-400">
             {theme === 'dark' ? <Moon className="w-5 h-5 text-indigo-400" /> : <Sun className="w-5 h-5 text-amber-500" />}
           </HapticButton>
         </div>
@@ -483,9 +516,9 @@ export function CoursePlayerComponent() {
         ) : (
           <>
             {/* Lesson Area */}
-            <div className="flex-1 overflow-y-auto bg-white dark:bg-slate-950 pb-24">
+            <div ref={scrollRef} className="flex-1 overflow-y-auto bg-white dark:bg-slate-950 pb-24 scroll-smooth lesson-scroll">
           {lesson.content_type === 'video' && videoSrc && (
-            <div className="w-full bg-slate-900 aspect-video relative flex items-center justify-center border-b border-slate-800">
+            <div id="lesson-watch" className="scroll-mt-16 w-full bg-slate-900 aspect-video relative flex items-center justify-center border-b border-slate-800">
               {lesson.video_url.includes('youtube.com') || lesson.video_url.includes('youtu.be') || lesson.video_url.includes('cloudflarestream.com') ? (
                 <iframe
                   ref={iframeRef}
@@ -533,87 +566,120 @@ export function CoursePlayerComponent() {
               </AnimatePresence>
             </div>
           )}
-
-          <div className="max-w-4xl xl:max-w-6xl 2xl:max-w-[88rem] mx-auto px-6 py-10 lg:px-12 2xl:px-16">
-            <div className="flex items-center gap-3 mb-6">
-              <span className="px-3 py-1 text-xs font-black uppercase tracking-wider rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/50">
-                {lesson.content_type === 'video' ? '▶ Video Lesson' : '📄 Reading'}
-              </span>
-              {lesson.video_duration_minutes && (
-                <span className="text-xs font-bold text-slate-400">{lesson.video_duration_minutes} min</span>
-              )}
+          <div className="max-w-4xl xl:max-w-6xl 2xl:max-w-[88rem] mx-auto px-6 pt-6 pb-10 lg:px-12 2xl:px-16">
+            <div className="mb-3 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+              <h1 className="text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight text-balance">{lesson.title}</h1>
+              <p className="flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-400">
+                {hasWatch ? <MonitorPlay className="w-4 h-4 self-center" aria-hidden="true" /> : <FileText className="w-4 h-4 self-center" aria-hidden="true" />}
+                <span>{hasWatch ? 'Video lesson' : 'Reading'}</span>
+                {lesson.video_duration_minutes ? <><span aria-hidden="true">·</span><span>{lesson.video_duration_minutes} min</span></> : null}
+              </p>
             </div>
 
-            <h1 className="text-3xl lg:text-4xl font-black mb-8 pb-8 border-b border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white tracking-tight leading-tight">{lesson.title}</h1>
+            <LessonPath
+              scrollRef={scrollRef} lessonKey={lessonId || ''}
+              hasWatch={hasWatch} watchDone={watchDone} hasRead={hasRead} hasCheck={hasCheck} checkDone={checkDone}
+            />
 
-            {lesson.sections && lesson.sections.length > 0 ? (
-              <div className="space-y-8">
-                {lesson.sections.map((section: any) => {
-                  const isCard = ['markdown', 'video', 'image', 'ppt'].includes(section.section_type);
-                  return (
-                    <div key={section.id} className={`w-full ${isCard ? 'bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-8 shadow-sm' : ''}`}>
-                      {section.section_type === 'markdown' && <MarkdownSection content={section.content} />}
-                      {section.section_type === 'video' && <VideoSection content={section.content} />}
-                      {section.section_type === 'image' && <ImageSection content={section.content} />}
-                      {section.section_type === 'ppt' && <PptSection content={section.content} />}
-                      {section.section_type === 'quiz' && <QuizSection content={section.content} />}
-                      {section.section_type === 'assignment' && <AssignmentSection content={section.content} />}
-                      {section.section_type === 'interactive_video' && <InteractiveVideoSection content={section.content} lessonId={lessonId!} />}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : lesson.content_type === 'blocks' && blocks.length > 0 ? (
-              <div className="space-y-8">
-                {blocks.map((block) => (
-                  <div key={block.id} className="w-full bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-8 shadow-sm">
-                    {block.type === 'markdown' && <MarkdownSection content={block.content} />}
-                    {block.type === 'video' && <VideoSection content={block.content} />}
-                    {block.type === 'image' && <ImageSection content={block.content} />}
-                    {block.type === 'ppt' && <PptSection content={block.content} />}
+            {/* 1. Watch: the lesson's own video comes first, sized to fit the screen. */}
+            {ivSections.length > 0 && (
+              <section id="lesson-watch" aria-label="Lesson video" className="mt-6 scroll-mt-16 space-y-6">
+                {ivSections.map((section: any) => (
+                  <div key={section.id} className="w-full" style={{ maxWidth: 'max(32rem, calc((100dvh - 24rem) * 16 / 9))' }}>
+                    <InteractiveVideoSection content={section.content} lessonId={lessonId!} />
                   </div>
                 ))}
-              </div>
-            ) : (
-              cleanContent && (
-                <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-8 shadow-sm">
-                  <div
-                    className="prose prose-slate dark:prose-invert prose-lg max-w-none text-slate-700 dark:text-slate-300 prose-headings:font-black prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-img:rounded-xl prose-img:shadow-lg"
-                    dangerouslySetInnerHTML={{ __html: cleanContent }}
-                  />
-                </div>
-              )
+              </section>
             )}
 
-            {lesson.pdf_url && (
-              <div className="mt-8 p-5 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-lg"><FileText className="w-5 h-5" /></div>
-                  <div>
-                    <h3 className="font-bold text-slate-900 dark:text-white text-sm">Lesson Resources</h3>
-                    <p className="text-xs text-slate-500">Download the companion PDF guide.</p>
+            {/* 2. Read: the written lesson. */}
+            {hasRead && (
+              <section id="lesson-read" aria-label="Lesson notes" className={`scroll-mt-16 ${hasWatch || hasCheck ? 'mt-10' : 'mt-6'}`}>
+                {hasWatch && <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight mb-5">Lesson notes</h2>}
+                {readSections.length > 0 ? (
+                  <div className="space-y-8">
+                    {readSections.map((section: any) => (
+                      <div key={section.id} className="w-full">
+                        {section.section_type === 'markdown' && <MarkdownSection content={section.content} />}
+                        {section.section_type === 'video' && <VideoSection content={section.content} />}
+                        {section.section_type === 'image' && <ImageSection content={section.content} />}
+                        {section.section_type === 'ppt' && <PptSection content={section.content} />}
+                        {section.section_type === 'quiz' && <QuizSection content={section.content} />}
+                        {section.section_type === 'assignment' && <AssignmentSection content={section.content} />}
+                      </div>
+                    ))}
                   </div>
-                </div>
-                <a href={lesson.pdf_url} target="_blank" rel="noopener noreferrer" className="px-4 py-2 font-bold text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:shadow-sm transition-all text-slate-700 dark:text-slate-300">Download PDF</a>
-              </div>
+                ) : lesson.content_type === 'blocks' && blocks.length > 0 ? (
+                  <div className="space-y-8">
+                    {blocks.map((block) => (
+                      <div key={block.id} className="w-full">
+                        {block.type === 'markdown' && <MarkdownSection content={block.content} />}
+                        {block.type === 'video' && <VideoSection content={block.content} />}
+                        {block.type === 'image' && <ImageSection content={block.content} />}
+                        {block.type === 'ppt' && <PptSection content={block.content} />}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  cleanContent && (
+                    <div
+                      className="prose prose-slate dark:prose-invert prose-lg max-w-[75ch] text-slate-700 dark:text-slate-300 prose-headings:font-black prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-img:rounded-xl prose-img:shadow-lg"
+                      dangerouslySetInnerHTML={{ __html: cleanContent }}
+                    />
+                  )
+                )}
+
+                {lesson.pdf_url && (
+                  <div className="mt-8 p-5 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4 flex-wrap">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-lg"><FileText className="w-5 h-5" aria-hidden="true" /></div>
+                      <div>
+                        <h3 className="font-bold text-slate-900 dark:text-white text-sm">Lesson Resources</h3>
+                        <p className="text-xs text-slate-600 dark:text-slate-400">Download the companion PDF guide.</p>
+                      </div>
+                    </div>
+                    <a href={lesson.pdf_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center min-h-[44px] px-4 font-bold text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:shadow-sm transition-all text-slate-700 dark:text-slate-300">Download PDF</a>
+                  </div>
+                )}
+              </section>
             )}
 
-            {/* Knowledge Check */}
-            {knowledgeCheck && (
-              <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg"><Lightbulb className="w-5 h-5 text-amber-500" /></div>
-                  <div>
-                    <h3 className="font-black text-slate-900 dark:text-white">Knowledge Check</h3>
-                    <p className="text-xs text-slate-500">Test your understanding of this lesson</p>
-                  </div>
-                </div>
+            {/* 3. Check: the video's questions and the lesson's Knowledge Check, in one place. */}
+            {hasCheck && (
+              <section id="lesson-check" aria-label="Check your understanding" className="mt-12 scroll-mt-16">
+                <h2 className="flex items-center gap-2 text-xl font-black text-slate-900 dark:text-white tracking-tight mb-5">
+                  <ListChecks className="w-5 h-5 text-indigo-600 dark:text-indigo-400" aria-hidden="true" /> Check your understanding
+                </h2>
 
-                <div className="relative group perspective-1000">
-                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-sky-400 rounded-3xl blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-700" />
-                  <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-xl">
-                    <p className="font-black text-slate-900 dark:text-white mb-6 text-xl leading-tight">{knowledgeCheck.question_text}</p>
-                    <div className="space-y-4 mb-8">
+                {totalCheckpoints > 0 && (
+                  <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-800 p-4 max-w-3xl">
+                    <div className="flex items-center gap-3">
+                      {answeredCheckpoints >= totalCheckpoints
+                        ? <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0" aria-hidden="true" />
+                        : <span aria-hidden="true" className="w-6 h-6 shrink-0 rounded-full border-2 border-amber-500" />}
+                      <div>
+                        <p className="font-bold text-slate-900 dark:text-white">Questions in the video</p>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">{answeredCheckpoints} of {totalCheckpoints} answered</p>
+                      </div>
+                    </div>
+                    {answeredCheckpoints < totalCheckpoints && (
+                      <button
+                        onClick={() => {
+                          document.getElementById('lesson-watch')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          window.setTimeout(() => window.dispatchEvent(new CustomEvent(OPEN_VIDEO_QUESTION, { detail: { lessonId } })), 350);
+                        }}
+                        className="inline-flex items-center min-h-[44px] px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold"
+                      >
+                        Answer in the video
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {knowledgeCheck && (
+                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 max-w-3xl">
+                    <p className="font-bold text-slate-900 dark:text-white mb-5 text-lg leading-snug">{knowledgeCheck.question_text}</p>
+                    <div className="space-y-3 mb-6">
                       {(knowledgeCheck.options || []).map((option: string) => {
                         const isSelected = selectedAnswer === option;
                         const isCorrect = checkResult && option === checkResult.correctAnswer;
@@ -624,20 +690,21 @@ export function CoursePlayerComponent() {
                             key={option}
                             disabled={!!checkResult}
                             onClick={() => !checkResult && setSelectedAnswer(option)}
-                            className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all font-bold text-sm flex items-center gap-4 ${
-                              isCorrect ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300 shadow-md' :
-                              isWrong ? 'border-rose-400 bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400' :
-                              isSelected ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-800 dark:text-indigo-200 shadow-md scale-[1.02]' :
-                              'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-indigo-400 hover:shadow-sm'
+                            aria-pressed={isSelected}
+                            className={`w-full text-left px-4 py-3 min-h-[48px] rounded-xl border-2 transition-colors font-semibold text-sm flex items-center gap-3 ${
+                              isCorrect ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-900 dark:text-emerald-200' :
+                              isWrong ? 'border-rose-400 bg-rose-50 dark:bg-rose-900/20 text-rose-800 dark:text-rose-300' :
+                              isSelected ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' :
+                              'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-indigo-400'
                             }`}
                           >
-                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                            <span aria-hidden="true" className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
                               isCorrect ? 'border-emerald-500 bg-emerald-500' :
                               isWrong ? 'border-rose-400 bg-rose-400' :
                               isSelected ? 'border-indigo-500 bg-indigo-500' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'
                             }`}>
-                              {(isCorrect || isSelected) && <div className="w-2.5 h-2.5 rounded-full bg-white" />}
-                            </div>
+                              {(isCorrect || isSelected) && <span className="w-2 h-2 rounded-full bg-white" />}
+                            </span>
                             <span className="flex-1">{option}</span>
                           </button>
                         );
@@ -645,13 +712,13 @@ export function CoursePlayerComponent() {
                     </div>
 
                     {checkResult ? (
-                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`p-5 rounded-xl flex gap-4 ${checkResult.isCorrect ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800' : 'bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800'}`}>
-                        {checkResult.isCorrect ? <CheckCheck className="w-6 h-6 text-emerald-500 shrink-0 mt-0.5" /> : <AlertCircle className="w-6 h-6 text-rose-500 shrink-0 mt-0.5" />}
+                      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} aria-live="polite" className={`p-4 rounded-xl flex gap-3 ${checkResult.isCorrect ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800' : 'bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800'}`}>
+                        {checkResult.isCorrect ? <CheckCheck className="w-6 h-6 text-emerald-600 shrink-0" aria-hidden="true" /> : <AlertCircle className="w-6 h-6 text-rose-600 shrink-0" aria-hidden="true" />}
                         <div>
-                          <p className={`font-black text-lg ${checkResult.isCorrect ? 'text-emerald-800 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'}`}>
-                            {checkResult.isCorrect ? '🎉 Correct!' : 'Not quite right'}
+                          <p className={`font-bold ${checkResult.isCorrect ? 'text-emerald-900 dark:text-emerald-300' : 'text-rose-800 dark:text-rose-300'}`}>
+                            {checkResult.isCorrect ? 'Correct' : 'Not quite right'}
                           </p>
-                          {checkResult.explanation && <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed font-medium">{checkResult.explanation}</p>}
+                          {checkResult.explanation && <p className="text-sm text-slate-700 dark:text-slate-300 mt-1 leading-relaxed">{checkResult.explanation}</p>}
                         </div>
                       </motion.div>
                     ) : (
@@ -659,15 +726,15 @@ export function CoursePlayerComponent() {
                         <HapticButton
                           disabled={!selectedAnswer || submitKcMutation.isPending}
                           onClick={() => submitKcMutation.mutate()}
-                          className="px-8 py-3.5 bg-slate-900 dark:bg-white hover:opacity-90 disabled:opacity-50 text-white dark:text-slate-900 font-black rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg"
+                          className="px-6 min-h-[48px] bg-slate-900 dark:bg-white hover:opacity-90 disabled:opacity-50 text-white dark:text-slate-900 font-bold rounded-xl transition-opacity flex items-center justify-center gap-2"
                         >
-                          {submitKcMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Submit Answer'}
+                          {submitKcMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Submit answer'}
                         </HapticButton>
                       </div>
                     )}
                   </div>
-                </div>
-              </div>
+                )}
+              </section>
             )}
           </div>
         </div>
@@ -723,24 +790,16 @@ export function CoursePlayerComponent() {
 
       {/* Side Panels */}
       <div className="flex shrink-0 z-40 lg:z-10 absolute lg:relative inset-0 lg:inset-auto pointer-events-none lg:pointer-events-auto">
-        <div className="hidden lg:flex w-12 border-l border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex-col items-center pt-6 gap-4 shrink-0 pointer-events-auto">
-          <button onClick={() => setSidePanel(sidePanel === 'ai' ? 'none' : 'ai')} title="AI Learning Assistant" className={`p-2.5 rounded-lg transition-all ${sidePanel === 'ai' ? 'bg-indigo-600 text-white shadow-md' : 'text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50'}`}>
-            <Lightbulb className="w-5 h-5" />
-          </button>
-          <button onClick={() => setSidePanel(sidePanel === 'notes' ? 'none' : 'notes')} title="My Notes" className={`p-2.5 rounded-lg transition-all ${sidePanel === 'notes' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'}`}>
-            <StickyNote className="w-5 h-5" />
-          </button>
-          <button onClick={() => setSidePanel(sidePanel === 'discussion' ? 'none' : 'discussion')} title="Lesson Q&A" className={`p-2.5 rounded-lg transition-all ${sidePanel === 'discussion' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'}`}>
-            <MessageCircle className="w-5 h-5" />
-          </button>
-          <div className="w-8 h-px bg-slate-200 dark:bg-slate-800 my-1" />
-          <button onClick={() => setTheaterMode(!theaterMode)} title="Theater Mode" className="p-2.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all hidden lg:block">
-            {theaterMode ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
-          </button>
+        <div role="toolbar" aria-label="Lesson tools" aria-orientation="vertical" className="hidden lg:flex w-[76px] border-l border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex-col items-center pt-4 gap-1 shrink-0 pointer-events-auto">
+          <RailButton icon={Lightbulb} label="AI tutor" active={sidePanel === 'ai'} onClick={() => setSidePanel(sidePanel === 'ai' ? 'none' : 'ai')} />
+          <RailButton icon={StickyNote} label="Notes" active={sidePanel === 'notes'} onClick={() => setSidePanel(sidePanel === 'notes' ? 'none' : 'notes')} />
+          <RailButton icon={MessageCircle} label="Q&A" active={sidePanel === 'discussion'} onClick={() => setSidePanel(sidePanel === 'discussion' ? 'none' : 'discussion')} />
+          <div className="w-10 h-px bg-slate-200 dark:bg-slate-800 my-1" aria-hidden="true" />
+          <RailButton icon={theaterMode ? Minimize : Maximize} label="Theater" active={theaterMode} onClick={() => setTheaterMode(!theaterMode)} />
           <div className="flex-1" />
-          <button onClick={toggleTheme} title="Toggle light/dark mode" className="p-2.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all mb-4">
-            {theme === 'dark' ? <Moon className="w-5 h-5 text-indigo-400" /> : <Sun className="w-5 h-5 text-amber-500" />}
-          </button>
+          <div className="mb-4">
+            <RailButton icon={theme === 'dark' ? Sun : Moon} label={theme === 'dark' ? 'Light' : 'Dark'} active={false} onClick={toggleTheme} />
+          </div>
         </div>
 
         {/* Mobile Backdrop */}

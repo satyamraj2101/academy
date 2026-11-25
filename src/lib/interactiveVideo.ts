@@ -22,6 +22,17 @@ export function parseContent(json: string): IVContent | null {
   return null;
 }
 
+// ---- Player controls (pure helpers for the custom control bar) ----
+export const SPEEDS = [0.75, 1, 1.25, 1.5, 2] as const;
+export const formatSpeed = (r: number) => `${r}×`;
+export const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
+/** Position of a time on the scrubber, as a percentage 0..100. */
+export const pct = (t: number, duration: number) => (duration > 0 ? clamp((t / duration) * 100, 0, 100) : 0);
+/** Where a skip lands: never before the start, never past the end. */
+export const skipTo = (t: number, delta: number, duration: number) => clamp(t + delta, 0, Math.max(0, duration));
+/** A pointer position over the scrubber, turned into a time. */
+export const timeAtPointer = (clientX: number, left: number, width: number, duration: number) => (width > 0 ? clamp((clientX - left) / width, 0, 1) * duration : 0);
+
 export const formatTime = (s: number) => `${Math.floor(Math.max(0, s) / 60)}:${String(Math.floor(Math.max(0, s) % 60)).padStart(2, '0')}`;
 
 // The route shown as a map: consecutive scenes at the same station are one stop, and a station revisited later is a new stop.

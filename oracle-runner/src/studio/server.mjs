@@ -216,7 +216,7 @@ const server = http.createServer(async (req, res) => {
     if (action === 'publish' && req.method === 'POST') {
       if (!academyConfigured()) return json(res, 400, { error: 'Set ACADEMY_ADMIN_BASE_URL and ACADEMY_SERVICE_API_KEY in .env to publish to the Academy.' });
       const b = await body(req);
-      if (!/^[\w-]{8,64}$/.test(String(b.lessonId || ''))) return json(res, 400, { error: 'Choose a lesson first' });
+      if (!/^[\w-]{1,80}$/.test(String(b.lessonId || ''))) return json(res, 400, { error: 'Choose a lesson first' });
       const out = await publishToAcademy(slug, Number(b.version) || projectMeta(slug).current, String(b.lessonId), b.replaceVideoId ? String(b.replaceVideoId) : null);
       return json(res, 201, out);
     }

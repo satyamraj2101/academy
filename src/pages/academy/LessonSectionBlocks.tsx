@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, isValidElement } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ReactMarkdown from 'react-markdown';
@@ -8,6 +8,7 @@ import rehypeKatex from 'rehype-katex';
 import DOMPurify from 'dompurify';
 import { academyAPI } from '../../academy/api';
 import { InteractiveVideoPlayer, type SavePayload } from '../../components/video/InteractiveVideoPlayer';
+import { MermaidDiagram, hydrateDiagrams, useIsDark } from '../../components/MermaidDiagram';
 import { parseContent, type IVProgress } from '../../lib/interactiveVideo';
 import { HapticButton } from '../../components/HapticButton';
 import { toast } from '../../lib/toast';
@@ -54,16 +55,38 @@ function FullscreenMediaFrame({ children }: { children: React.ReactNode }) {
 // rendered through DOMPurify instead; everything else stays Markdown.
 const HTML_CONTENT = /^\s*<(?:h[1-6]|p|div|ul|ol|table|section|article|blockquote|figure)[\s>]/i;
 
+// Reading text keeps a comfortable line length (about 75 characters) instead of stretching across a wide screen.
 const PROSE_CLASSES =
-  'prose prose-slate dark:prose-invert prose-lg max-w-none text-slate-700 dark:text-slate-300 prose-headings:font-black prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-img:rounded-xl prose-img:shadow-lg';
+  'prose prose-slate dark:prose-invert prose-lg max-w-[75ch] text-slate-700 dark:text-slate-300 prose-headings:font-black prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-img:rounded-xl prose-img:shadow-lg';
+
+// HTML lessons: the sanitised markup is set once, then any diagram blocks in it are drawn.
+function HtmlSection({ content }: { content: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const dark = useIsDark();
+  const html = useMemo(() => ({ __html: DOMPurify.sanitize(content) }), [content]);
+  useEffect(() => (ref.current ? hydrateDiagrams(ref.current, dark) : undefined), [html, dark]);
+  return <div ref={ref} className={PROSE_CLASSES} dangerouslySetInnerHTML={html} />;
+}
 
 export function MarkdownSection({ content }: { content: string }) {
-  if (HTML_CONTENT.test(content)) {
-    return <div className={PROSE_CLASSES} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }} />;
-  }
+  if (HTML_CONTENT.test(content)) return <HtmlSection content={content} />;
   return (
     <div className={PROSE_CLASSES}>
-      <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{content}</ReactMarkdown>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[rehypeKatex]}
+        components={{
+          // A fenced ```mermaid block becomes a drawn diagram; every other code block renders as before.
+          pre: ({ children }) => {
+            const child = Array.isArray(children) ? children[0] : children;
+            const props = isValidElement(child) ? (child.props as { className?: string; children?: unknown }) : null;
+            if (props && /\blanguage-mermaid\b/.test(props.className || '')) return <MermaidDiagram code={String(props.children ?? '')} />;
+            return <pre>{children}</pre>;
+          },
+        }}
+      >
+        {content}
+      </ReactMarkdown>
     </div>
   );
 }
