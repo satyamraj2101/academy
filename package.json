@@ -7,8 +7,8 @@
     "dev": "node scripts/dev.mjs",
     "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "build:pages": "vite build && node scripts/prerender.mjs",
-    "deploy:dev": "npx wrangler pages deploy dist --project-name spotclm",
-    "deploy:prod": "npx wrangler pages deploy dist --project-name spotclm-academy --branch main",
+    "deploy:dev": "npx wrangler pages deploy dist --project-name spotclm-academy --branch main",
+    "deploy:prod": "node -e \"console.error('deploy:prod is disabled until the prod promotion plan is approved (ISS-009). Use deploy:dev.');process.exit(1)\"",
     "start": "node dist/server.cjs",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit"
