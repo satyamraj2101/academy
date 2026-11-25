@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
 import { proposeEdits, applyChanges, NOTE_KINDS } from '../video/edits.mjs';
 import { api } from '../api.mjs';
+import { fetchLesson, lessonToScript, lessonSource } from '../video/lesson-to-script.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
@@ -58,6 +59,28 @@ async function publishToAcademy(slug, n, lessonId, replaceVideoId) {
   v.published = [...(v.published || []), { lessonId, sectionId: result.sectionId, videoId: result.videoId, src, at: new Date().toISOString(), replaced: replaceVideoId || null }];
   writeJson(join(pdir(slug), 'project.json'), m);
   return { ...result, src };
+}
+
+// ---- Make a video script from a real lesson (the AI call is network-bound, so it runs right here without blocking).
+const genJobs = new Map();
+const uniqueSlug = (want) => { let s = String(want).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 50) || 'lesson-video', n = 1, out = s; while (projectMeta(out)) out = `${s}-${++n}`; return out; };
+function startGenerate(courseId, lessonId, intro) {
+  const id = randomUUID().slice(0, 8), job = { status: 'running', step: 'Reading the lesson' };
+  genJobs.set(id, job);
+  (async () => {
+    const found = await fetchLesson(courseId, lessonId);
+    const r = await lessonToScript(found, { intro, onProgress: (m) => { job.step = m; } });
+    const slug = uniqueSlug(`${lessonId}-video`);
+    createProject(slug, r.script.title, r.script);
+    Object.assign(job, { status: 'done', step: `Script ready: ${r.script.scenes.length} scenes`, slug, warnings: r.warnings, ai: `${r.ai.provider}:${r.ai.model}`, attempts: r.attempts });
+  })().catch((e) => Object.assign(job, { status: 'failed', step: 'Failed', error: e.message }));
+  return id;
+}
+async function sourceCheck(slug) {
+  const m = projectMeta(slug), src = readJson(join(pdir(slug), `script.v${m.current}.json`), null)?.source;
+  if (!src) return { hasSource: false };
+  const found = await fetchLesson(src.courseId, src.lessonId);
+  return { hasSource: true, courseId: src.courseId, lessonId: src.lessonId, lessonTitle: found.lesson.title, changed: lessonSource(found.lesson).hash !== src.hash };
 }
 
 const jobs = new Map(); // slug -> { status: 'running'|'done'|'failed', step, done, total, error, version }
@@ -143,6 +166,17 @@ const server = http.createServer(async (req, res) => {
     }
 
 
+
+    if (parts[1] === 'academy' && parts[2] === 'from-lesson') {
+      if (!academyConfigured()) return json(res, 400, { error: 'Connect the Academy first (ACADEMY_ADMIN_BASE_URL and ACADEMY_SERVICE_API_KEY in .env).' });
+      if (req.method === 'POST') {
+        const b = await body(req);
+        if (!/^[\w-]{1,80}$/.test(String(b.courseId || '')) || !/^[\w-]{1,80}$/.test(String(b.lessonId || ''))) return json(res, 400, { error: 'Choose a course and a lesson first' });
+        return json(res, 202, { jobId: startGenerate(String(b.courseId), String(b.lessonId), !!b.intro) });
+      }
+      if (req.method === 'GET' && parts[3]) { const j = genJobs.get(parts[3]); return j ? json(res, 200, j) : json(res, 404, { error: 'Unknown job' }); }
+    }
+
     if (parts[1] === 'academy' && req.method === 'GET') {
       if (!academyConfigured()) return json(res, 200, { configured: false });
       if (parts[2] === 'status') return json(res, 200, { configured: true, base: ACADEMY_BASE });
@@ -172,6 +206,12 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, { ok: true });
     }
 
+
+
+    if (action === 'source-check' && req.method === 'GET') {
+      if (!academyConfigured()) return json(res, 200, { hasSource: false });
+      try { return json(res, 200, await sourceCheck(slug)); } catch (e) { return json(res, 200, { hasSource: true, error: e.message }); }
+    }
 
     if (action === 'publish' && req.method === 'POST') {
       if (!academyConfigured()) return json(res, 400, { error: 'Set ACADEMY_ADMIN_BASE_URL and ACADEMY_SERVICE_API_KEY in .env to publish to the Academy.' });

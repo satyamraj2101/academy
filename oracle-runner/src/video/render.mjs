@@ -16,7 +16,7 @@ import { travelSvg, TRAVEL_SECONDS } from './travel.mjs';
 import { stationName, STATIONS } from './stations.mjs';
 import { highlights } from './scene.mjs';
 
-export const RENDER_VERSION = 13; // bump when visuals or audio processing change, so stale cache is not reused
+export const RENDER_VERSION = 14; // bump when visuals or audio processing change, so stale cache is not reused
 export const GAP = 0.5; // seconds of silence after each scene
 const FONT_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'assets', 'fonts');
 const FONT_FILES = ['400Regular', '600SemiBold', '700Bold', '800ExtraBold'].map(w => join(FONT_DIR, `Inter_${w}.ttf`));

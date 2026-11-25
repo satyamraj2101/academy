@@ -49,3 +49,11 @@ test('with no pause nearby the voice is dipped under the chirp, not left at full
   const mid = Math.round(1.04 * RATE);
   assert.ok(Math.abs(mixed[mid] - (voice[mid] * 0.5 + sound('nudge')[mid - Math.round(1 * RATE)])) < 1e-6);
 });
+
+test('the renderer copes with a chirp that is an object, null or junk', () => {
+  const base = { spoken: 'one two three four', slide: { layout: 'bullets' } };
+  assert.equal(sceneEvents({ ...base, sfx: { sound: 'happy', time: 1 } }, 4).length, 1);
+  assert.equal(sceneEvents({ ...base, sfx: null }, 4).length, 0);
+  assert.equal(sceneEvents({ ...base, sfx: 'happy' }, 4).length, 0);
+  assert.equal(sceneEvents({ ...base, sfx: [null, 3, { sound: 'happy', time: 1 }] }, 4).length, 1);
+});

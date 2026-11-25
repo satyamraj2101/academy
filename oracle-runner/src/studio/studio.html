@@ -118,8 +118,17 @@
       <h2>Proposed changes</h2>
       <div id="proposal"></div>
     </div>
+    <div class="card" id="genCard" hidden>
+      <h2>Make a video from a lesson</h2>
+      <p class="mute" style="margin:0 0 8px">Pick a real lesson. The AI turns what it already says into a Soomy and Indoo script (it adds no new facts), and you review it before anything is rendered.</p>
+      <div class="row" style="margin-bottom:8px"><select id="genCourse" aria-label="Course"><option value="">Choose a course</option></select><select id="genLesson" aria-label="Lesson" disabled><option value="">Choose a lesson</option></select></div>
+      <label class="mute" style="display:block;margin-bottom:8px"><input type="checkbox" id="genIntro"> Add the Soomy and Indoo welcome (for the first lesson of a course)</label>
+      <div class="row"><button class="primary" id="genBtn" disabled>Write the script</button></div>
+      <div id="genMsg" class="mute" style="margin-top:8px"></div>
+    </div>
     <div class="card" id="pubCard" style="margin-top:12px" hidden>
       <h2>Publish to the Academy</h2>
+      <p class="mute" id="srcNote" style="margin:0 0 8px" hidden></p>
       <p class="mute" id="pubNote" style="margin:0 0 8px">Uploads this version's video and adds it to a lesson as an interactive video (students must watch it and answer its questions).</p>
       <div class="row" style="margin-bottom:8px"><select id="pubCourse" aria-label="Course"><option value="">Choose a course</option></select><select id="pubLesson" aria-label="Lesson" disabled><option value="">Choose a lesson</option></select></div>
       <div class="row"><button class="primary" id="pubBtn" disabled>Publish this version</button><label class="mute" id="pubReplaceWrap" hidden><input type="checkbox" id="pubReplace"> replace the video already in this lesson</label></div>
@@ -153,10 +162,10 @@ const checkpoints = () => cur()?.chapters?.checkpoints || [];
 const sceneAt = (t) => chapters().filter((c) => c.start <= t).at(-1) || chapters()[0];
 const answersKey = () => `studio:answers:${slug}:${ver}`;
 
-async function loadProjects() {
+async function loadProjects(select) {
   const list = await api('/projects');
   $('project').innerHTML = list.map((p) => `<option value="${p.slug}">${esc(p.title)}</option>`).join('');
-  if (list.length) { slug = slug && list.some((p) => p.slug === slug) ? slug : list[0].slug; $('project').value = slug; await load(); }
+  if (list.length) { slug = select || (slug && list.some((p) => p.slug === slug) ? slug : list[0].slug); $('project').value = slug; await load(); }
 }
 async function load(keepVer) {
   P = await api(`/projects/${slug}`);
@@ -184,6 +193,7 @@ function draw() {
   drawProposal();
   drawJob();
   updateAt();
+  showSource();
   const pubs = cur().published || [];
   if ($('pubMsg') && pubs.length && !$('pubMsg').textContent.startsWith('Published')) $('pubMsg').innerHTML = `Already published ${pubs.length} time${pubs.length > 1 ? 's' : ''}; last on ${new Date(pubs.at(-1).at).toLocaleString()}.`;
 }
@@ -320,10 +330,59 @@ $('map').onclick = (e) => { const b = e.target.closest('.stop'); if (b) { video.
 $('hintBtn').onclick = showHint;
 $('soundBtn').textContent = soundsOn ? 'Sounds on' : 'Sounds off'; $('soundBtn').setAttribute('aria-pressed', String(soundsOn));
 $('soundBtn').onclick = () => { soundsOn = !soundsOn; try { localStorage.setItem('studio:sounds', soundsOn ? 'on' : 'off'); } catch {} $('soundBtn').textContent = soundsOn ? 'Sounds on' : 'Sounds off'; $('soundBtn').setAttribute('aria-pressed', String(soundsOn)); if (soundsOn) chirp('happy'); };
+let genStructure = [];
+async function initGenerate() {
+  if (!academy?.configured) return;
+  $('genCard').hidden = false;
+  try {
+    const r = await api('/academy/courses');
+    $('genCourse').innerHTML = '<option value="">Choose a course</option>' + r.courses.map((c) => `<option value="${c.id}">${esc(c.title)}</option>`).join('');
+  } catch (e) { $('genMsg').textContent = e.message; }
+}
+$('genCourse').onchange = async (e) => {
+  $('genLesson').innerHTML = '<option value="">Choose a lesson</option>'; $('genLesson').disabled = true; $('genBtn').disabled = true;
+  if (!e.target.value) return;
+  try {
+    genStructure = (await api(`/academy/courses/${e.target.value}/structure`)).structure;
+    $('genLesson').innerHTML = '<option value="">Choose a lesson</option>' + genStructure.flatMap((m) => m.lessons.map((l) => `<option value="${l.id}">${esc(m.title)} - ${esc(l.title)}</option>`)).join('');
+    $('genLesson').disabled = false;
+  } catch (err) { $('genMsg').textContent = err.message; }
+};
+$('genLesson').onchange = (e) => { $('genBtn').disabled = !e.target.value; };
+$('genBtn').onclick = async () => {
+  $('genBtn').disabled = true; $('genMsg').textContent = 'Starting...';
+  try {
+    const { jobId } = await api('/academy/from-lesson', { method: 'POST', body: { courseId: $('genCourse').value, lessonId: $('genLesson').value, intro: $('genIntro').checked } });
+    for (;;) {
+      await new Promise((r) => setTimeout(r, 1200));
+      const j = await api(`/academy/from-lesson/${jobId}`);
+      $('genMsg').textContent = j.step;
+      if (j.status === 'failed') { $('genMsg').innerHTML = `<span class="err">${esc(j.error)}</span>`; break; }
+      if (j.status === 'done') {
+        $('genMsg').innerHTML = `Script ready (${esc(j.ai)}, ${j.attempts} attempt${j.attempts > 1 ? 's' : ''}). Next: render it and review.` + (j.warnings.length ? `<div class="warn">Check: ${j.warnings.map(esc).join('; ')}</div>` : '');
+        await loadProjects(j.slug);
+        break;
+      }
+    }
+  } catch (e) { $('genMsg').textContent = e.message; }
+  $('genBtn').disabled = !$('genLesson').value;
+};
+async function showSource() {
+  $('srcNote').hidden = true;
+  const src = P.scripts[P.current]?.source;
+  if (!src) return;
+  $('srcNote').hidden = false;
+  $('srcNote').textContent = `Written from the lesson "${src.lessonTitle}" (${src.courseTitle}).`;
+  if (academy?.configured) {
+    api(`/projects/${slug}/source-check`).then((c) => { if (c.hasSource && c.changed) $('srcNote').innerHTML = `Written from the lesson "${esc(src.lessonTitle)}", <b style="color:var(--warn)">but that lesson has changed since.</b> Re-generate to match it.`; }).catch(() => {});
+    if ($('pubCourse').value !== src.courseId) { $('pubCourse').value = src.courseId; $('pubCourse').dispatchEvent(new Event('change')); setTimeout(() => { $('pubLesson').value = src.lessonId; $('pubLesson').dispatchEvent(new Event('change')); }, 900); }
+  }
+}
 let academy = null, structure = [];
 async function initPublish() {
   try { academy = await api('/academy/status'); } catch { academy = { configured: false }; }
   $('pubCard').hidden = false;
+  initGenerate();
   if (!academy.configured) { $('pubNote').textContent = 'Not connected. Add ACADEMY_ADMIN_BASE_URL and ACADEMY_SERVICE_API_KEY to the runner .env, then restart the Studio.'; $('pubCourse').disabled = true; return; }
   try {
     const r = await api('/academy/courses');

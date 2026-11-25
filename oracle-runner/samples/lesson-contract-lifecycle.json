@@ -1,0 +1,149 @@
+{
+  "title": "The Contract Lifecycle",
+  "campus": [
+    "frontdesk",
+    "hub"
+  ],
+  "source": {
+    "courseId": "clm-masterclass",
+    "courseTitle": "The Ultimate CLM Masterclass",
+    "lessonId": "les-2",
+    "lessonTitle": "The Contract Lifecycle",
+    "hash": "0751fa1fa0ee",
+    "at": "2026-11-25T16:12:56.759Z"
+  },
+  "scenes": [
+    {
+      "id": "intro",
+      "gesture": "present",
+      "narration": "Welcome to the ultimate CLM masterclass! Today, we're exploring the five essential stages of the contract lifecycle.",
+      "spoken": "Welcome to Spot C L M Academy! I'm Soomy, and this is Indoo. Today, we're diving into an important topic: The Contract Lifecycle. Every contract, big or small, goes through a standard lifecycle with five distinct stages. Understanding these stages is key to effective contract management. Let's explore what each one entails.",
+      "station": "frontdesk",
+      "hint": "The contract lifecycle has a set number of stages, Soomy just mentioned it!",
+      "sfx": [
+        {
+          "sound": "happy",
+          "at": "contract management"
+        }
+      ],
+      "slide": {
+        "layout": "hook",
+        "title": "The Contract Lifecycle",
+        "kicker": "Every Contract's Journey",
+        "subtitle": "The 5 Stages of CLM",
+        "subAt": "five distinct stages"
+      }
+    },
+    {
+      "id": "stages",
+      "gesture": "point",
+      "narration": "From generation to management, learn about each crucial stage of a contract's journey.",
+      "spoken": "The first stage is Generation. This is where we focus on drafting the initial contract document. Next, we move into Negotiation, which involves redlining the contract with the counterparty. Following negotiation, we enter the Approval stage, where internal stakeholders review the document. Then comes Execution, the crucial step of collecting all necessary signatures. Finally, we have Management, where obligations and renewals are tracked throughout the contract's life. These five stages ensure a smooth and organized contract process.",
+      "station": "hub",
+      "hint": "Think about the order of creation, discussion, approval, finalization, and follow-up.",
+      "sfx": [
+        {
+          "sound": "curious",
+          "at": "contract process"
+        }
+      ],
+      "slide": {
+        "layout": "steps",
+        "title": "The Five Stages of CLM",
+        "steps": [
+          {
+            "text": "Generation",
+            "desc": "Drafting the initial contract.",
+            "at": "Generation. This is"
+          },
+          {
+            "text": "Negotiation",
+            "desc": "Redlining with the counterparty.",
+            "at": "into Negotiation, which"
+          },
+          {
+            "text": "Approval",
+            "desc": "Internal stakeholders review.",
+            "at": "enter the Approval stage"
+          },
+          {
+            "text": "Execution",
+            "desc": "Signatures are collected.",
+            "at": "comes Execution, the crucial"
+          },
+          {
+            "text": "Management",
+            "desc": "Obligations and renewals are tracked.",
+            "at": "have Management, where obligations"
+          }
+        ]
+      }
+    },
+    {
+      "id": "quiz-stage",
+      "gesture": "raise",
+      "narration": "Test your knowledge: which stage involves redlining with the counterparty?",
+      "spoken": "Now, for a quick check. Which stage of the contract lifecycle involves redlining with the counterparty? Is it A: Generation, B: Negotiation, or C: Approval? Think about it. || The answer is B: Negotiation. Redlining is the process of making changes and discussing terms with the other party.",
+      "station": "hub",
+      "hint": "Redlining means making changes and discussing terms with the other party.",
+      "sfx": [
+        {
+          "sound": "nudge",
+          "at": "Think about it"
+        }
+      ],
+      "slide": {
+        "layout": "quiz",
+        "title": "Check Your Knowledge!",
+        "quiz": {
+          "question": "Which stage involves redlining with the counterparty?",
+          "options": [
+            "Generation",
+            "Negotiation",
+            "Approval"
+          ],
+          "optionsAt": [
+            "A: Generation",
+            "B: Negotiation",
+            "C: Approval"
+          ],
+          "answer": 1,
+          "answerAt": "The answer is B"
+        }
+      },
+      "thinkSeconds": 4
+    },
+    {
+      "id": "recap",
+      "gesture": "present",
+      "narration": "Recap the five essential stages of the contract lifecycle, from generation to management.",
+      "spoken": "Great job, everyone! Let's quickly recap what we've learned about the contract lifecycle. Remember, every contract follows a standard process. First, we generate the contract, then negotiate its terms. After that, we get internal approval, followed by execution where signatures are collected. Finally, the contract enters management, ensuring obligations and renewals are tracked. Understanding these five stages is foundational for mastering C L M. Join us next time for more insights!",
+      "station": "frontdesk",
+      "hint": "The key takeaway is the sequence of the five stages.",
+      "sfx": [
+        {
+          "sound": "celebrate",
+          "at": "mastering C L M"
+        }
+      ],
+      "slide": {
+        "layout": "recap",
+        "title": "Lesson Recap: The Contract Lifecycle",
+        "takeaways": [
+          {
+            "text": "Every contract goes through a standard lifecycle.",
+            "at": "contract follows a standard"
+          },
+          {
+            "text": "There are five stages: Generation, Negotiation, Approval, Execution, and Management."
+          },
+          {
+            "text": "Each stage has a distinct purpose, from drafting to tracking."
+          }
+        ],
+        "next": "Introduction to CLM Software",
+        "nextAt": "next time for more"
+      }
+    }
+  ]
+}

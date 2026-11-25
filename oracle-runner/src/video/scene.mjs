@@ -26,16 +26,19 @@ export function wrap(text, fontSize, maxWidth) {
 
 // Where in the scene's audio a phrase is spoken. Scenes voiced in parts (split with "||" around a silent think
 // pause) carry scene.parts = [{ text, start, dur }]; otherwise the whole narration is treated as one even stream.
+// Matching ignores case, punctuation and curly quotes ("After that, Approval" finds "after that approval").
+export const normText = (t) => String(t).toLowerCase().replace(/[^a-z0-9|\s]+/g, ' ').replace(/\s+/g, ' ').trim();
 function phraseTime(scene, phrase, dur) {
-  const p = String(phrase).toLowerCase();
+  const p = normText(phrase);
+  if (!p) return -1;
   if (scene.parts) {
     for (const part of scene.parts) {
-      const k = part.text.toLowerCase().indexOf(p);
-      if (k >= 0) return Math.max(0, part.start + (k / part.text.length) * part.dur - 0.2);
+      const text = normText(part.text), k = text.indexOf(p);
+      if (k >= 0) return Math.max(0, part.start + (k / text.length) * part.dur - 0.2);
     }
     return -1;
   }
-  const said = (scene.spoken || scene.narration || '').toLowerCase();
+  const said = normText(scene.spoken || scene.narration || '');
   const k = said.indexOf(p);
   return k >= 0 ? Math.max(0, (k / said.length) * dur - 0.2) : -1;
 }
@@ -136,11 +139,16 @@ function bullets(scene, lt, dur) {
 function steps(scene, lt, dur) {
   const items = norm(scene.slide.steps).slice(0, 6), ts = itemTimes(scene, items, dur), n = items.length;
   const gap = 18, bw = (PW - (n - 1) * gap) / n, by = 200, bh = 110, fs = n > 5 ? 19 : 24;
+  // One label size for every step, small enough that the longest word fits its box.
+  const longestWord = Math.max(...items.map(it => Math.max(...String(it.text).replace(/^\s*\d+\s*[.):-]\s+/, '').split(/\s+/).map(w => w.length))));
+  const fitAll = Math.max(14, Math.min(fs, Math.floor((bw - 18) / (longestWord * 0.62))));
   let active = -1;
   ts.forEach((t, i) => { if (lt >= t) active = i; });
   let out = header(scene.slide.title);
   items.forEach((s, i) => {
     const x = PX + i * (bw + gap), isActive = i === active, past = i < active;
+    const label = String(s.text).replace(/^\s*\d+\s*[.):-]\s+/, ''); // the badge already shows the number
+    const fit = fitAll;
     T['s' + i] = { x, y: by, w: bw, h: bh };
     const fill = isActive ? '#2563EB' : past ? '#DBEAFE' : '#F1F5F9', stroke = isActive || past ? '#2563EB' : '#CBD5E1';
     const txt = isActive ? '#FFFFFF' : past ? '#1E3A8A' : '#64748B';
@@ -148,7 +156,7 @@ function steps(scene, lt, dur) {
     out += `<g transform="translate(${x + bw / 2} ${by + bh / 2}) scale(${grow.toFixed(3)}) translate(${-(x + bw / 2)} ${-(by + bh / 2)})" opacity="${(i <= active ? 1 : 0.7).toFixed(2)}">
       <rect x="${x}" y="${by}" width="${bw}" height="${bh}" rx="18" fill="${fill}" stroke="${stroke}" stroke-width="2.5"/>
       <circle cx="${x + 24}" cy="${by + 24}" r="13" fill="${isActive ? '#FFFFFF' : '#CBD5E1'}"/><text x="${x + 24}" y="${by + 24}" font-size="15" font-weight="bold" text-anchor="middle" dominant-baseline="central" fill="${isActive ? '#2563EB' : '#475569'}">${i + 1}</text>`;
-    wrap(s.text, fs, bw - 14).slice(0, 2).forEach((ln, k, a) => { out += `<text x="${x + bw / 2}" y="${by + 68 + (k - (a.length - 1) / 2) * 28}" font-size="${fs}" font-weight="bold" text-anchor="middle" dominant-baseline="central" fill="${txt}">${esc(ln)}</text>`; });
+    wrap(label, fit, bw - 14).slice(0, 2).forEach((ln, k, a) => { out += `<text x="${x + bw / 2}" y="${by + 68 + (k - (a.length - 1) / 2) * 28}" font-size="${fit}" font-weight="bold" text-anchor="middle" dominant-baseline="central" fill="${txt}">${esc(ln)}</text>`; });
     out += '</g>';
   });
   if (active >= 0 && items[active].desc) {

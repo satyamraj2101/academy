@@ -3,13 +3,14 @@
 // never produce a scene the renderer cannot draw.
 import { complete } from '../ai.mjs';
 import { STATIONS } from './stations.mjs';
+import { normText } from './scene.mjs';
 
 export const LAYOUTS = ['hook', 'bullets', 'steps', 'compare', 'quiz', 'recap'];
 export const GESTURES = ['point', 'raise', 'present'];
 export const SFX = ['happy', 'curious', 'oops', 'celebrate', 'notice', 'nudge'];
 export const NOTE_KINDS = ['wording', 'visual', 'timing', 'quiz', 'other'];
 
-const SHAPE = `A scene is JSON:
+export const SHAPE = `A scene is JSON:
 { "id": "<keep unchanged>", "gesture": "point|raise|present",
   "narration": "text shown as captions", "spoken": "text read aloud (write CLM as 'C L M'; use '||' only in quiz scenes)",
   "station": "frontdesk|hub|draft|review|approve|sign|track|checkpoint" (the place behind Soomy; changing it adds a ship ride),
@@ -35,7 +36,7 @@ export function validateScene(next, original) {
   if (!next || typeof next !== 'object') return { scene: null, problems: ['reply was not a scene object'] };
   const scene = { ...next, id: original.id };
   if (scene.station && !STATIONS[scene.station]) { problems.push(`unknown station "${scene.station}", kept the original`); scene.station = original.station; }
-  const said = String(scene.spoken || scene.narration || '').toLowerCase();
+  const said = normText(scene.spoken || scene.narration || '');
   if (!String(scene.narration || '').trim()) problems.push('narration is empty');
   if (!scene.slide || !LAYOUTS.includes(scene.slide.layout)) problems.push(`layout must be one of ${LAYOUTS.join(', ')}`);
   if (scene.hint !== undefined && typeof scene.hint !== 'string') delete scene.hint;
@@ -44,8 +45,10 @@ export function validateScene(next, original) {
   if (problems.length) return { scene: null, problems };
 
   const fixAt = (obj, key, label) => {
-    if (obj && obj[key] && !said.includes(String(obj[key]).toLowerCase())) { problems.push(`"${obj[key]}" is not in the spoken text, so the ${label} will appear at a default time`); delete obj[key]; }
+    if (obj && obj[key] && !said.includes(normText(obj[key]))) { problems.push(`"${obj[key]}" is not in the spoken text, so the ${label} will appear at a default time`); delete obj[key]; }
   };
+  // Models sometimes write a single chirp as an object instead of a list.
+  if (scene.sfx && !Array.isArray(scene.sfx)) scene.sfx = typeof scene.sfx === 'object' ? [scene.sfx] : [];
   if (Array.isArray(scene.sfx)) {
     scene.sfx = scene.sfx.filter(e => e && SFX.includes(e.sound));
     scene.sfx.forEach(e => fixAt(e, 'at', 'chirp'));
@@ -61,7 +64,7 @@ export function validateScene(next, original) {
     const q = s.quiz;
     if (!q || !Array.isArray(q.options) || q.options.length < 2 || !Number.isInteger(q.answer) || q.answer < 0 || q.answer >= q.options.length) return { scene: null, problems: ['quiz needs options and a valid answer index'] };
     fixAt(q, 'answerAt', 'answer reveal');
-    if (Array.isArray(q.optionsAt)) q.optionsAt = q.optionsAt.map(p => (said.includes(String(p).toLowerCase()) ? p : null));
+    if (Array.isArray(q.optionsAt)) q.optionsAt = q.optionsAt.map(p => (said.includes(normText(p)) ? p : null));
   }
   if (s.layout === 'steps' && (!Array.isArray(s.steps) || s.steps.length < 2 || s.steps.length > 6)) return { scene: null, problems: ['steps needs 2 to 6 items'] };
   return { scene, problems };

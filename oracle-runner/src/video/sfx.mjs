@@ -51,7 +51,9 @@ export function sound(name) {
 // A quiz scene gets a happy chirp on the answer reveal unless the script already places one there.
 export function sceneEvents(scene, dur) {
   const events = [];
-  for (const e of scene.sfx || []) {
+  const chirps = Array.isArray(scene.sfx) ? scene.sfx : scene.sfx && typeof scene.sfx === 'object' ? [scene.sfx] : [];
+  for (const e of chirps) {
+    if (!e || typeof e !== 'object') continue;
     if (!SOUNDS.includes(e.sound)) continue;
     const t = e.at ? timeOf(scene, e.at, dur, -1) : Number(e.time);
     if (Number.isFinite(t) && t >= 0 && t < dur) events.push({ t, sound: e.sound });
