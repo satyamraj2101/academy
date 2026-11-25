@@ -333,7 +333,7 @@ export function CourseDetailComponent() {
                   <span>({course.review_count} review{course.review_count === 1 ? '' : 's'})</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-2"><Star className="w-4 h-4 text-amber-400" /> New</div>
+                <div className="flex items-center gap-2"><Star className="w-4 h-4 text-slate-400" /> No reviews yet</div>
               )}
               {course.enrollment_count > 0 && (
                 <div className="flex items-center gap-2"><Users className="w-4 h-4 text-indigo-400" /> {course.enrollment_count.toLocaleString()} enrolled</div>
@@ -342,9 +342,28 @@ export function CourseDetailComponent() {
           </div>
           
           {/* Pricing Card */}
-          <div className="w-full md:w-96 bg-white/80 dark:bg-surface-900/60 backdrop-blur-lg rounded-card p-6 md:p-8 shadow-floating border border-slate-200/50 dark:border-slate-800/50 text-slate-900 dark:text-white">
-            <h3 className="text-2xl font-black mb-2">${(course.price_usd / 100).toLocaleString()}</h3>
-            <p className="text-sm font-semibold text-slate-500 mb-6">Full lifetime access to this course</p>
+          <div className="w-full md:w-96 bg-white dark:bg-slate-900 rounded-card p-6 md:p-8 shadow-floating border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white">
+            {enrollment ? (
+              <>
+                <h3 className="text-2xl font-black mb-3">{enrollment.progress_percent ?? 0}% complete</h3>
+                <div
+                  role="progressbar"
+                  aria-label="Course progress"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={enrollment.progress_percent ?? 0}
+                  className="h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden mb-3"
+                >
+                  <div className="h-full rounded-full bg-indigo-600 transition-all duration-500" style={{ width: `${enrollment.progress_percent ?? 0}%` }} />
+                </div>
+                <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-6">You're enrolled in this course</p>
+              </>
+            ) : (
+              <>
+                <h3 className="text-2xl font-black mb-2">${(course.price_usd / 100).toLocaleString()}</h3>
+                <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-6">Full lifetime access to this course</p>
+              </>
+            )}
             
             <HapticButton
               className="w-full py-4 rounded-control bg-indigo-600 hover:bg-indigo-700 text-white font-bold tracking-tight shadow-raised flex items-center justify-center gap-2 transition-all mb-4 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -442,32 +461,46 @@ export function CourseDetailComponent() {
                     <h3 className="font-bold text-slate-900 dark:text-white">{mod.title}</h3>
                   </div>
                   <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {mod.lessons?.map((lesson: any) => (
-                      <div key={lesson.id} className="px-6 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                        <div className="flex items-center gap-3">
-                          {lesson.content_type === 'video' ? (
-                            <PlayCircle className="w-5 h-5 text-slate-400" />
-                          ) : (
-                            <FileText className="w-5 h-5 text-slate-400" />
-                          )}
-                          <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">{lesson.title}</span>
-                        </div>
-                        <div className="flex items-center gap-3 text-xs font-semibold text-slate-500">
-                          {lesson.is_preview ? (
-                            <button
-                              type="button"
-                              onClick={() => handlePreviewLesson(lesson.id)}
-                              className="text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900 px-2 py-0.5 rounded-full cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
-                            >
-                              Preview
-                            </button>
-                          ) : (
-                            <Lock className="w-4 h-4" />
-                          )}
-                          {lesson.video_duration_minutes && <span>{lesson.video_duration_minutes}m</span>}
-                        </div>
-                      </div>
-                    ))}
+                    {mod.lessons?.map((lesson: any) => {
+                      // Enrolled students can open every lesson, so the whole row is a button.
+                      // Everyone else sees a locked row, except free-preview lessons.
+                      const Row: any = enrollment ? 'button' : 'div';
+                      const rowProps = enrollment
+                        ? { type: 'button', onClick: () => navigate(`/course-player/${course.id}/lesson/${lesson.id}`) }
+                        : {};
+                      return (
+                        <Row
+                          key={lesson.id}
+                          {...rowProps}
+                          className={`px-6 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${enrollment ? 'w-full text-left cursor-pointer' : ''}`}
+                        >
+                          <div className="flex items-center gap-3">
+                            {lesson.content_type === 'video' ? (
+                              <PlayCircle className="w-5 h-5 text-slate-400" />
+                            ) : (
+                              <FileText className="w-5 h-5 text-slate-400" />
+                            )}
+                            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">{lesson.title}</span>
+                          </div>
+                          <div className="flex items-center gap-3 text-xs font-semibold text-slate-500">
+                            {enrollment ? (
+                              lesson.completed && <CheckCircle className="w-4 h-4 text-emerald-500" role="img" aria-label="Completed" />
+                            ) : lesson.is_preview ? (
+                              <button
+                                type="button"
+                                onClick={() => handlePreviewLesson(lesson.id)}
+                                className="text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900 px-2 py-0.5 rounded-full cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                              >
+                                Preview
+                              </button>
+                            ) : (
+                              <Lock className="w-4 h-4" role="img" aria-label="Locked until you enroll" />
+                            )}
+                            {lesson.video_duration_minutes && <span>{lesson.video_duration_minutes}m</span>}
+                          </div>
+                        </Row>
+                      );
+                    })}
                     {!mod.lessons?.length && (
                       <div className="px-6 py-4 text-sm text-slate-500 italic">Lessons coming soon.</div>
                     )}
