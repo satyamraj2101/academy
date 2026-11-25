@@ -1,6 +1,6 @@
 // Indoo's voice: short synthesised chirps. Pure sine tones with smooth envelopes (no noise, no clicks), generated in code,
 // so they are original, free to use and the same on every machine. They are mixed well under the narrator.
-import { timeOf } from './scene.mjs';
+import { timeOf, highlights } from './scene.mjs';
 
 export const RATE = 24000;
 export const SOUNDS = ['happy', 'curious', 'oops', 'celebrate', 'notice', 'nudge'];
@@ -55,6 +55,9 @@ export function sceneEvents(scene, dur) {
     if (!SOUNDS.includes(e.sound)) continue;
     const t = e.at ? timeOf(scene, e.at, dur, -1) : Number(e.time);
     if (Number.isFinite(t) && t >= 0 && t < dur) events.push({ t, sound: e.sound });
+  }
+  for (const h of highlights(scene, dur)) {
+    if (!events.some(e => Math.abs(e.t - h.t0) < 1.2)) events.push({ t: h.t0, sound: 'notice' });
   }
   if (scene.slide?.layout === 'quiz' && scene.slide.quiz) {
     const t = timeOf(scene, scene.slide.quiz.answerAt, dur, dur * 0.8);

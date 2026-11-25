@@ -1,6 +1,6 @@
 // Draws one video frame as SVG. Layouts: hook, bullets, steps, compare, quiz, recap. Every item can name the
 // words it should appear on (`at`), so visuals land when the narrator says them instead of at fixed times.
-import { robot } from './robot.mjs';
+import { robot, indooEye } from './robot.mjs';
 import { lockup } from './brand.mjs';
 
 export const W = 1280;
@@ -52,6 +52,59 @@ export const timeOf = (scene, phrase, dur, fallback) => {
   return t >= 0 ? t : fallback;
 };
 
+// ----- Special points -----------------------------------------------------------------------------------------------
+// An item flagged `highlight` (true, or a short note string) is lit by Indoo's eye-projector for a few seconds: a soft cone
+// of light from her eyes, a glow around the item, and a "key point" banner when there is a note. Unflagged items are
+// never highlighted, so the beam always means "this one matters".
+export const HOLD = 3.6; // seconds a highlight stays lit
+let T = {}; // item rectangles of the frame being drawn, filled by the layouts, keyed like "b0" (bullets), "s2" (steps)...
+
+function itemLists(scene) {
+  const s = scene.slide || {}, out = [];
+  const layout = s.layout || 'bullets';
+  if (layout === 'bullets') out.push(['b', norm(s.bullets)]);
+  if (layout === 'steps') out.push(['s', norm(s.steps).slice(0, 6)]);
+  if (layout === 'compare') { out.push(['l', norm(s.compare?.left?.items)]); out.push(['r', norm(s.compare?.right?.items)]); }
+  if (layout === 'recap') out.push(['t', norm(s.takeaways)]);
+  return out;
+}
+export function highlights(scene, dur) {
+  const out = [], layout = scene.slide?.layout || 'bullets';
+  for (const [k, items] of itemLists(scene)) {
+    const ts = itemTimes(scene, items, dur);
+    items.forEach((it, i) => {
+      if (!it.highlight) return;
+      const note = typeof it.highlight === 'string' ? it.highlight : it.note || null;
+      out.push({ key: `${k}${i}`, t0: ts[i], t1: ts[i] + HOLD, note, layout });
+    });
+  }
+  return out;
+}
+
+function spotlight(scene, lt, dur, events) {
+  const hl = highlights(scene, dur).find(h => lt >= h.t0 && lt <= h.t1 && T[h.key]);
+  if (!hl) return { beam: '', svg: '', k: 0 };
+  const r = T[hl.key], k = Math.min(ease((lt - hl.t0) / 0.35), ease((hl.t1 - lt) / 0.35));
+  const eye = indooEye(lt, events);
+  const tx = hl.layout === 'steps' ? r.x + r.w / 2 : r.x - 4, ty = hl.layout === 'steps' ? r.y + r.h : r.y + r.h / 2;
+  const dx = tx - eye.x, dy = ty - eye.y, n = Math.hypot(dx, dy) || 1, nx = -dy / n, ny = dx / n, wEnd = 16, wStart = 3;
+  const pulse = 0.82 + 0.18 * Math.sin(lt * 7);
+  // The cone is drawn under the slide's text (so words stay crisp even when the light crosses them); the glow and banner sit on top.
+  const beam = `<g opacity="${(k * 0.95).toFixed(2)}">
+    <defs><linearGradient id="beam" gradientUnits="userSpaceOnUse" x1="${eye.x.toFixed(1)}" y1="${eye.y.toFixed(1)}" x2="${tx.toFixed(1)}" y2="${ty.toFixed(1)}"><stop offset="0" stop-color="#8FE3FF" stop-opacity="0.75"/><stop offset="1" stop-color="#22D3EE" stop-opacity="0.22"/></linearGradient></defs>
+    <polygon points="${(eye.x + nx * wStart).toFixed(1)},${(eye.y + ny * wStart).toFixed(1)} ${(tx + nx * wEnd).toFixed(1)},${(ty + ny * wEnd).toFixed(1)} ${(tx - nx * wEnd).toFixed(1)},${(ty - ny * wEnd).toFixed(1)} ${(eye.x - nx * wStart).toFixed(1)},${(eye.y - ny * wStart).toFixed(1)}" fill="url(#beam)"/></g>`;
+  let svg = `<g opacity="${(k * 0.95).toFixed(2)}"><rect x="${r.x - 10}" y="${r.y - 8}" width="${r.w + 20}" height="${r.h + 16}" rx="18" fill="#22D3EE" fill-opacity="${(0.1 * pulse).toFixed(2)}" stroke="#22D3EE" stroke-width="3.5" stroke-opacity="${pulse.toFixed(2)}"/></g>`;
+  if (hl.note && (hl.layout === 'bullets' || hl.layout === 'steps')) {
+    const lines = wrap(hl.note, 22, PW - 120).slice(0, 2), h = 30 + lines.length * 28, y = 560 - h;
+    svg += `<g opacity="${k.toFixed(2)}" transform="translate(0 ${((1 - k) * 14).toFixed(1)})"><rect x="${PX}" y="${y}" width="${PW}" height="${h}" rx="16" fill="#ECFEFF" stroke="#22D3EE" stroke-width="2.5"/>
+      <path d="M${PX + 30} ${y + h / 2 - 12} l4.4 9 l9.8 1.4 l-7.1 6.9 l1.7 9.8 l-8.8 -4.6 l-8.8 4.6 l1.7 -9.8 l-7.1 -6.9 l9.8 -1.4z" fill="#0891B2"/>
+      <text x="${PX + 62}" y="${y + 24}" font-size="14" font-weight="700" fill="#0E7490">KEY POINT</text>`;
+    lines.forEach((ln, i) => { svg += `<text x="${PX + 62}" y="${y + 48 + i * 28}" font-size="22" fill="#164E63">${esc(ln)}</text>`; });
+    svg += '</g>';
+  }
+  return { beam, svg, k };
+}
+
 const header = (title) => `<text x="${PX}" y="118" font-size="44" font-weight="bold" fill="#0F172A">${esc(title || '')}</text><rect x="${PX}" y="136" width="72" height="5" rx="2.5" fill="#2563EB"/>`;
 
 function hook(scene, lt, dur) {
@@ -70,6 +123,7 @@ function bullets(scene, lt, dur) {
   let y = 214, out = header(scene.slide.title);
   items.forEach((b, i) => {
     const v = ease((lt - ts[i]) / 0.4), lines = wrap(b.text, 34, 700);
+    T['b' + i] = { x: PX - 8, y: y - 36, w: PW - 24, h: 42 * (lines.length - 1) + 50 };
     out += `<g opacity="${v.toFixed(2)}" transform="translate(${((1 - v) * 28).toFixed(1)} 0)"><circle cx="${PX + 12}" cy="${y - 11}" r="8" fill="#2563EB"/>`;
     lines.forEach((ln, k) => { out += `<text x="${PX + 40}" y="${y + k * 42}" font-size="34" fill="#1E293B">${esc(ln)}</text>`; });
     out += '</g>';
@@ -86,6 +140,7 @@ function steps(scene, lt, dur) {
   let out = header(scene.slide.title);
   items.forEach((s, i) => {
     const x = PX + i * (bw + gap), isActive = i === active, past = i < active;
+    T['s' + i] = { x, y: by, w: bw, h: bh };
     const fill = isActive ? '#2563EB' : past ? '#DBEAFE' : '#F1F5F9', stroke = isActive || past ? '#2563EB' : '#CBD5E1';
     const txt = isActive ? '#FFFFFF' : past ? '#1E3A8A' : '#64748B';
     const grow = isActive ? 1 + 0.05 * ease((lt - ts[i]) / 0.3) : 1;
@@ -107,16 +162,17 @@ function steps(scene, lt, dur) {
 function compare(scene, lt, dur) {
   const c = scene.slide.compare, e = ease(lt / 0.5);
   const cols = [
-    { d: c.left, x: PX, fill: '#FEF2F2', stroke: '#FCA5A5', head: '#B91C1C', icon: 'x' },
-    { d: c.right, x: PX + PW / 2 + 20, fill: '#EFF6FF', stroke: '#93C5FD', head: '#1D4ED8', icon: 'check' },
+    { pre: 'l', d: c.left, x: PX, fill: '#FEF2F2', stroke: '#FCA5A5', head: '#B91C1C', icon: 'x' },
+    { pre: 'r', d: c.right, x: PX + PW / 2 + 20, fill: '#EFF6FF', stroke: '#93C5FD', head: '#1D4ED8', icon: 'check' },
   ];
   let out = header(scene.slide.title);
-  cols.forEach(({ d, x, fill, stroke, head, icon }) => {
+  cols.forEach(({ pre, d, x, fill, stroke, head, icon }) => {
     const items = norm(d.items), ts = itemTimes(scene, items, dur), w = PW / 2 - 20;
     out += `<g opacity="${e.toFixed(2)}"><rect x="${x}" y="166" width="${w}" height="372" rx="22" fill="${fill}" stroke="${stroke}" stroke-width="2.5"/><text x="${x + 24}" y="212" font-size="30" font-weight="bold" fill="${head}">${esc(d.title)}</text></g>`;
     let y = 276;
     items.forEach((it, i) => {
       const v = ease((lt - ts[i]) / 0.4), lines = wrap(it.text, 26, w - 84);
+      T[pre + i] = { x: x + 12, y: y - 30, w: w - 24, h: 32 * (lines.length - 1) + 44 };
       const ic = icon === 'x'
         ? `<circle cx="${x + 38}" cy="${y - 8}" r="15" fill="#DC2626"/><path d="M${x + 31} ${y - 15} l14 14 M${x + 45} ${y - 15} l-14 14" stroke="#fff" stroke-width="3" stroke-linecap="round"/>`
         : `<circle cx="${x + 38}" cy="${y - 8}" r="15" fill="#2563EB"/><path d="M${x + 30} ${y - 8} l6 7 l10 -13" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
@@ -160,6 +216,7 @@ function recap(scene, lt, dur) {
   let y = 226, out = header(scene.slide.title || 'Recap');
   items.forEach((it, i) => {
     const v = ease((lt - ts[i]) / 0.4), lines = wrap(it.text, 32, PW - 90);
+    T['t' + i] = { x: PX - 8, y: y - 38, w: PW - 4, h: 40 * (lines.length - 1) + 54 };
     out += `<g opacity="${v.toFixed(2)}" transform="translate(${((1 - v) * 28).toFixed(1)} 0)"><circle cx="${PX + 24}" cy="${y - 10}" r="22" fill="#2563EB"/><text x="${PX + 24}" y="${y - 10}" font-size="24" font-weight="bold" fill="#fff" text-anchor="middle" dominant-baseline="central">${i + 1}</text>`;
     lines.forEach((ln, k) => { out += `<text x="${PX + 66}" y="${y + k * 40}" font-size="32" fill="#1E293B">${esc(ln)}</text>`; });
     out += '</g>';
@@ -179,11 +236,16 @@ const LAYOUTS = { hook, bullets, steps, compare, quiz, recap };
 export function frameSvg(scene, lt, dur, wave) {
   const layout = LAYOUTS[scene.slide.layout || 'bullets'] || bullets;
   const e = ease(lt / 0.35);
+  T = {};
+  const content = layout(scene, lt, dur);
+  const spot = spotlight(scene, lt, dur, scene.events || []);
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="Inter">
   <rect width="${W}" height="${H}" fill="#F1F5F9"/>
-  ${robot(lt, wave, scene.gesture, scene.events || [])}
+  ${robot(lt, wave, scene.gesture, scene.events || [], spot)}
   <rect x="400" y="50" width="840" height="530" rx="26" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2"/>
-  <g opacity="${e.toFixed(2)}" transform="translate(${((1 - e) * 30).toFixed(1)} 0)">${layout(scene, lt, dur)}</g>
+  ${spot.beam}
+  <g opacity="${e.toFixed(2)}" transform="translate(${((1 - e) * 30).toFixed(1)} 0)">${content}</g>
+  ${spot.svg}
   ${lockup(40, 664, 0.36, { id: 'lkFoot' })}<text x="138" y="684" font-size="17" font-weight="600" fill="#64748B">Academy</text>
 </svg>`;
 }

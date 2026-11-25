@@ -18,6 +18,7 @@ const SHAPE = `A scene is JSON:
     compare: "compare":{"left":{"title","items":[{"text","at"}]},"right":{...}};
     quiz: "quiz":{"question","options":[3 strings],"optionsAt":[3 phrases],"answer":<index>,"answerAt":"phrase"};
     recap: "takeaways":[{"text","at"}],"next","nextAt" } }
+Any bullet, step, compare item or takeaway may carry "highlight": true, or "highlight": "short key-point note (max 120 chars)". Use it ONLY for a genuinely special fact, warning or tip, never for ordinary points; Indoo then lights it with her eye-projector. The note banner shows on bullets and steps scenes only.
 Every "at" / "subAt" / "answerAt" / "nextAt" must be a short phrase that appears word-for-word in "spoken" (case-insensitive); it is the moment that item appears on screen.`;
 
 export function sceneForTime(chapters, time) {
@@ -44,6 +45,9 @@ export function validateScene(next, original) {
     scene.sfx = scene.sfx.filter(e => e.at || Number.isFinite(Number(e.time)));
   }
   const s = scene.slide;
+  for (const list of [s.bullets, s.steps, s.takeaways, s.compare && s.compare.left && s.compare.left.items, s.compare && s.compare.right && s.compare.right.items]) {
+    (list || []).forEach(it => { if (it && typeof it === 'object' && typeof it.highlight === 'string') it.highlight = it.highlight.slice(0, 120); if (it && typeof it === 'object' && it.highlight && typeof it.highlight !== 'string') it.highlight = true; });
+  }
   fixAt(s, 'subAt', 'subtitle'); fixAt(s, 'nextAt', 'next button');
   for (const list of [s.bullets, s.steps, s.takeaways, s.compare?.left?.items, s.compare?.right?.items]) (list || []).forEach(it => typeof it === 'object' && fixAt(it, 'at', 'item'));
   if (s.layout === 'quiz') {

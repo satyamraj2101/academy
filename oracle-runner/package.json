@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "node src/index.mjs",
-    "test": "node --test test/ai.test.mjs test/edits.test.mjs test/sfx.test.mjs",
+    "test": "node --test test/ai.test.mjs test/edits.test.mjs test/sfx.test.mjs test/scene.test.mjs",
     "video": "node src/video/make-video.mjs"
   },
   "dependencies": {

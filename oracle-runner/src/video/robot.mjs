@@ -11,6 +11,7 @@ export const WAVE_POINTS = 48;
 export const NAMES = { instructor: 'Soomy', companion: 'Indoo' }; // Indoo is a she
 
 const CX = 160; // Soomy's centre line
+const INDOO_BASE = CX + 118;
 const SH = { left: [CX - 76, 316], right: [CX + 76, 316] }; // shoulders
 
 // Two-bone arm: where does the elbow go so the hand reaches (tx, ty)? `bend` picks which way the elbow points.
@@ -127,7 +128,7 @@ const star = (x, y, r, o) => `<path d="M${x} ${y - r} Q${x} ${y} ${x + r} ${y} Q
 
 // Indoo: small, curious and a little cheeky. She wanders near Soomy's feet, her stubby legs never quite stop shaking,
 // her eyes follow things and react to every chirp, and she winks now and then.
-function indoo(t, amp, baseX, events) {
+function indoo(t, amp, baseX, events, spot) {
   const rx = reaction(events, t);
   const px = baseX + Math.sin(t * 0.38) * 44 + Math.sin(t * 1.0) * 6;
   const vx = Math.cos(t * 0.38) * 44 * 0.38 + Math.cos(t * 1.0) * 6 * 1.0;
@@ -139,8 +140,8 @@ function indoo(t, amp, baseX, events) {
   const squash = rx && rx.type === 'oops' ? 1 - 0.07 * rx.k : 1;
   const tilt = (rx && rx.type === 'curious' ? 7 * rx.k : 0) + Math.sin(t * 1.2) * 2;
 
-  const look = Math.sin(t * 0.5) * 3 + (rx && rx.type === 'curious' ? 3 * rx.k : 0);
-  const big = rx && (rx.type === 'curious' || rx.type === 'notice') ? 1 + 0.22 * rx.k : 1;
+  const look = Math.sin(t * 0.5) * 3 + (rx && rx.type === 'curious' ? 3 * rx.k : 0) + (spot ? 4 * spot.k : 0);
+  const big = (rx && (rx.type === 'curious' || rx.type === 'notice') ? 1 + 0.22 * rx.k : 1) + (spot ? 0.15 * spot.k : 0);
   const blink = t % 4.3 < 0.13 ? 0.1 : 1;
   const wink = t % 7.4 < 0.55;
   const joy = !!(rx && (rx.type === 'happy' || rx.type === 'celebrate') && rx.age < 0.95);
@@ -153,7 +154,7 @@ function indoo(t, amp, baseX, events) {
       <circle cx="${cx - 2.6}" cy="-51.5" r="${(2.7 * blink).toFixed(1)}" fill="#FFFFFF"/><circle cx="${cx + 3}" cy="-44" r="${(1.4 * blink).toFixed(1)}" fill="#FFFFFF" fill-opacity="0.8"/>${lid}
       <path d="M${cx + side * 8} -56 q${side * 5} -3 ${side * 8} 2 M${cx + side * 6} -59 q${side * 4} -4 ${side * 8} -1" fill="none" stroke="#8FE3FF" stroke-width="1.7" stroke-linecap="round"/>`;
   };
-  const ringOn = rx && rx.type === 'notice' ? rx.k : 0;
+  const ringOn = Math.max(rx && rx.type === 'notice' ? rx.k : 0, spot ? spot.k : 0);
 
   const legs = [-40, -14, 14, 40].map((x, i) => {
     const sh = Math.sin(t * 19 + i * 1.9) * 1.8 * excite, lift = Math.max(0, Math.sin(t * 8 + i * 1.4)) * 3.5 * excite;
@@ -191,9 +192,18 @@ function indoo(t, amp, baseX, events) {
 }
 
 // wave: Float32Array(WAVE_POINTS), -1..1. t: seconds into the scene.
-export function robot(t, wave, gesture = 'point', events = []) {
+export function robot(t, wave, gesture = 'point', events = [], spot = null) {
   let sum = 0;
   for (const v of wave) sum += v * v;
   const amp = Math.min(1, Math.sqrt(sum / wave.length) * 1.6);
-  return `${DEFS}${clem(t, wave, gesture, amp)}${indoo(t, amp, CX + 118, events)}`;
+  return `${DEFS}${clem(t, wave, gesture, amp)}${indoo(t, amp, INDOO_BASE, events, spot)}`;
+}
+
+// Where Indoo's eyes are on screen (for the projector beam). Matches the motion in indoo() closely enough for a light cone.
+export function indooEye(t, events = []) {
+  const rx = reaction(events, t);
+  let hop = 0;
+  if (rx && rx.type === 'celebrate') hop -= Math.abs(Math.sin(rx.age * 11)) * 18 * rx.k;
+  if (rx && rx.type === 'happy') hop -= Math.abs(Math.sin(rx.age * 10)) * 7 * rx.k;
+  return { x: INDOO_BASE + Math.sin(t * 0.38) * 44 + Math.sin(t * 1.0) * 6 + 18, y: 556 + hop - 55 };
 }

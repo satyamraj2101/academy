@@ -74,7 +74,8 @@
           },
           {
             "text": "Dates and obligations in one place",
-            "at": "key dates"
+            "at": "key dates",
+            "highlight": "Dates and obligations are what CLM keeps watching for you."
           }
         ]
       },
@@ -122,7 +123,8 @@
           {
             "text": "Track",
             "at": "tracked",
-            "desc": "Key dates and duties are watched, then the contract is renewed or closed."
+            "desc": "Key dates and duties are watched, then the contract is renewed or closed.",
+            "highlight": "Signing is not the end of a contract’s life."
           }
         ]
       },
