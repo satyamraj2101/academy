@@ -137,21 +137,17 @@ export const onRequestPut: PagesFunction<Env> = async ({ request, env }) => {
 
     // Newly published (wasn't published before) — let every active student know.
     if (status === 'published' && existing?.status !== 'published') {
-      const { results: users } = await db.prepare('SELECT id FROM academy_users WHERE is_active = 1').all();
-      const now = new Date().toISOString();
-      for (const u of (users || []) as any[]) {
-        await db.prepare(`
-          INSERT INTO academy_notifications (id, user_id, title, message, action_url, is_read, created_at)
-          VALUES (?, ?, ?, ?, ?, 0, ?)
-        `).bind(
-          crypto.randomUUID(),
-          u.id,
-          'New course available',
-          `"${title}" just went live — check it out.`,
-          `/courses/${id}`,
-          now
-        ).run();
-      }
+      // One set-based statement (a per-user loop blew the free plan's ~50 queries/request cap).
+      // The id is derived in SQL so each row stays unique.
+      await db.prepare(`
+        INSERT INTO academy_notifications (id, user_id, title, message, action_url, is_read, created_at)
+        SELECT lower(hex(randomblob(16))), id, ?, ?, ?, 0, ? FROM academy_users WHERE is_active = 1
+      `).bind(
+        'New course available',
+        `"${title}" just went live — check it out.`,
+        `/courses/${id}`,
+        new Date().toISOString()
+      ).run();
     }
 
     return corsResponse({ success: true });
