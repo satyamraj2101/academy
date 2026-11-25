@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "@resvg/resvg-js": "^2.6.2",
-    "dejavu-fonts-ttf": "^2.37.3",
     "jszip": "^3.10.1",
     "kokoro-js": "^1.2.1",
     "mammoth": "^1.8.0",

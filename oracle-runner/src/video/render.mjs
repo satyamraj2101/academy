@@ -12,11 +12,11 @@ import { frameSvg, W, itemTimes, timeOf } from './scene.mjs';
 import { WAVE_POINTS } from './robot.mjs';
 import { voiceFilter } from './voicefx.mjs';
 
-export const RENDER_VERSION = 4; // bump when visuals or audio processing change, so stale cache is not reused
+export const RENDER_VERSION = 6; // bump when visuals or audio processing change, so stale cache is not reused
 export const GAP = 0.5; // seconds of silence after each scene
-const FONT_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'node_modules', 'dejavu-fonts-ttf', 'ttf');
-const FONT_FILES = [join(FONT_DIR, 'DejaVuSans.ttf'), join(FONT_DIR, 'DejaVuSans-Bold.ttf')];
-const CAPTION_STYLE = 'FontName=DejaVu Sans,FontSize=11,PrimaryColour=&H3B2F1E&,OutlineColour=&HFFFFFF&,BorderStyle=1,Outline=2,Shadow=0,MarginV=22,Alignment=2';
+const FONT_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'assets', 'fonts');
+const FONT_FILES = ['400Regular', '600SemiBold', '700Bold', '800ExtraBold'].map(w => join(FONT_DIR, `Inter_${w}.ttf`));
+const CAPTION_STYLE = 'FontName=Inter,FontSize=11,PrimaryColour=&H3B2F1E&,OutlineColour=&HFFFFFF&,BorderStyle=1,Outline=2,Shadow=0,MarginV=22,Alignment=2';
 
 export const sceneKey = (scene, { voice, fx, fps }) => {
   const { id, ...content } = scene;
@@ -76,7 +76,7 @@ export async function renderScene(scene, { cacheRoot, voice, fx, fps }) {
     const wave = new Float32Array(WAVE_POINTS);
     for (let i = 0; i < WAVE_POINTS; i++) { const idx = Math.round(a + (i * (WN - 1)) / (WAVE_POINTS - 1)); wave[i] = idx >= 0 && idx < audio.length ? Math.max(-1, Math.min(1, audio[idx] / peak)) : 0; }
     const svg = frameSvg(withParts, lt, dur, wave);
-    const png = new Resvg(svg, { fitTo: { mode: 'width', value: W }, font: { fontFiles: FONT_FILES, loadSystemFonts: false, defaultFontFamily: 'DejaVu Sans' } }).render().asPng();
+    const png = new Resvg(svg, { fitTo: { mode: 'width', value: W }, font: { fontFiles: FONT_FILES, loadSystemFonts: false, defaultFontFamily: 'Inter' } }).render().asPng();
     writeFileSync(join(dir, 'frames', `${String(f).padStart(5, '0')}.png`), png);
   }
   stats.frameSeconds = (Date.now() - t0) / 1000;

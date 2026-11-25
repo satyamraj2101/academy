@@ -1,6 +1,7 @@
 // Draws one video frame as SVG. Layouts: hook, bullets, steps, compare, quiz, recap. Every item can name the
 // words it should appear on (`at`), so visuals land when the narrator says them instead of at fixed times.
 import { robot } from './robot.mjs';
+import { lockup } from './brand.mjs';
 
 export const W = 1280;
 export const H = 720;
@@ -148,8 +149,8 @@ function quiz(scene, lt, dur) {
     out += '</g>';
   });
   if (lt >= thinkFrom - 0.3 && !revealed) {
-    const frac = clamp01((lt - thinkFrom) / Math.max(0.5, ansT - thinkFrom)), r = 26, C = 2 * Math.PI * r;
-    out += `<g transform="translate(${PX + PW - 26} 60)"><circle r="${r}" fill="none" stroke="#E2E8F0" stroke-width="7"/><circle r="${r}" fill="none" stroke="#2563EB" stroke-width="7" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * frac).toFixed(1)}" transform="rotate(-90)"/><text y="1" font-size="15" font-weight="bold" fill="#2563EB" text-anchor="middle" dominant-baseline="central">THINK</text></g>`;
+    const frac = clamp01((lt - thinkFrom) / Math.max(0.5, ansT - thinkFrom)), r = 31, C = 2 * Math.PI * r;
+    out += `<g transform="translate(${PX + PW - 34} 96)"><circle r="${r}" fill="none" stroke="#E2E8F0" stroke-width="7"/><circle r="${r}" fill="none" stroke="#2563EB" stroke-width="7" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * frac).toFixed(1)}" transform="rotate(-90)"/><text y="1" font-size="12" font-weight="700" fill="#2563EB" text-anchor="middle" dominant-baseline="central">THINK</text></g>`;
   }
   return out;
 }
@@ -178,11 +179,11 @@ const LAYOUTS = { hook, bullets, steps, compare, quiz, recap };
 export function frameSvg(scene, lt, dur, wave) {
   const layout = LAYOUTS[scene.slide.layout || 'bullets'] || bullets;
   const e = ease(lt / 0.35);
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="DejaVu Sans, Arial, sans-serif">
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="Inter">
   <rect width="${W}" height="${H}" fill="#F1F5F9"/>
   ${robot(lt, wave, scene.gesture)}
   <rect x="400" y="50" width="840" height="530" rx="26" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2"/>
   <g opacity="${e.toFixed(2)}" transform="translate(${((1 - e) * 30).toFixed(1)} 0)">${layout(scene, lt, dur)}</g>
-  <text x="40" y="690" font-size="22" fill="#94A3B8">SpotCLM Academy</text>
+  ${lockup(40, 664, 0.36, { id: 'lkFoot' })}<text x="138" y="684" font-size="17" font-weight="600" fill="#64748B">Academy</text>
 </svg>`;
 }

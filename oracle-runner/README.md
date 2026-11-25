@@ -15,8 +15,8 @@ Jobs wait in D1 if the runner is down; a job whose runner dies is retried (3 att
 ## Multiple AI providers
 `src/ai.mjs` routes each step by role through `AI_DRAFT` / `AI_REVIEW` (see `.env.example`). Supported: `gemini`, `anthropic`, `openai` (and OpenAI-compatible hosts), `cloudflare` (Workers AI). A provider without a key is skipped; on 429/5xx it retries with backoff, then falls through to the next. When `AI_REVIEW` is set, every lesson gets a second-opinion pass by that model, which returns corrections that replace the draft (a failed review never fails the job). Unit tests: `npm test`.
 
-## Lesson videos (the SpotCLM "Counsel" robot)
-`src/video/` turns a scene script into an MP4 with no GPU and no paid service. A faceless robot barrister (wig, gown, scales of justice, `SpotCLM` badge) narrates; its visor draws the real audio waveform, so there is no lip-sync to get wrong. A slide beside it builds up as each point is spoken, and captions are burned in.
+## Lesson videos (Clem and Swish)
+`src/video/` turns a scene script into an MP4 with no GPU and no paid service. **Clem** is the SpotCLM instructor robot: full body, white and navy, the real SpotCLM logo on his chest panel, a tablet in one hand and a pointer in the other. His glass visor draws the real audio waveform, so there is no lip-sync to get wrong. **Swish**, a small mop-bot, follows him in every scene. A slide beside them builds up as each point is spoken, and captions are burned in. Typography is Inter, as on spotclm.com. Names live in `NAMES` in `src/video/robot.mjs`.
 ```bash
 npm run video -- samples/what-is-clm.json out/clm --voice am_puck --fx clean --cache out/.cache
 node src/video/voice-demo.mjs out/voices          # short clips to pick a voice by ear
