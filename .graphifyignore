@@ -1,0 +1,13 @@
+# Keep third-party tooling, build output and dependencies out of the code graph.
+.claude/
+dist/
+build/
+coverage/
+node_modules/
+mcp-server/node_modules/
+mcp-server/dist/
+.wrangler/
+graphify-out/
+package-lock.json
+mcp-server/package-lock.json
+*.log
