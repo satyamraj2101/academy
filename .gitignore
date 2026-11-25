@@ -16,3 +16,5 @@ graphify-out/graph.html
 # Oracle runner secrets and deps
 oracle-runner/.env
 oracle-runner/node_modules/
+oracle-runner/sample-output/
+oracle-runner/out/

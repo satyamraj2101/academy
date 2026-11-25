@@ -4,13 +4,19 @@
   "private": true,
   "description": "Long-running AI authoring jobs for SpotCLM Academy. Runs on an Oracle Always Free VM, pulls jobs from the Cloudflare admin API.",
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node src/index.mjs",
-    "test": "node --test test/ai.test.mjs"
+    "test": "node --test test/ai.test.mjs",
+    "video": "node src/video/make-video.mjs"
   },
   "dependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "dejavu-fonts-ttf": "^2.37.3",
     "jszip": "^3.10.1",
+    "kokoro-js": "^1.2.1",
     "mammoth": "^1.8.0",
     "pdf-parse": "^1.1.1"
   }

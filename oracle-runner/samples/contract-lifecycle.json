@@ -1,0 +1,17 @@
+{
+  "title": "The contract lifecycle",
+  "scenes": [
+    {
+      "narration": "Welcome. In this lesson you will learn how a contract moves from a first request to a signed agreement, and why each stage matters.",
+      "slide": { "title": "The contract lifecycle", "bullets": ["From request to signature", "Why every stage matters"] }
+    },
+    {
+      "narration": "Every contract starts with a request. Someone in the business needs an agreement, so they describe what they need, who it is with, and by when.",
+      "slide": { "title": "Stage one: request", "bullets": ["What is needed", "Who it is with", "By when"] }
+    },
+    {
+      "narration": "From there the contract is drafted, reviewed by legal, approved by the people who own the risk, and finally signed by both parties.",
+      "slide": { "title": "The four stages", "steps": ["Draft", "Review", "Approve", "Sign"] }
+    }
+  ]
+}

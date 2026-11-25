@@ -15,6 +15,14 @@ Jobs wait in D1 if the runner is down; a job whose runner dies is retried (3 att
 ## Multiple AI providers
 `src/ai.mjs` routes each step by role through `AI_DRAFT` / `AI_REVIEW` (see `.env.example`). Supported: `gemini`, `anthropic`, `openai` (and OpenAI-compatible hosts), `cloudflare` (Workers AI). A provider without a key is skipped; on 429/5xx it retries with backoff, then falls through to the next. When `AI_REVIEW` is set, every lesson gets a second-opinion pass by that model, which returns corrections that replace the draft (a failed review never fails the job). Unit tests: `npm test`.
 
+## Lesson videos (faceless robot narrator)
+`src/video/` turns a scene script into an MP4 with no GPU and no paid service: Kokoro voice, a drawn robot whose chest sound bars follow the audio (so no lip-sync is needed), a slide beside it that reveals bullets and diagram steps as they are spoken, and captions burned in (plus `.srt` and `.vtt` files).
+```bash
+npm run video -- samples/contract-lifecycle.json out/contract   # writes out/contract/video.mp4 and timings.json
+```
+Script format: `{ "scenes": [ { "narration": "...", "slide": { "title": "...", "bullets": [], "steps": [] } } ] }`.
+`timings.json` reports render speed; measure it on the Oracle VM before planning a large batch. On a 16-thread desktop the voice is the slow step (about real time), the rest is quick.
+
 ## 1. Create the Oracle VM (one time, in the Oracle Cloud console)
 1. Compute > Instances > Create instance. Image: **Ubuntu 24.04** (aarch64). Shape: **VM.Standard.A1.Flex**, 2 OCPU, **12 GB** RAM. That is now the whole Always Free Ampere allowance (Oracle reduced it from 4 OCPU / 24 GB), so use all of it on one VM; creating more than the allowance can get instances disabled.
 2. Networking: keep the default public subnet and a public IP. Add your SSH public key (or download the generated key).
