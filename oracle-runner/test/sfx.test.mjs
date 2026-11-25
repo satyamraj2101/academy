@@ -7,8 +7,8 @@ test('every chirp is finite, quiet, short, and starts and ends at silence (no cl
     const s = sound(name);
     let peak = 0;
     for (const v of s) { assert.ok(Number.isFinite(v)); peak = Math.max(peak, Math.abs(v)); }
-    assert.ok(peak > 0.05 && peak <= 0.31, `${name} peak ${peak}`);
-    assert.ok(s.length / RATE > 0.08 && s.length / RATE < 0.6, `${name} length`);
+    assert.ok(peak > 0.05 && peak <= 0.25, `${name} peak ${peak}`);
+    assert.ok(s.length / RATE > 0.1 && s.length / RATE < 0.6, `${name} length`);
     assert.ok(Math.abs(s[0]) < 0.02 && Math.abs(s[s.length - 1]) < 0.02, `${name} edges`);
   }
 });

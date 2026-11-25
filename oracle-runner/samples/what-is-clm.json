@@ -1,6 +1,37 @@
 {
-  "title": "What is CLM?",
+  "title": "What is CLM? (with introduction)",
   "scenes": [
+    {
+      "id": "intro",
+      "gesture": "present",
+      "narration": "Hi, I'm Soomy, your instructor here at SpotCLM Academy. And this is Indoo. Wherever I go, whatever I do, Indoo follows. She cleans up the mess, and she lights up what matters. Ready? Let's get started.",
+      "spoken": "Hi, I'm Soomy, your instructor here at SpotCLM Academy. And this is Indoo. Wherever I go, whatever I do, Indoo follows. She cleans up the mess, and she lights up what matters. Ready? Let's get started.",
+      "sfx": [
+        {
+          "sound": "happy",
+          "at": "and this is indoo"
+        },
+        {
+          "sound": "curious",
+          "at": "indoo follows"
+        },
+        {
+          "sound": "notice",
+          "at": "lights up what matters"
+        },
+        {
+          "sound": "celebrate",
+          "at": "get started"
+        }
+      ],
+      "slide": {
+        "layout": "hook",
+        "kicker": "Welcome to SpotCLM Academy",
+        "title": "Meet Soomy and Indoo",
+        "subtitle": "Your guides through every course",
+        "subAt": "wherever i go"
+      }
+    },
     {
       "id": "hook",
       "gesture": "raise",

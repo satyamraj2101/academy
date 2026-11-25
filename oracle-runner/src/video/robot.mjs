@@ -129,8 +129,8 @@ const star = (x, y, r, o) => `<path d="M${x} ${y - r} Q${x} ${y} ${x + r} ${y} Q
 // her eyes follow things and react to every chirp, and she winks now and then.
 function indoo(t, amp, baseX, events) {
   const rx = reaction(events, t);
-  const px = baseX + Math.sin(t * 0.55) * 44 + Math.sin(t * 1.5) * 6;
-  const vx = Math.cos(t * 0.55) * 44 * 0.55 + Math.cos(t * 1.5) * 6 * 1.5;
+  const px = baseX + Math.sin(t * 0.38) * 44 + Math.sin(t * 1.0) * 6;
+  const vx = Math.cos(t * 0.38) * 44 * 0.38 + Math.cos(t * 1.0) * 6 * 1.0;
   const lean = Math.max(-4, Math.min(4, vx * 0.06));
   const excite = 0.45 + amp * 0.9 + (rx ? rx.k * 0.9 : 0);
   let hop = -Math.abs(Math.sin(t * 6.5)) * amp * 3;
@@ -139,7 +139,7 @@ function indoo(t, amp, baseX, events) {
   const squash = rx && rx.type === 'oops' ? 1 - 0.07 * rx.k : 1;
   const tilt = (rx && rx.type === 'curious' ? 7 * rx.k : 0) + Math.sin(t * 1.2) * 2;
 
-  const look = Math.sin(t * 0.7) * 3 + (rx && rx.type === 'curious' ? 3 * rx.k : 0);
+  const look = Math.sin(t * 0.5) * 3 + (rx && rx.type === 'curious' ? 3 * rx.k : 0);
   const big = rx && (rx.type === 'curious' || rx.type === 'notice') ? 1 + 0.22 * rx.k : 1;
   const blink = t % 4.3 < 0.13 ? 0.1 : 1;
   const wink = t % 7.4 < 0.55;
@@ -156,7 +156,7 @@ function indoo(t, amp, baseX, events) {
   const ringOn = rx && rx.type === 'notice' ? rx.k : 0;
 
   const legs = [-40, -14, 14, 40].map((x, i) => {
-    const sh = Math.sin(t * 24 + i * 1.9) * 1.8 * excite, lift = Math.max(0, Math.sin(t * 10 + i * 1.4)) * 3.5 * excite;
+    const sh = Math.sin(t * 19 + i * 1.9) * 1.8 * excite, lift = Math.max(0, Math.sin(t * 8 + i * 1.4)) * 3.5 * excite;
     return `<line x1="${x}" y1="-30" x2="${(x + sh).toFixed(1)}" y2="${(-4 - lift).toFixed(1)}" stroke="#9FB3CC" stroke-width="8" stroke-linecap="round"/><ellipse cx="${(x + sh).toFixed(1)}" cy="${(-1.5 - lift).toFixed(1)}" rx="9.5" ry="4.5" fill="#0D1F4A"/>`;
   }).join('');
   const strands = Array.from({ length: 7 }, (_, i) => {

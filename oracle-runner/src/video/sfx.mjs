@@ -4,19 +4,19 @@ import { timeOf } from './scene.mjs';
 
 export const RATE = 24000;
 export const SOUNDS = ['happy', 'curious', 'oops', 'celebrate', 'notice', 'nudge'];
-const MIX_GAIN = 0.3; // peak of a chirp relative to full scale; narration sits near 0.5 peaks
+const MIX_GAIN = 0.24; // peak of a chirp relative to full scale; narration sits near 0.5 peaks
 
 // freq(p): frequency in Hz at progress p (0..1). The envelope has a soft attack and release so nothing clicks.
 function tone(dur, freq, { vib = 0, vibHz = 16, decay = 0 } = {}) {
   const n = Math.round(dur * RATE), out = new Float32Array(n);
   let phase = 0;
-  const atk = Math.round(0.008 * RATE), rel = Math.round(Math.min(0.05, dur * 0.4) * RATE);
+  const atk = Math.round(0.014 * RATE), rel = Math.round(Math.min(0.05, dur * 0.4) * RATE);
   for (let i = 0; i < n; i++) {
     const p = i / n, f = freq(p) + (vib ? Math.sin((i / RATE) * 2 * Math.PI * vibHz) * vib : 0);
     phase += (2 * Math.PI * f) / RATE;
     let env = Math.min(1, i / atk, (n - i) / rel);
     if (decay) env *= Math.exp(-decay * p);
-    out[i] = (Math.sin(phase) + 0.18 * Math.sin(2 * phase)) * env * 0.85;
+    out[i] = (Math.sin(phase) + 0.07 * Math.sin(2 * phase)) * env * 0.92;
   }
   return out;
 }
@@ -29,12 +29,12 @@ const join = (parts, gapSec = 0.02) => {
 const glide = (a, b) => (p) => a + (b - a) * p;
 
 const BUILD = {
-  happy: () => join([tone(0.15, glide(780, 1250)), tone(0.07, () => 1250)], 0.01),
-  curious: () => tone(0.3, (p) => 700 + 300 * Math.sin(p * Math.PI) + (p > 0.6 ? -60 * (p - 0.6) : 0), { vib: 22, vibHz: 14 }),
-  oops: () => tone(0.34, glide(640, 290), { vib: 16, vibHz: 9 }),
-  celebrate: () => join([784, 988, 1175, 1568].map((f, i) => tone(i === 3 ? 0.16 : 0.07, () => f)), 0.015),
-  notice: () => join([tone(0.08, () => 1568, { decay: 3 }), tone(0.11, () => 2093, { decay: 3.5 })], 0.03),
-  nudge: () => tone(0.1, glide(500, 560)),
+  happy: () => join([tone(0.17, glide(1000, 1560)), tone(0.09, () => 1560)], 0.01),
+  curious: () => tone(0.34, (p) => 940 + 360 * Math.sin(p * Math.PI) + (p > 0.6 ? -80 * (p - 0.6) : 0), { vib: 16, vibHz: 11 }),
+  oops: () => tone(0.38, glide(900, 440), { vib: 10, vibHz: 7 }),
+  celebrate: () => join([1047, 1319, 1568, 2093].map((f, i) => tone(i === 3 ? 0.2 : 0.09, () => f)), 0.015),
+  notice: () => join([tone(0.1, () => 2093, { decay: 3 }), tone(0.14, () => 2637, { decay: 3.5 })], 0.035),
+  nudge: () => tone(0.12, glide(760, 860)),
 };
 
 export function sound(name) {

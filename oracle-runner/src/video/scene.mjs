@@ -60,7 +60,7 @@ function hook(scene, lt, dur) {
   const kick = timeOf(scene, s.kickerAt, dur, 0.4);
   return `<text x="${CX}" y="190" font-size="30" fill="#2563EB" font-weight="bold" text-anchor="middle" opacity="${ease((lt - kick) / 0.4).toFixed(2)}">${esc(s.kicker || '')}</text>
   <g transform="translate(${CX} 320) scale(${(0.88 + 0.12 * e).toFixed(3)}) translate(${-CX} -320)" opacity="${e.toFixed(2)}">
-    <text x="${CX}" y="330" font-size="104" font-weight="bold" fill="#0F172A" text-anchor="middle">${esc(s.title)}</text></g>
+    <text x="${CX}" y="330" font-size="${Math.min(104, Math.floor(740 / (String(s.title).length * 0.6)))}" font-weight="bold" fill="#0F172A" text-anchor="middle">${esc(s.title)}</text></g>
   <rect x="${CX - 40}" y="360" width="80" height="6" rx="3" fill="#2563EB" opacity="${e.toFixed(2)}"/>
   <text x="${CX}" y="440" font-size="40" fill="#475569" text-anchor="middle" opacity="${ease((lt - sub) / 0.5).toFixed(2)}">${esc(s.subtitle || '')}</text>`;
 }
