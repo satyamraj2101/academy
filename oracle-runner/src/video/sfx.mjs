@@ -94,3 +94,12 @@ export function mixSfx(audio, events) {
     }
   }
 }
+
+// The ship's departure: one smooth rising-and-falling tone, quiet and noise-free. Not an author-selectable chirp.
+export function whoosh() {
+  const s = tone(1.1, (p) => 200 + 520 * Math.sin(p * Math.PI) * (1 - 0.3 * p), { vib: 0 });
+  let peak = 0;
+  for (const v of s) peak = Math.max(peak, Math.abs(v));
+  for (let i = 0; i < s.length; i++) s[i] = (s[i] / (peak || 1)) * 0.14;
+  return s;
+}

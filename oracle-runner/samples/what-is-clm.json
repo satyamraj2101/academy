@@ -30,7 +30,8 @@
         "title": "Meet Soomy and Indoo",
         "subtitle": "Your guides through every course",
         "subAt": "wherever i go"
-      }
+      },
+      "station": "frontdesk"
     },
     {
       "id": "hook",
@@ -53,7 +54,8 @@
           "sound": "happy",
           "at": "or c l m"
         }
-      ]
+      ],
+      "station": "frontdesk"
     },
     {
       "id": "definition",
@@ -84,7 +86,8 @@
           "sound": "nudge",
           "at": "scattered everywhere"
         }
-      ]
+      ],
+      "station": "frontdesk"
     },
     {
       "id": "lifecycle",
@@ -133,7 +136,8 @@
           "sound": "notice",
           "at": "signing is not the end"
         }
-      ]
+      ],
+      "station": "hub"
     },
     {
       "id": "why",
@@ -189,7 +193,8 @@
           "sound": "happy",
           "at": "before key dates"
         }
-      ]
+      ],
+      "station": "review"
     },
     {
       "id": "check",
@@ -221,7 +226,8 @@
           "sound": "curious",
           "at": "think about it"
         }
-      ]
+      ],
+      "station": "checkpoint"
     },
     {
       "id": "recap",
@@ -253,7 +259,14 @@
           "sound": "celebrate",
           "at": "in the next lesson"
         }
-      ]
+      ],
+      "station": "frontdesk"
     }
+  ],
+  "campus": [
+    "frontdesk",
+    "hub",
+    "review",
+    "checkpoint"
   ]
 }

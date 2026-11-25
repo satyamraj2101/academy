@@ -123,7 +123,7 @@ const video = $('video');
 const cur = () => P.versions.find((v) => v.n === ver);
 const chapters = () => cur()?.chapters?.chapters || [];
 const checkpoints = () => cur()?.chapters?.checkpoints || [];
-const sceneAt = (t) => chapters().find((c) => t >= c.start && t < c.end + 0.5) || chapters().at(-1);
+const sceneAt = (t) => chapters().filter((c) => c.start <= t).at(-1) || chapters()[0];
 const answersKey = () => `studio:answers:${slug}:${ver}`;
 
 async function loadProjects() {

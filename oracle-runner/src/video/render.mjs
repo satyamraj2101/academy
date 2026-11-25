@@ -11,9 +11,11 @@ import { synth, wavBuffer } from './tts.mjs';
 import { frameSvg, W, itemTimes, timeOf } from './scene.mjs';
 import { WAVE_POINTS } from './robot.mjs';
 import { voiceFilter } from './voicefx.mjs';
-import { sceneEvents, placeEvents, mixSfx } from './sfx.mjs';
+import { sceneEvents, placeEvents, mixSfx, whoosh } from './sfx.mjs';
+import { travelSvg, TRAVEL_SECONDS } from './travel.mjs';
+import { stationName, STATIONS } from './stations.mjs';
 
-export const RENDER_VERSION = 12; // bump when visuals or audio processing change, so stale cache is not reused
+export const RENDER_VERSION = 13; // bump when visuals or audio processing change, so stale cache is not reused
 export const GAP = 0.5; // seconds of silence after each scene
 const FONT_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'assets', 'fonts');
 const FONT_FILES = ['400Regular', '600SemiBold', '700Bold', '800ExtraBold'].map(w => join(FONT_DIR, `Inter_${w}.ttf`));
@@ -115,6 +117,35 @@ export async function renderScene(scene, { cacheRoot, voice, fx, fps }) {
   return { ...meta, dir, key, cached: false };
 }
 
+// Soomy and Indoo ride the ship to the next station: no voice, a short whoosh, and the route map on the slide card.
+export async function renderTravel(item, { cacheRoot, fps }) {
+  const dur = TRAVEL_SECONDS;
+  const key = createHash('sha1').update(JSON.stringify({ v: RENDER_VERSION, travel: item.travel, stops: item.stops, fps })).digest('hex').slice(0, 16);
+  const dir = join(cacheRoot, key), metaPath = join(dir, 'meta.json');
+  if (existsSync(metaPath) && existsSync(join(dir, 'segment.mp4'))) return { ...JSON.parse(readFileSync(metaPath, 'utf8')), dir, key, cached: true };
+  mkdirSync(join(dir, 'frames'), { recursive: true });
+  const stats = { voiceSeconds: 0 };
+  let t0 = Date.now();
+  const frames = Math.ceil(dur * fps);
+  for (let f = 0; f < frames; f++) {
+    const svg = travelSvg(item.travel, f / fps, dur, item.stops);
+    const png = new Resvg(svg, { fitTo: { mode: 'width', value: W }, font: { fontFiles: FONT_FILES, loadSystemFonts: false, defaultFontFamily: 'Inter' } }).render().asPng();
+    writeFileSync(join(dir, 'frames', `${String(f).padStart(5, '0')}.png`), png);
+  }
+  stats.frameSeconds = (Date.now() - t0) / 1000;
+  const rate = 24000, audio = new Float32Array(Math.ceil(dur * rate)), w = whoosh();
+  audio.set(w.subarray(0, Math.min(w.length, audio.length - Math.round(0.1 * rate))), Math.round(0.1 * rate));
+  writeFileSync(join(dir, 'audio.wav'), wavBuffer(audio, rate));
+  t0 = Date.now();
+  ff(['-framerate', String(fps), '-i', 'frames/%05d.png', '-i', 'audio.wav', '-af', 'alimiter=limit=0.7', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '21', '-pix_fmt', 'yuv420p', '-r', String(fps),
+    '-c:a', 'aac', '-b:a', '160k', '-ar', '44100', '-ac', '1', '-shortest', 'segment.mp4'], dir);
+  stats.encodeSeconds = (Date.now() - t0) / 1000;
+  rmSync(join(dir, 'frames'), { recursive: true, force: true });
+  const meta = { dur, total: dur, cues: [], events: [], travel: true, stats };
+  writeFileSync(metaPath, JSON.stringify(meta));
+  return { ...meta, dir, key, cached: false };
+}
+
 export const stamp = (s, sep) => { const ms = Math.round(s * 1000); const p = (n, w = 2) => String(n).padStart(w, '0'); return `${p(Math.floor(ms / 3600000))}:${p(Math.floor(ms / 60000) % 60)}:${p(Math.floor(ms / 1000) % 60)}${sep}${p(ms % 1000, 3)}`; };
 
 // Builds <outDir>/video.mp4 + captions + chapters.json. Unchanged scenes come from cache.
@@ -122,17 +153,34 @@ export async function buildVideo(script, outDir, { cacheRoot = join(outDir, '..'
   mkdirSync(outDir, { recursive: true });
   mkdirSync(cacheRoot, { recursive: true });
   const scenes = script.scenes.map((s, i) => ({ ...s, id: s.id || `s${i + 1}` }));
+  for (const sc of scenes) if (sc.station && !STATIONS[sc.station]) throw new Error(`Scene "${sc.id}" uses unknown station "${sc.station}" (use ${Object.keys(STATIONS).join(', ')})`);
+
+  // The campus map: stations in the order the course first visits them (or script.campus). A scene that changes station
+  // gets a ship ride in front of it, unless the script sets "autoTravel": false.
+  const campus = (script.campus || [...new Set(scenes.map(s => s.station).filter(Boolean))]).filter(id => STATIONS[id]);
+  const stops = campus.map(id => ({ id, name: stationName(id) }));
+  const timeline = [];
+  scenes.forEach((sc, i) => {
+    const prev = scenes[i - 1];
+    if (script.autoTravel !== false && prev?.station && sc.station && prev.station !== sc.station) {
+      const known = stops.some(p => p.id === prev.station) && stops.some(p => p.id === sc.station);
+      timeline.push({ id: `travel-${i}`, travel: { from: prev.station, to: sc.station }, stops: known ? stops : [...stops, ...[prev.station, sc.station].filter(id => !stops.some(p => p.id === id)).map(id => ({ id, name: stationName(id) }))] });
+    }
+    timeline.push(sc);
+  });
+
   const rendered = [];
-  for (const [i, scene] of scenes.entries()) {
-    onProgress?.({ step: `Rendering scene ${i + 1} of ${scenes.length}`, done: i, total: scenes.length });
-    rendered.push(await renderScene(scene, { cacheRoot, voice, fx, fps }));
+  for (const [i, item] of timeline.entries()) {
+    onProgress?.({ step: item.travel ? `Rendering ship ride ${i + 1} of ${timeline.length}` : `Rendering scene ${i + 1} of ${timeline.length}`, done: i, total: timeline.length });
+    rendered.push(item.travel ? await renderTravel(item, { cacheRoot, fps }) : await renderScene(item, { cacheRoot, voice, fx, fps }));
   }
 
   let cursor = 0;
   const cues = [], chapters = [], checkpoints = [];
   rendered.forEach((r, i) => {
-    const s = scenes[i];
-    chapters.push({ index: i, id: s.id, title: s.slide?.title || `Scene ${i + 1}`, layout: s.slide?.layout || 'bullets', start: +cursor.toFixed(2), end: +(cursor + r.dur).toFixed(2) });
+    const s = timeline[i];
+    if (s.travel) { cursor += r.total; return; }
+    chapters.push({ index: chapters.length, id: s.id, title: s.slide?.title || `Scene ${chapters.length + 1}`, layout: s.slide?.layout || 'bullets', station: s.station || null, start: +cursor.toFixed(2), end: +(cursor + r.dur).toFixed(2) });
     r.cues.forEach(c => cues.push({ start: cursor + c.start, end: cursor + c.end, text: c.text }));
     if (s.slide?.layout === 'quiz') {
       const q = s.slide.quiz, sc = { ...s, parts: r.parts }, opts = q.options.map((text, k) => ({ text, at: q.optionsAt?.[k] }));
@@ -150,11 +198,11 @@ export async function buildVideo(script, outDir, { cacheRoot = join(outDir, '..'
   writeFileSync(join(outDir, 'captions.vtt'), 'WEBVTT\n\n' + cues.map(c => `${stamp(c.start, '.')} --> ${stamp(c.end, '.')}\n${c.text}\n`).join('\n'));
   const fresh = rendered.filter(r => !r.cached);
   const timings = {
-    videoSeconds: +cursor.toFixed(1), voice, fx, fps, scenes: scenes.length, reusedScenes: rendered.length - fresh.length, renderedScenes: fresh.length,
+    videoSeconds: +cursor.toFixed(1), voice, fx, fps, scenes: scenes.length, shipRides: timeline.length - scenes.length, reusedScenes: rendered.length - fresh.length, renderedScenes: fresh.length,
     voiceSeconds: +fresh.reduce((n, r) => n + r.stats.voiceSeconds, 0).toFixed(1), frameSeconds: +fresh.reduce((n, r) => n + r.stats.frameSeconds, 0).toFixed(1), encodeSeconds: +fresh.reduce((n, r) => n + r.stats.encodeSeconds, 0).toFixed(1),
   };
   const meta = { title: script.title, duration: +cursor.toFixed(1), chapters, checkpoints, timings };
   writeFileSync(join(outDir, 'chapters.json'), JSON.stringify(meta, null, 2));
-  onProgress?.({ step: 'Done', done: scenes.length, total: scenes.length });
+  onProgress?.({ step: 'Done', done: timeline.length, total: timeline.length });
   return meta;
 }

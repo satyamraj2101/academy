@@ -2,6 +2,7 @@
 // proposes: nothing is saved or rendered until a person accepts. Every proposal is validated so a bad reply can
 // never produce a scene the renderer cannot draw.
 import { complete } from '../ai.mjs';
+import { STATIONS } from './stations.mjs';
 
 export const LAYOUTS = ['hook', 'bullets', 'steps', 'compare', 'quiz', 'recap'];
 export const GESTURES = ['point', 'raise', 'present'];
@@ -11,6 +12,7 @@ export const NOTE_KINDS = ['wording', 'visual', 'timing', 'quiz', 'other'];
 const SHAPE = `A scene is JSON:
 { "id": "<keep unchanged>", "gesture": "point|raise|present",
   "narration": "text shown as captions", "spoken": "text read aloud (write CLM as 'C L M'; use '||' only in quiz scenes)",
+  "station": "frontdesk|hub|draft|review|approve|sign|track|checkpoint" (the place behind Soomy; changing it adds a ship ride),
   "thinkSeconds": <quiz only>,
   "sfx": [{"sound": "happy|curious|oops|celebrate|notice|nudge", "at": "phrase in spoken"}]  (Indoo, the mop-bot, chirps and reacts),
   "slide": { "layout": "hook|bullets|steps|compare|quiz|recap", "title": "...",
@@ -22,7 +24,8 @@ Any bullet, step, compare item or takeaway may carry "highlight": true, or "high
 Every "at" / "subAt" / "answerAt" / "nextAt" must be a short phrase that appears word-for-word in "spoken" (case-insensitive); it is the moment that item appears on screen.`;
 
 export function sceneForTime(chapters, time) {
-  return chapters.find(c => time >= c.start && time < c.end + 0.5) || chapters[chapters.length - 1];
+  // A time during a ship ride belongs to the scene before it.
+  return chapters.filter(c => c.start <= time).pop() || chapters[0];
 }
 
 // Returns { scene, problems[] }: the scene made safe to render, plus anything we had to drop or could not accept.
@@ -30,6 +33,7 @@ export function validateScene(next, original) {
   const problems = [];
   if (!next || typeof next !== 'object') return { scene: null, problems: ['reply was not a scene object'] };
   const scene = { ...next, id: original.id };
+  if (scene.station && !STATIONS[scene.station]) { problems.push(`unknown station "${scene.station}", kept the original`); scene.station = original.station; }
   const said = String(scene.spoken || scene.narration || '').toLowerCase();
   if (!String(scene.narration || '').trim()) problems.push('narration is empty');
   if (!scene.slide || !LAYOUTS.includes(scene.slide.layout)) problems.push(`layout must be one of ${LAYOUTS.join(', ')}`);

@@ -2,6 +2,7 @@
 // words it should appear on (`at`), so visuals land when the narrator says them instead of at fixed times.
 import { robot, indooEye } from './robot.mjs';
 import { lockup } from './brand.mjs';
+import { stationSvg } from './stations.mjs';
 
 export const W = 1280;
 export const H = 720;
@@ -241,6 +242,7 @@ export function frameSvg(scene, lt, dur, wave) {
   const spot = spotlight(scene, lt, dur, scene.events || []);
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="Inter">
   <rect width="${W}" height="${H}" fill="#F1F5F9"/>
+  ${scene.station ? stationSvg(scene.station) : ''}
   ${robot(lt, wave, scene.gesture, scene.events || [], spot)}
   <rect x="400" y="50" width="840" height="530" rx="26" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2"/>
   ${spot.beam}
