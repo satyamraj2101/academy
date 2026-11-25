@@ -11,8 +11,9 @@ import { synth, wavBuffer } from './tts.mjs';
 import { frameSvg, W, itemTimes, timeOf } from './scene.mjs';
 import { WAVE_POINTS } from './robot.mjs';
 import { voiceFilter } from './voicefx.mjs';
+import { sceneEvents, placeEvents, mixSfx } from './sfx.mjs';
 
-export const RENDER_VERSION = 6; // bump when visuals or audio processing change, so stale cache is not reused
+export const RENDER_VERSION = 10; // bump when visuals or audio processing change, so stale cache is not reused
 export const GAP = 0.5; // seconds of silence after each scene
 const FONT_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'assets', 'fonts');
 const FONT_FILES = ['400Regular', '600SemiBold', '700Bold', '800ExtraBold'].map(w => join(FONT_DIR, `Inter_${w}.ttf`));
@@ -64,17 +65,21 @@ export async function renderScene(scene, { cacheRoot, voice, fx, fps }) {
   let o = 0;
   for (const c of chunks) { audio.set(c, o); o += c.length; }
   normalise(audio);
+  const withParts = { ...scene, parts: texts.length > 1 ? parts : undefined };
+  const voiceOnly = Float32Array.from(audio); // Soomy's visor draws his voice only, never Indoo's chirps
+  const events = placeEvents(sceneEvents(withParts, dur), voiceOnly); // chirps wait for a pause so they never talk over him
+  mixSfx(audio, events); // chirps go in after levelling so they stay well under the voice
+  withParts.events = events;
   writeFileSync(join(dir, 'audio.wav'), wavBuffer(audio, rate));
   stats.voiceSeconds = (Date.now() - t0) / 1000;
 
   // Frames: the waveform drawn on the robot's visor is a real slice of this scene's audio.
   t0 = Date.now();
-  const withParts = { ...scene, parts: texts.length > 1 ? parts : undefined };
   const frames = Math.ceil(total * fps), WN = 1100, peak = 0.5;
   for (let f = 0; f < frames; f++) {
     const lt = f / fps, c = Math.round(lt * rate), a = c - WN / 2;
     const wave = new Float32Array(WAVE_POINTS);
-    for (let i = 0; i < WAVE_POINTS; i++) { const idx = Math.round(a + (i * (WN - 1)) / (WAVE_POINTS - 1)); wave[i] = idx >= 0 && idx < audio.length ? Math.max(-1, Math.min(1, audio[idx] / peak)) : 0; }
+    for (let i = 0; i < WAVE_POINTS; i++) { const idx = Math.round(a + (i * (WN - 1)) / (WAVE_POINTS - 1)); wave[i] = idx >= 0 && idx < voiceOnly.length ? Math.max(-1, Math.min(1, voiceOnly[idx] / peak)) : 0; }
     const svg = frameSvg(withParts, lt, dur, wave);
     const png = new Resvg(svg, { fitTo: { mode: 'width', value: W }, font: { fontFiles: FONT_FILES, loadSystemFonts: false, defaultFontFamily: 'Inter' } }).render().asPng();
     writeFileSync(join(dir, 'frames', `${String(f).padStart(5, '0')}.png`), png);
@@ -105,7 +110,7 @@ export async function renderScene(scene, { cacheRoot, voice, fx, fps }) {
   stats.encodeSeconds = (Date.now() - t0) / 1000;
   rmSync(join(dir, 'frames'), { recursive: true, force: true });
 
-  const meta = { dur, total, parts: withParts.parts, cues, stats };
+  const meta = { dur, total, parts: withParts.parts, cues, events, stats };
   writeFileSync(metaPath, JSON.stringify(meta));
   return { ...meta, dir, key, cached: false };
 }

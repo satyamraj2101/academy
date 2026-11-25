@@ -5,12 +5,14 @@ import { complete } from '../ai.mjs';
 
 export const LAYOUTS = ['hook', 'bullets', 'steps', 'compare', 'quiz', 'recap'];
 export const GESTURES = ['point', 'raise', 'present'];
+export const SFX = ['happy', 'curious', 'oops', 'celebrate', 'notice', 'nudge'];
 export const NOTE_KINDS = ['wording', 'visual', 'timing', 'quiz', 'other'];
 
 const SHAPE = `A scene is JSON:
 { "id": "<keep unchanged>", "gesture": "point|raise|present",
   "narration": "text shown as captions", "spoken": "text read aloud (write CLM as 'C L M'; use '||' only in quiz scenes)",
   "thinkSeconds": <quiz only>,
+  "sfx": [{"sound": "happy|curious|oops|celebrate|notice|nudge", "at": "phrase in spoken"}]  (Indoo, the mop-bot, chirps and reacts),
   "slide": { "layout": "hook|bullets|steps|compare|quiz|recap", "title": "...",
     hook: "kicker","subtitle","subAt";  bullets: "bullets":[{"text","at"}];  steps: "steps":[{"text","desc","at"}];
     compare: "compare":{"left":{"title","items":[{"text","at"}]},"right":{...}};
@@ -36,6 +38,11 @@ export function validateScene(next, original) {
   const fixAt = (obj, key, label) => {
     if (obj && obj[key] && !said.includes(String(obj[key]).toLowerCase())) { problems.push(`"${obj[key]}" is not in the spoken text, so the ${label} will appear at a default time`); delete obj[key]; }
   };
+  if (Array.isArray(scene.sfx)) {
+    scene.sfx = scene.sfx.filter(e => e && SFX.includes(e.sound));
+    scene.sfx.forEach(e => fixAt(e, 'at', 'chirp'));
+    scene.sfx = scene.sfx.filter(e => e.at || Number.isFinite(Number(e.time)));
+  }
   const s = scene.slide;
   fixAt(s, 'subAt', 'subtitle'); fixAt(s, 'nextAt', 'next button');
   for (const list of [s.bullets, s.steps, s.takeaways, s.compare?.left?.items, s.compare?.right?.items]) (list || []).forEach(it => typeof it === 'object' && fixAt(it, 'at', 'item'));

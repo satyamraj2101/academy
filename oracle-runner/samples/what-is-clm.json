@@ -12,7 +12,17 @@
         "title": "What is CLM?",
         "subtitle": "Contract Lifecycle Management",
         "subAt": "welcome to contract lifecycle"
-      }
+      },
+      "sfx": [
+        {
+          "sound": "curious",
+          "at": "live right now"
+        },
+        {
+          "sound": "happy",
+          "at": "or c l m"
+        }
+      ]
     },
     {
       "id": "definition",
@@ -36,7 +46,13 @@
             "at": "key dates"
           }
         ]
-      }
+      },
+      "sfx": [
+        {
+          "sound": "nudge",
+          "at": "scattered everywhere"
+        }
+      ]
     },
     {
       "id": "lifecycle",
@@ -78,7 +94,13 @@
             "desc": "Key dates and duties are watched, then the contract is renewed or closed."
           }
         ]
-      }
+      },
+      "sfx": [
+        {
+          "sound": "notice",
+          "at": "signing is not the end"
+        }
+      ]
     },
     {
       "id": "why",
@@ -124,7 +146,17 @@
             ]
           }
         }
-      }
+      },
+      "sfx": [
+        {
+          "sound": "oops",
+          "at": "version is final"
+        },
+        {
+          "sound": "happy",
+          "at": "before key dates"
+        }
+      ]
     },
     {
       "id": "check",
@@ -150,7 +182,13 @@
           "answer": 1,
           "answerAt": "the answer is b"
         }
-      }
+      },
+      "sfx": [
+        {
+          "sound": "curious",
+          "at": "think about it"
+        }
+      ]
     },
     {
       "id": "recap",
@@ -176,7 +214,13 @@
         ],
         "next": "create your first contract",
         "nextAt": "in the next lesson"
-      }
+      },
+      "sfx": [
+        {
+          "sound": "celebrate",
+          "at": "in the next lesson"
+        }
+      ]
     }
   ]
 }

@@ -1,16 +1,16 @@
-// CLEM, the SpotCLM instructor robot, and SWISH, his mop-bot sidekick who follows him everywhere.
+// SOOMY, the SpotCLM instructor robot, and INDOO, her mop-bot sidekick (she) who follows him everywhere.
 //
-// Clem is a friendly full-body robot in white and navy with a glass visor that draws the REAL audio waveform
+// Soomy is a friendly full-body robot in white and navy with a glass visor that draws the REAL audio waveform
 // (so there is nothing to lip-sync), the SpotCLM logo on a chest panel, a tablet in one hand and a telescopic
 // pointer in the other. He breathes, tilts his head, nods while speaking and gestures by scene.
-// Swish is a small round mop robot with a fringe of mop strands, two LED eyes that look up at Clem, and a happy
-// wiggle when Clem talks. Names are working names and live in one place (NAMES) so they are easy to change.
-import { lockup, cometMark } from './brand.mjs';
+// Indoo is a small, curious, cheeky mop robot: shaking legs, a fringe of mop strands, big glossy LED eyes and a chirp
+// for every mood. She reacts to each sound with her eyes and body. Names are working names and live in one place (NAMES) so they are easy to change.
+import { lockup } from './brand.mjs';
 
 export const WAVE_POINTS = 48;
-export const NAMES = { instructor: 'Clem', companion: 'Swish' };
+export const NAMES = { instructor: 'Soomy', companion: 'Indoo' }; // Indoo is a she
 
-const CX = 160; // Clem's centre line
+const CX = 160; // Soomy's centre line
 const SH = { left: [CX - 76, 316], right: [CX + 76, 316] }; // shoulders
 
 // Two-bone arm: where does the elbow go so the hand reaches (tx, ty)? `bend` picks which way the elbow points.
@@ -43,6 +43,7 @@ const DEFS = `<defs>
   <linearGradient id="visor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14213D"/><stop offset="1" stop-color="#070D1C"/></linearGradient>
   <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#12326F"/><stop offset="1" stop-color="#0A1A3F"/></linearGradient>
   <linearGradient id="sw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#C5DCF3"/></linearGradient>
+  <radialGradient id="iris" cx="0.45" cy="0.4" r="0.7"><stop offset="0" stop-color="#E9FAFF"/><stop offset="0.45" stop-color="#8FE3FF"/><stop offset="1" stop-color="#2A8FE0"/></radialGradient>
   <radialGradient id="orb" cx="0.4" cy="0.35" r="0.7"><stop offset="0" stop-color="#E9FAFF"/><stop offset="1" stop-color="#2A9BDA"/></radialGradient>
 </defs>`;
 
@@ -112,37 +113,87 @@ function clem(t, wave, gesture, amp) {
   </g>`;
 }
 
-function swish(t, amp, sx) {
-  const hop = -Math.abs(Math.sin(t * 6)) * amp * 3;
-  const x = sx + Math.sin(t * 0.9) * 7, tilt = Math.sin(t * 0.9 + 1) * 2.2;
-  const blink = t % 4.3 < 0.14 ? 0.12 : 1;
-  const look = -2.5 + Math.sin(t * 0.9) * 0.8;
-  const strands = Array.from({ length: 9 }, (_, i) => {
+// What Indoo is reacting to right now (the latest chirp within the last 1.3 s), or null.
+function reaction(events, t) {
+  let best = null;
+  for (const e of events) {
+    const age = t - e.t;
+    if (age >= 0 && age < 1.3 && (!best || e.t > best.t)) best = { type: e.sound, age, k: Math.max(0, 1 - age / 1.3), t: e.t };
+  }
+  return best;
+}
+
+const star = (x, y, r, o) => `<path d="M${x} ${y - r} Q${x} ${y} ${x + r} ${y} Q${x} ${y} ${x} ${y + r} Q${x} ${y} ${x - r} ${y} Q${x} ${y} ${x} ${y - r}Z" fill="#E9FAFF" fill-opacity="${o.toFixed(2)}"/>`;
+
+// Indoo: small, curious and a little cheeky. She wanders near Soomy's feet, her stubby legs never quite stop shaking,
+// her eyes follow things and react to every chirp, and she winks now and then.
+function indoo(t, amp, baseX, events) {
+  const rx = reaction(events, t);
+  const px = baseX + Math.sin(t * 0.55) * 44 + Math.sin(t * 1.5) * 6;
+  const vx = Math.cos(t * 0.55) * 44 * 0.55 + Math.cos(t * 1.5) * 6 * 1.5;
+  const lean = Math.max(-4, Math.min(4, vx * 0.06));
+  const excite = 0.45 + amp * 0.9 + (rx ? rx.k * 0.9 : 0);
+  let hop = -Math.abs(Math.sin(t * 6.5)) * amp * 3;
+  if (rx && rx.type === 'celebrate') hop -= Math.abs(Math.sin(rx.age * 11)) * 18 * rx.k;
+  if (rx && rx.type === 'happy') hop -= Math.abs(Math.sin(rx.age * 10)) * 7 * rx.k;
+  const squash = rx && rx.type === 'oops' ? 1 - 0.07 * rx.k : 1;
+  const tilt = (rx && rx.type === 'curious' ? 7 * rx.k : 0) + Math.sin(t * 1.2) * 2;
+
+  const look = Math.sin(t * 0.7) * 3 + (rx && rx.type === 'curious' ? 3 * rx.k : 0);
+  const big = rx && (rx.type === 'curious' || rx.type === 'notice') ? 1 + 0.22 * rx.k : 1;
+  const blink = t % 4.3 < 0.13 ? 0.1 : 1;
+  const wink = t % 7.4 < 0.55;
+  const joy = !!(rx && (rx.type === 'happy' || rx.type === 'celebrate') && rx.age < 0.95);
+  const eye = (cx, closed, side) => {
+    if (joy) return `<path d="M${cx - 8} -45 q8 -11 16 0" fill="none" stroke="#8FE3FF" stroke-width="3.2" stroke-linecap="round"/>`;
+    if (closed) return `<path d="M${cx - 8} -48 q8 7 16 0" fill="none" stroke="#8FE3FF" stroke-width="3" stroke-linecap="round"/>`;
+    const ry = 9.5 * big * blink, rxx = 8.5 * big;
+    const lid = rx && rx.type === 'oops' ? `<path d="M${cx - rxx - 1} ${-48 - ry} h${2 * rxx + 2} v${ry * 0.95} h${-(2 * rxx + 2)}z" fill="#070D1C"/>` : '';
+    return `<ellipse cx="${cx}" cy="-48" rx="${rxx.toFixed(1)}" ry="${ry.toFixed(1)}" fill="url(#iris)"/>
+      <circle cx="${cx - 2.6}" cy="-51.5" r="${(2.7 * blink).toFixed(1)}" fill="#FFFFFF"/><circle cx="${cx + 3}" cy="-44" r="${(1.4 * blink).toFixed(1)}" fill="#FFFFFF" fill-opacity="0.8"/>${lid}
+      <path d="M${cx + side * 8} -56 q${side * 5} -3 ${side * 8} 2 M${cx + side * 6} -59 q${side * 4} -4 ${side * 8} -1" fill="none" stroke="#8FE3FF" stroke-width="1.7" stroke-linecap="round"/>`;
+  };
+  const ringOn = rx && rx.type === 'notice' ? rx.k : 0;
+
+  const legs = [-40, -14, 14, 40].map((x, i) => {
+    const sh = Math.sin(t * 24 + i * 1.9) * 1.8 * excite, lift = Math.max(0, Math.sin(t * 10 + i * 1.4)) * 3.5 * excite;
+    return `<line x1="${x}" y1="-30" x2="${(x + sh).toFixed(1)}" y2="${(-4 - lift).toFixed(1)}" stroke="#9FB3CC" stroke-width="8" stroke-linecap="round"/><ellipse cx="${(x + sh).toFixed(1)}" cy="${(-1.5 - lift).toFixed(1)}" rx="9.5" ry="4.5" fill="#0D1F4A"/>`;
+  }).join('');
+  const strands = Array.from({ length: 7 }, (_, i) => {
     const sway = Math.sin(t * 3.2 + i * 0.9) * (3 + amp * 3);
-    return `<rect x="${-50 + i * 12}" y="-22" width="9" height="${18 + (i % 2) * 5}" rx="4.5" fill="${i % 2 ? '#FFFFFF' : '#8FD3F5'}" stroke="#7FB9DD" stroke-width="1" transform="skewX(${sway.toFixed(1)}) translate(${(sway * -0.6).toFixed(1)} 0)"/>`;
+    return `<rect x="${-36 + i * 11}" y="-30" width="8" height="${14 + (i % 2) * 4}" rx="4" fill="${i % 2 ? '#FFFFFF' : '#8FD3F5'}" stroke="#7FB9DD" stroke-width="1" transform="skewX(${sway.toFixed(1)}) translate(${(sway * -0.55).toFixed(1)} 0)"/>`;
   }).join('');
-  const drops = [0, 1, 2].map((k) => {
-    const p = (t * 0.7 + k / 3) % 1;
-    return `<circle cx="${(-30 + k * 30 + Math.sin(p * 6) * 4).toFixed(1)}" cy="${(-74 - p * 26).toFixed(1)}" r="${(3.2 - p * 1.6).toFixed(1)}" fill="#5BC8F5" fill-opacity="${(0.7 * (1 - p)).toFixed(2)}"/>`;
-  }).join('');
-  return `<g transform="translate(${x.toFixed(1)} ${(550 + hop).toFixed(1)}) rotate(${tilt.toFixed(2)}) scale(1.2)">
-    <ellipse cx="0" cy="${(-hop).toFixed(1)}" rx="60" ry="8" fill="#0D1F4A" fill-opacity="0.15" transform="translate(0 0)"/>
-    ${strands}
-    <rect x="-58" y="-66" width="116" height="48" rx="24" fill="url(#sw)" stroke="#9FC3E4" stroke-width="2"/>
-    <rect x="-52" y="-30" width="104" height="7" rx="3.5" fill="#1246A0"/>
-    <path d="M-40 -64 Q0 -92 40 -64 Z" fill="url(#sw)" stroke="#9FC3E4" stroke-width="2"/>
-    <ellipse cx="-14" cy="-76" rx="14" ry="3.5" fill="#FFFFFF" fill-opacity="0.9"/>
-    <rect x="-36" y="-58" width="72" height="26" rx="13" fill="url(#visor)" stroke="#1E3A8A" stroke-width="2"/>
-    <ellipse cx="${(-13 + look).toFixed(1)}" cy="-45" rx="6.5" ry="${(7 * blink).toFixed(1)}" fill="#8FE3FF"/><ellipse cx="${(13 + look).toFixed(1)}" cy="-45" rx="6.5" ry="${(7 * blink).toFixed(1)}" fill="#8FE3FF"/>
-    ${cometMark(0, -84, 7, { dark: false, id: 'cmSwish' })}
-    ${drops}
+  const dots = rx && rx.type === 'celebrate' ? Array.from({ length: 9 }, (_, i) => {
+    const a = rx.age, x = Math.sin(i * 2.3) * (14 + a * 70), y = -96 - a * 60 + a * a * 70;
+    return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="${['#5BC8F5', '#FBBF24', '#2563EB', '#FFFFFF', '#F472B6'][i % 5]}" fill-opacity="${Math.max(0, 1 - a / 1.2).toFixed(2)}"/>`;
+  }).join('') : '';
+  const sparkles = rx && rx.type === 'notice' ? star(-34, -84, 7 * rx.k + 2, rx.k) + star(36, -92, 5 * rx.k + 1, rx.k) : '';
+  const drop = rx && rx.type === 'oops' ? `<path d="M34 -86 q6 9 0 13 q-6 -4 0 -13z" fill="#7DD3FC" fill-opacity="${rx.k.toFixed(2)}" transform="translate(0 ${(rx.age * 14).toFixed(1)})"/>` : '';
+  const wiggle = rx && rx.type === 'nudge' ? Math.sin(rx.age * 40) * 3 * rx.k : 0;
+
+  return `<g transform="translate(${(px + wiggle).toFixed(1)} ${(556 + hop).toFixed(1)}) rotate(${lean.toFixed(2)}) scale(1.15 ${(1.15 * squash).toFixed(3)})">
+    <ellipse cx="0" cy="${(-hop / 1.15).toFixed(1)}" rx="62" ry="8" fill="#0D1F4A" fill-opacity="0.15"/>
+    ${strands}${legs}
+    <rect x="-56" y="-70" width="112" height="44" rx="22" fill="url(#sw)" stroke="#9FC3E4" stroke-width="2"/>
+    <rect x="-50" y="-36" width="100" height="6" rx="3" fill="#1246A0"/>
+    <g transform="rotate(${tilt.toFixed(2)} 0 -60)">
+      <path d="M-40 -68 Q0 -98 40 -68 Z" fill="url(#sw)" stroke="#9FC3E4" stroke-width="2"/>
+      <ellipse cx="-14" cy="-80" rx="14" ry="3.5" fill="#FFFFFF" fill-opacity="0.9"/>
+      <line x1="-14" y1="-90" x2="-20" y2="-104" stroke="#9FB3CC" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="-20" cy="-108" r="${(8 + amp * 3).toFixed(1)}" fill="#5BC8F5" fill-opacity="0.25"/><circle cx="-20" cy="-108" r="5.5" fill="url(#orb)"/>
+      <path d="M16 -90 l-9 -7 v14z M16 -90 l9 -7 v14z" fill="#5BC8F5" stroke="#2A8FE0" stroke-width="1.2" stroke-linejoin="round"/><circle cx="16" cy="-90" r="3.4" fill="#1460C8"/>
+      <rect x="-40" y="-66" width="80" height="36" rx="18" fill="url(#visor)" stroke="${ringOn ? '#8FE3FF' : '#1E3A8A'}" stroke-width="${(2 + ringOn * 2).toFixed(1)}"/>
+      ${eye(-16 + look, false, -1)}${eye(16 + look, wink && !joy, 1)}
+      <ellipse cx="-31" cy="-38" rx="5" ry="3" fill="#FF9EB5" fill-opacity="0.35"/><ellipse cx="31" cy="-38" rx="5" ry="3" fill="#FF9EB5" fill-opacity="0.35"/>
+    </g>
+    ${sparkles}${drop}${dots}
   </g>`;
 }
 
 // wave: Float32Array(WAVE_POINTS), -1..1. t: seconds into the scene.
-export function robot(t, wave, gesture = 'point') {
+export function robot(t, wave, gesture = 'point', events = []) {
   let sum = 0;
   for (const v of wave) sum += v * v;
   const amp = Math.min(1, Math.sqrt(sum / wave.length) * 1.6);
-  return `${DEFS}${swish(t, amp, CX + 138)}${clem(t, wave, gesture, amp)}`;
+  return `${DEFS}${clem(t, wave, gesture, amp)}${indoo(t, amp, CX + 118, events)}`;
 }

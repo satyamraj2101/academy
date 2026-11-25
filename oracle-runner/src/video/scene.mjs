@@ -181,7 +181,7 @@ export function frameSvg(scene, lt, dur, wave) {
   const e = ease(lt / 0.35);
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="Inter">
   <rect width="${W}" height="${H}" fill="#F1F5F9"/>
-  ${robot(lt, wave, scene.gesture)}
+  ${robot(lt, wave, scene.gesture, scene.events || [])}
   <rect x="400" y="50" width="840" height="530" rx="26" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2"/>
   <g opacity="${e.toFixed(2)}" transform="translate(${((1 - e) * 30).toFixed(1)} 0)">${layout(scene, lt, dur)}</g>
   ${lockup(40, 664, 0.36, { id: 'lkFoot' })}<text x="138" y="684" font-size="17" font-weight="600" fill="#64748B">Academy</text>

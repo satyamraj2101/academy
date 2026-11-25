@@ -7,8 +7,8 @@ const DTYPE = process.env.KOKORO_DTYPE || 'q8';
 let model;
 const load = () => (model ??= KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', { dtype: DTYPE, device: 'cpu' }));
 
-// Kokoro handles a few hundred tokens per call, so split long narration on sentence ends.
-export function chunkText(text, max = 280) {
+// Voice each sentence (or two short ones) on its own: better prosody, and a real pause between them for Indoo to chirp in.
+export function chunkText(text, max = 90) {
   const sentences = text.replace(/\s+/g, ' ').trim().match(/[^.!?]+[.!?]+(\s|$)|[^.!?]+$/g) || [text];
   const chunks = [];
   let cur = '';
@@ -29,7 +29,7 @@ export async function synth(text, { voice = 'bf_emma', speed = 1 } = {}) {
     const a = await tts.generate(chunk, { voice, speed });
     rate = a.sampling_rate;
     parts.push(a.audio);
-    parts.push(new Float32Array(Math.round(rate * 0.12))); // short breath between sentences
+    parts.push(new Float32Array(Math.round(rate * 0.28))); // a natural breath between sentences (also gives Indoo room to chirp)
   }
   const total = parts.reduce((n, p) => n + p.length, 0);
   const samples = new Float32Array(total);
