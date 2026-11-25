@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpotCLM Video Studio</title>
+<style>
+  :root { --blue:#2563eb; --ink:#0f172a; --mute:#64748b; --line:#e2e8f0; --bg:#f1f5f9; --card:#fff; --ok:#16a34a; --bad:#dc2626; --warn:#b45309; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--ink); background:var(--bg); }
+  header { display:flex; align-items:center; gap:12px; padding:12px 20px; background:var(--card); border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  header h1 { font-size:17px; margin:0; font-weight:600; }
+  header .sp { flex:1; }
+  select, button, input, textarea { font:inherit; }
+  select, textarea, input[type=text] { border:1px solid var(--line); border-radius:8px; padding:7px 10px; background:#fff; color:var(--ink); }
+  button { border:1px solid var(--line); background:#fff; border-radius:8px; padding:7px 14px; cursor:pointer; color:var(--ink); }
+  button:hover { background:#f8fafc; }
+  button.primary { background:var(--blue); border-color:var(--blue); color:#fff; }
+  button.primary:hover { background:#1d4ed8; }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  main { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(320px,1fr); gap:16px; padding:16px 20px; max-width:1500px; margin:0 auto; }
+  @media (max-width:980px) { main { grid-template-columns:1fr; } }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+  .card h2 { font-size:14px; margin:0 0 10px; font-weight:600; color:var(--mute); }
+  .stage { position:relative; background:#0f172a; border-radius:12px; overflow:hidden; aspect-ratio:16/9; }
+  .stage video { width:100%; height:100%; display:block; background:#0f172a; }
+  .overlay { position:absolute; inset:0; background:rgba(15,23,42,.82); display:flex; align-items:center; justify-content:center; padding:20px; }
+  .overlay .box { background:#fff; border-radius:16px; padding:22px 24px; width:min(560px,100%); }
+  .overlay h3 { margin:0 0 4px; font-size:13px; color:var(--blue); text-transform:none; font-weight:600; }
+  .overlay p.q { margin:0 0 14px; font-size:18px; font-weight:600; }
+  .opt { display:flex; width:100%; gap:12px; align-items:center; text-align:left; margin:8px 0; padding:12px 14px; border-radius:12px; border:2px solid var(--line); background:#fff; font-size:16px; }
+  .opt b { width:28px; height:28px; border-radius:50%; background:var(--blue); color:#fff; display:inline-flex; align-items:center; justify-content:center; flex:none; font-size:14px; }
+  .opt.right { border-color:var(--ok); background:#f0fdf4; } .opt.right b { background:var(--ok); }
+  .opt.wrong { border-color:var(--bad); background:#fef2f2; } .opt.wrong b { background:var(--bad); }
+  .fb { margin:12px 0 0; font-size:14px; } .fb.ok { color:var(--ok); } .fb.no { color:var(--bad); }
+  .empty { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; color:#cbd5e1; height:100%; text-align:center; padding:20px; }
+  .chap { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+  .chap button { font-size:13px; padding:5px 10px; }
+  .chap button.on { background:var(--blue); border-color:var(--blue); color:#fff; }
+  .row { display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap; }
+  textarea { width:100%; min-height:64px; resize:vertical; }
+  .note { border:1px solid var(--line); border-radius:10px; padding:9px 11px; margin:8px 0; background:#fff; }
+  .note.applied { background:#f8fafc; color:var(--mute); }
+  .note .meta { display:flex; gap:8px; align-items:center; font-size:12px; color:var(--mute); margin-bottom:3px; flex-wrap:wrap; }
+  .tag { padding:1px 8px; border-radius:99px; background:#dbeafe; color:#1e40af; font-size:12px; }
+  .tag.applied { background:#dcfce7; color:#166534; }
+  a.t { color:var(--blue); cursor:pointer; text-decoration:none; font-variant-numeric:tabular-nums; }
+  .bar { height:8px; border-radius:99px; background:#dbeafe; overflow:hidden; } .bar i { display:block; height:100%; background:var(--blue); transition:width .3s; }
+  .change { border:1px solid var(--line); border-radius:12px; padding:12px; margin:10px 0; }
+  .change h4 { margin:0 0 4px; font-size:14px; }
+  .diff { display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:13px; margin-top:8px; }
+  .diff pre { margin:0; padding:8px; border-radius:8px; white-space:pre-wrap; word-break:break-word; font:12px/1.45 ui-monospace,Menlo,Consolas,monospace; background:#f8fafc; max-height:200px; overflow:auto; }
+  .diff pre.b { background:#fef2f2; } .diff pre.a { background:#f0fdf4; }
+  .warn { color:var(--warn); font-size:13px; margin-top:6px; }
+  .mute { color:var(--mute); font-size:13px; }
+  .err { color:var(--bad); font-size:14px; margin:6px 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>SpotCLM Video Studio</h1>
+  <select id="project" aria-label="Project"></select>
+  <select id="version" aria-label="Version"></select>
+  <span class="sp"></span>
+  <span id="status" class="mute"></span>
+  <button id="renderBtn">Render this version</button>
+</header>
+<main>
+  <section>
+    <div class="stage" id="stage">
+      <video id="video" controls playsinline preload="metadata"></video>
+      <div class="overlay" id="quiz" hidden></div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <h2>Chapters</h2>
+      <div class="chap" id="chapters"></div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <h2>Mark an edit at <span id="at">0:00</span> <span class="mute" id="atScene"></span></h2>
+      <div class="row" style="margin-bottom:8px">
+        <select id="kind" aria-label="What kind of change">
+          <option value="wording">Wording</option><option value="visual">Visual</option><option value="timing">Timing</option><option value="quiz">Quiz</option><option value="other">Other</option>
+        </select>
+        <span class="mute">The video pauses when you start typing, and the note is pinned to that moment.</span>
+      </div>
+      <textarea id="text" placeholder="e.g. Explain this more simply, or show the three steps earlier."></textarea>
+      <div class="row" style="margin-top:8px"><button class="primary" id="addNote">Add note</button><span id="noteErr" class="err"></span></div>
+    </div>
+  </section>
+  <aside>
+    <div class="card">
+      <h2>Notes on this version</h2>
+      <div id="notes"></div>
+      <div class="row" style="margin-top:10px"><button class="primary" id="propose">Propose changes from open notes</button></div>
+      <div id="proposeErr" class="err"></div>
+    </div>
+    <div class="card" id="proposalCard" style="margin-top:12px" hidden>
+      <h2>Proposed changes</h2>
+      <div id="proposal"></div>
+    </div>
+    <div class="card" id="jobCard" style="margin-top:12px" hidden>
+      <h2>Rendering</h2>
+      <div class="bar"><i id="jobBar" style="width:0"></i></div>
+      <p class="mute" id="jobText" style="margin:8px 0 0"></p>
+    </div>
+  </aside>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const token = new URLSearchParams(location.search).get('token') || '';
+const q = token ? `?token=${encodeURIComponent(token)}` : '';
+const api = async (path, opt = {}) => {
+  const r = await fetch(`/api${path}${q}`, { ...opt, headers: { 'Content-Type': 'application/json', ...(opt.headers || {}) }, body: opt.body ? JSON.stringify(opt.body) : undefined });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || `Request failed (${r.status})`);
+  return d;
+};
+const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+let slug = null, P = null, ver = null, answered = {}, lastT = 0, pollTimer = null;
+const video = $('video');
+const cur = () => P.versions.find((v) => v.n === ver);
+const chapters = () => cur()?.chapters?.chapters || [];
+const checkpoints = () => cur()?.chapters?.checkpoints || [];
+const sceneAt = (t) => chapters().find((c) => t >= c.start && t < c.end + 0.5) || chapters().at(-1);
+const answersKey = () => `studio:answers:${slug}:${ver}`;
+
+async function loadProjects() {
+  const list = await api('/projects');
+  $('project').innerHTML = list.map((p) => `<option value="${p.slug}">${esc(p.title)}</option>`).join('');
+  if (list.length) { slug = slug && list.some((p) => p.slug === slug) ? slug : list[0].slug; $('project').value = slug; await load(); }
+}
+async function load(keepVer) {
+  P = await api(`/projects/${slug}`);
+  ver = keepVer && P.versions.some((v) => v.n === keepVer) ? keepVer : P.current;
+  try { answered = JSON.parse(localStorage.getItem(answersKey()) || '{}'); } catch { answered = {}; }
+  draw();
+  poll();
+}
+function draw() {
+  $('version').innerHTML = P.versions.map((v) => `<option value="${v.n}">v${v.n}${v.n === P.current ? ' (current)' : ''}${v.rendered ? '' : ' - not rendered'}</option>`).join('');
+  $('version').value = ver;
+  const v = cur();
+  const wasPlaying = !video.paused;
+  if (v.rendered) {
+    const src = `/media/${slug}/v${ver}/video.mp4${q}`;
+    if (!video.src.endsWith(`/media/${slug}/v${ver}/video.mp4${q}`) && video.getAttribute('data-v') !== `${slug}/${ver}`) { video.src = src; video.setAttribute('data-v', `${slug}/${ver}`); }
+    video.hidden = false;
+  } else { video.hidden = true; video.removeAttribute('src'); video.removeAttribute('data-v'); }
+  document.querySelector('.stage .empty')?.remove();
+  if (!v.rendered) $('stage').insertAdjacentHTML('afterbegin', `<div class="empty"><div>This version has not been rendered yet.</div><div class="mute">Press "Render this version". The first render takes a few minutes.</div></div>`);
+  $('renderBtn').hidden = v.rendered; $('renderBtn').disabled = P.job?.status === 'running';
+  $('chapters').innerHTML = chapters().map((c) => `<button data-t="${c.start}" data-id="${c.id}">${c.index + 1}. ${esc(c.title)}</button>`).join('') || '<span class="mute">Render to see chapters.</span>';
+  drawNotes();
+  drawProposal();
+  drawJob();
+  updateAt();
+}
+function drawNotes() {
+  const notes = P.notes.filter((n) => n.version === ver);
+  const open = notes.filter((n) => n.status === 'open').length;
+  $('notes').innerHTML = notes.length ? notes.map((n) => {
+    const ch = chapters().find((c) => c.id === n.sceneId) || sceneAt(n.time);
+    return `<div class="note ${n.status}"><div class="meta"><a class="t" data-seek="${n.time}">${fmt(n.time)}</a><span class="tag ${n.status === 'applied' ? 'applied' : ''}">${n.status === 'applied' ? `applied in v${n.appliedIn}` : esc(n.kind)}</span><span>${esc(ch?.title || '')}</span><span style="flex:1"></span>${n.status === 'open' ? `<button data-del="${n.id}" style="padding:2px 8px;font-size:12px">Delete</button>` : ''}</div>${esc(n.text)}</div>`;
+  }).join('') : '<p class="mute">No notes yet. Pause the video where something should change and write it below the player.</p>';
+  $('propose').disabled = !(ver === P.current && open > 0 && cur().rendered) || P.job?.status === 'running';
+  $('propose').textContent = open ? `Propose changes from ${open} open note${open > 1 ? 's' : ''}` : 'Propose changes from open notes';
+}
+function lines(o) { return JSON.stringify(o, null, 2).split('\n'); }
+function drawProposal() {
+  const p = P.proposal;
+  $('proposalCard').hidden = !p || p.baseVersion !== P.current;
+  if ($('proposalCard').hidden) return;
+  const ch = (id) => chapters().find((c) => c.id === id);
+  $('proposal').innerHTML = p.changes.map((c) => {
+    const a = new Set(lines(c.after)), b = new Set(lines(c.before));
+    const removed = lines(c.before).filter((l) => !a.has(l)).join('\n'), added = lines(c.after).filter((l) => !b.has(l)).join('\n');
+    return `<div class="change"><label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" checked data-pick="${c.sceneId}"><span><h4>${esc(ch(c.sceneId)?.title || c.sceneId)}</h4><div>${esc(c.summary || '')}</div></span></label>
+      <div class="diff"><pre class="b">${esc(removed || '(nothing removed)')}</pre><pre class="a">${esc(added || '(nothing added)')}</pre></div>
+      ${c.warnings?.length ? `<div class="warn">Adjusted: ${esc(c.warnings.join('; '))}</div>` : ''}${c.unapplied?.length ? `<div class="warn">Not applied: ${esc(c.unapplied.join('; '))}</div>` : ''}</div>`;
+  }).join('') + (p.skipped.length ? p.skipped.map((s) => `<div class="warn">Skipped ${esc(ch(s.sceneId)?.title || s.sceneId)}: ${esc(s.reason)}</div>`).join('') : '')
+    + `<div class="row" style="margin-top:10px">${p.changes.length ? '<button class="primary" id="accept">Accept selected and render</button>' : ''}<button id="discard">Discard</button></div><p class="mute">Only the changed scenes are re-rendered; every other scene is reused.</p>`;
+}
+function drawJob() {
+  const j = P.job, show = j && (j.status === 'running' || j.status === 'failed' || (j.status === 'done' && j.version === ver));
+  $('jobCard').hidden = !show;
+  if (!show) return;
+  $('jobBar').style.width = `${j.status === 'done' ? 100 : Math.round((j.done / Math.max(1, j.total)) * 100)}%`;
+  $('jobText').innerHTML = j.status === 'failed' ? `<span class="err">Render failed: ${esc(j.error)}</span>` : esc(j.step);
+  $('status').textContent = j.status === 'running' ? `Rendering v${j.version}...` : '';
+}
+function poll() {
+  clearInterval(pollTimer);
+  if (P.job?.status !== 'running') return;
+  pollTimer = setInterval(async () => {
+    const fresh = await api(`/projects/${slug}`).catch(() => null);
+    if (!fresh) return;
+    const was = P.job?.status;
+    P = fresh;
+    if (fresh.job?.status !== 'running') { clearInterval(pollTimer); await load(ver); } else drawJob();
+  }, 1000);
+}
+function updateAt() {
+  $('at').textContent = fmt(video.currentTime || 0);
+  $('atScene').textContent = chapters().length ? `· ${sceneAt(video.currentTime || 0)?.title || ''}` : '';
+  document.querySelectorAll('#chapters button').forEach((b) => b.classList.toggle('on', b.dataset.id === sceneAt(video.currentTime || 0)?.id));
+}
+
+// Quiz checkpoints: pause when playback naturally crosses the pause time, ask, then continue.
+setInterval(() => {
+  const t = video.currentTime;
+  if (!video.paused && !video.seeking) {
+    for (const cp of checkpoints()) {
+      if (lastT < cp.pauseAt && t >= cp.pauseAt && t - cp.pauseAt < 1.5 && !answered[cp.sceneId]) { video.pause(); showQuiz(cp); break; }
+    }
+  }
+  lastT = t; updateAt();
+}, 150);
+function showQuiz(cp) {
+  const box = $('quiz');
+  box.hidden = false;
+  box.innerHTML = `<div class="box"><h3>Quick check</h3><p class="q">${esc(cp.question)}</p>${cp.options.map((o, i) => `<button class="opt" data-i="${i}"><b>${'ABC'[i]}</b>${esc(o)}</button>`).join('')}<div id="fb"></div></div>`;
+  box.onclick = (e) => {
+    const b = e.target.closest('.opt');
+    if (!b || box.querySelector('.right')) return;
+    const i = Number(b.dataset.i), ok = i === cp.answer;
+    b.classList.add(ok ? 'right' : 'wrong');
+    box.querySelectorAll('.opt')[cp.answer].classList.add('right');
+    answered[cp.sceneId] = { choice: i, correct: ok, at: new Date().toISOString() };
+    try { localStorage.setItem(answersKey(), JSON.stringify(answered)); } catch {}
+    $('fb').innerHTML = `<p class="fb ${ok ? 'ok' : 'no'}">${ok ? 'Correct.' : 'Not quite. The answer is highlighted.'} ${cp.explanation ? esc(cp.explanation) : ''}</p><button class="primary" id="cont">Continue</button>`;
+    $('cont').onclick = () => { box.hidden = true; video.play(); };
+  };
+}
+
+$('project').onchange = (e) => { slug = e.target.value; load(); };
+$('version').onchange = (e) => { ver = Number(e.target.value); video.pause(); draw(); };
+$('renderBtn').onclick = async () => { try { await api(`/projects/${slug}/render`, { method: 'POST', body: { version: ver } }); await load(ver); } catch (e) { $('status').textContent = e.message; } };
+$('chapters').onclick = (e) => { const b = e.target.closest('button'); if (b) { video.currentTime = Number(b.dataset.t); video.play(); } };
+$('notes').onclick = async (e) => {
+  const s = e.target.closest('[data-seek]'); if (s) { video.currentTime = Number(s.dataset.seek); return; }
+  const d = e.target.closest('[data-del]'); if (d) { await api(`/projects/${slug}/notes/${d.dataset.del}`, { method: 'DELETE' }); await load(ver); }
+};
+$('text').addEventListener('focus', () => { video.pause(); updateAt(); });
+$('addNote').onclick = async () => {
+  $('noteErr').textContent = '';
+  const text = $('text').value.trim();
+  if (!text) { $('noteErr').textContent = 'Write what should change first.'; return; }
+  if (!cur().rendered) { $('noteErr').textContent = 'Render this version first, then mark notes on the video.'; return; }
+  try { await api(`/projects/${slug}/notes`, { method: 'POST', body: { text, kind: $('kind').value, time: video.currentTime, sceneId: sceneAt(video.currentTime)?.id, version: ver } }); $('text').value = ''; await load(ver); }
+  catch (e) { $('noteErr').textContent = e.message; }
+};
+$('propose').onclick = async () => {
+  $('proposeErr').textContent = ''; $('propose').disabled = true; $('propose').textContent = 'Asking the AI...';
+  try { await api(`/projects/${slug}/propose`, { method: 'POST', body: {} }); await load(ver); }
+  catch (e) { $('proposeErr').textContent = e.message; drawNotes(); }
+};
+$('proposal').onclick = async (e) => {
+  if (e.target.id === 'discard') { await api(`/projects/${slug}/discard`, { method: 'POST', body: {} }); await load(ver); }
+  if (e.target.id === 'accept') {
+    const ids = [...document.querySelectorAll('[data-pick]:checked')].map((x) => x.dataset.pick);
+    try { await api(`/projects/${slug}/accept`, { method: 'POST', body: { sceneIds: ids } }); await load(); } catch (err) { $('proposeErr').textContent = err.message; }
+  }
+};
+loadProjects();
+</script>
+</body>
+</html>

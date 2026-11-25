@@ -2,8 +2,10 @@
 // once (~90 MB) and is cached, then the whole thing works offline.
 import { KokoroTTS } from 'kokoro-js';
 
+// q8 is the small, fast model; fp32 is the full-quality one (larger download, slower, cleaner output).
+const DTYPE = process.env.KOKORO_DTYPE || 'q8';
 let model;
-const load = () => (model ??= KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', { dtype: 'q8', device: 'cpu' }));
+const load = () => (model ??= KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', { dtype: DTYPE, device: 'cpu' }));
 
 // Kokoro handles a few hundred tokens per call, so split long narration on sentence ends.
 export function chunkText(text, max = 280) {

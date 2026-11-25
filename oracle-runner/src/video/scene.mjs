@@ -173,17 +173,16 @@ function recap(scene, lt, dur) {
 
 const LAYOUTS = { hook, bullets, steps, compare, quiz, recap };
 
-// ctx: { index, total, progress (0..1 of whole video) }
-export function frameSvg(scene, lt, dur, wave, t, ctx) {
+// Frames are scene-local (lt = seconds into the scene) so a scene renders identically wherever it sits in the video,
+// which is what lets edited videos reuse every unchanged scene. Progress and chapters belong to the player.
+export function frameSvg(scene, lt, dur, wave) {
   const layout = LAYOUTS[scene.slide.layout || 'bullets'] || bullets;
   const e = ease(lt / 0.35);
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="DejaVu Sans, Arial, sans-serif">
   <rect width="${W}" height="${H}" fill="#F1F5F9"/>
-  ${robot(t, wave, scene.gesture)}
+  ${robot(lt, wave, scene.gesture)}
   <rect x="400" y="50" width="840" height="530" rx="26" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2"/>
-  <text x="1216" y="86" font-size="18" fill="#94A3B8" text-anchor="end">${ctx.index + 1} / ${ctx.total}</text>
   <g opacity="${e.toFixed(2)}" transform="translate(${((1 - e) * 30).toFixed(1)} 0)">${layout(scene, lt, dur)}</g>
   <text x="40" y="690" font-size="22" fill="#94A3B8">SpotCLM Academy</text>
-  <rect x="0" y="${H - 6}" width="${W}" height="6" fill="#DBEAFE"/><rect x="0" y="${H - 6}" width="${(W * ctx.progress).toFixed(1)}" height="6" fill="#2563EB"/>
 </svg>`;
 }

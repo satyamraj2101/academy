@@ -11,8 +11,7 @@ if (!outDir) { console.error('usage: voice-demo.mjs <outDir>'); process.exit(1);
 mkdirSync(outDir, { recursive: true });
 const TEXT = "Hi, I'm your contract counsel. A contract lifecycle starts with a request, then it is drafted, reviewed, approved, and signed.";
 const SAMPLES = [
-  ['am_puck', 'subtle'], ['am_puck', 'robot'], ['am_puck', 'none'],
-  ['am_michael', 'subtle'], ['am_fenrir', 'subtle'], ['bm_george', 'subtle'],
+  ['am_puck', 'clean'], ['am_puck', 'cute'], ['am_michael', 'clean'], ['am_michael', 'cute'], ['am_fenrir', 'clean'], ['am_puck', 'robot'],
 ];
 for (const [voice, fx] of SAMPLES) {
   const { samples, rate } = await synth(TEXT, { voice });

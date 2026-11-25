@@ -1,23 +1,25 @@
-// Gives the Kokoro voice a "friendly little robot" colour with plain ffmpeg filters (no model, no cost).
-//   pitch   : raised a few percent without changing speed (asetrate, then resample and compensate the tempo)
-//   buzz    : a slight amplitude flutter, the classic "synthetic" cue (tremolo)
-//   metal   : a very short echo that adds a comb-filter ring, like a speaker in a small metal body
-//   clarity : a gentle presence boost so the voice stays easy to understand
-// Levels: none (untouched human voice), subtle (mostly human, a hint of robot), robot (clearly synthetic).
-const LEVELS = {
-  subtle: { pitch: 1.05, buzzHz: 62, buzz: 0.07, echoMs: 8, echo: 0.1 },
-  robot: { pitch: 1.09, buzzHz: 52, buzz: 0.2, echoMs: 13, echo: 0.28 },
-};
+// Voice colour, applied with plain ffmpeg filters. Kokoro's raw output is already very quiet between words
+// (about -80 dBFS), so the clean presets add no noise. The modulating effects (buzz, echo) are what make a voice
+// sound "noisy", so only the optional "robot" preset uses them.
+//   clean : warmth + gentle presence + even levels. The default: pleasant and easy to listen to for long lessons.
+//   cute  : clean, plus the voice lifted ~4% in pitch (tempo unchanged) for a friendlier, younger tone.
+//   robot : cute, plus a slight buzz and a short metallic echo. Clearly synthetic; use sparingly.
+//   none  : untouched.
+const CLEAN = [
+  'highpass=f=70',
+  'equalizer=f=180:t=q:w=1:g=1.5',    // a little body
+  'equalizer=f=3200:t=q:w=1.2:g=1.5', // a little clarity
+  'acompressor=threshold=-22dB:ratio=2:attack=20:release=250:makeup=1',
+  'alimiter=limit=0.7',
+];
+const pitch = (rate, p) => [`asetrate=${Math.round(rate * p)}`, `aresample=${rate}`, `atempo=${(1 / p).toFixed(4)}`];
 
 export function voiceFilter(level, rate = 24000) {
-  if (!level || level === 'none') return 'loudnorm=I=-16:TP=-1.5';
-  const p = LEVELS[level];
-  if (!p) throw new Error(`unknown --fx "${level}" (use none, subtle or robot)`);
-  return [
-    `asetrate=${Math.round(rate * p.pitch)}`, `aresample=${rate}`, `atempo=${(1 / p.pitch).toFixed(4)}`,
-    `tremolo=f=${p.buzzHz}:d=${p.buzz}`,
-    `aecho=0.9:0.75:${p.echoMs}:${p.echo}`,
-    'highpass=f=80', 'equalizer=f=3000:t=q:w=1:g=2',
-    'loudnorm=I=-16:TP=-1.5',
-  ].join(',');
+  switch (level) {
+    case 'none': return 'alimiter=limit=0.7';
+    case 'clean': return CLEAN.join(',');
+    case 'cute': return [...pitch(rate, 1.04), ...CLEAN].join(',');
+    case 'robot': return [...pitch(rate, 1.07), 'tremolo=f=55:d=0.12', 'aecho=0.9:0.75:11:0.18', ...CLEAN].join(',');
+    default: throw new Error(`unknown --fx "${level}" (use clean, cute, robot or none)`);
+  }
 }

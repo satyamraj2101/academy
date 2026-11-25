@@ -15,17 +15,25 @@ Jobs wait in D1 if the runner is down; a job whose runner dies is retried (3 att
 ## Multiple AI providers
 `src/ai.mjs` routes each step by role through `AI_DRAFT` / `AI_REVIEW` (see `.env.example`). Supported: `gemini`, `anthropic`, `openai` (and OpenAI-compatible hosts), `cloudflare` (Workers AI). A provider without a key is skipped; on 429/5xx it retries with backoff, then falls through to the next. When `AI_REVIEW` is set, every lesson gets a second-opinion pass by that model, which returns corrections that replace the draft (a failed review never fails the job). Unit tests: `npm test`.
 
-## Lesson videos (the SpotCLM counsel robot)
-`src/video/` turns a scene script into an MP4 with no GPU and no paid service. A faceless robot lawyer narrates (its visor draws the real audio waveform, so there is no lip-sync to get wrong; the pocket badge says SpotCLM), a slide beside it builds up as each point is spoken, and captions are burned in.
+## Lesson videos (the SpotCLM "Counsel" robot)
+`src/video/` turns a scene script into an MP4 with no GPU and no paid service. A faceless robot barrister (wig, gown, scales of justice, `SpotCLM` badge) narrates; its visor draws the real audio waveform, so there is no lip-sync to get wrong. A slide beside it builds up as each point is spoken, and captions are burned in.
 ```bash
-npm run video -- samples/what-is-clm.json out/clm --voice am_puck --fx subtle   # video.mp4, captions, chapters.json
-node src/video/voice-demo.mjs out/voices                                          # short clips to pick a voice by ear
+npm run video -- samples/what-is-clm.json out/clm --voice am_puck --fx clean --cache out/.cache
+node src/video/voice-demo.mjs out/voices          # short clips to pick a voice by ear
 ```
-- **Layouts:** `hook`, `bullets`, `steps` (highlights the current step with a description), `compare` (two columns), `quiz` (question, options, think countdown, answer reveal) and `recap`. Items name the words they should appear on (`"at"`), so visuals land with the narration.
-- **Quiz pause:** put `||` in the spoken text with `thinkSeconds`; `chapters.json` lists `pauseAt` and `revealAt` so the course player can pause and ask the student.
-- **Voice:** Kokoro (`--voice am_puck`, `am_michael`, `am_fenrir`, `bm_george`...) plus `--fx none|subtle|robot` (pitch, a slight buzz and a short metallic echo via ffmpeg).
-- **Captions vs speech:** `narration` is what is shown, `spoken` is what is read aloud (e.g. "CLM" vs "C L M").
-- `timings.json` reports render speed; measure it on the Oracle VM before planning a large batch.
+- **Layouts:** `hook`, `bullets`, `steps` (highlights the current step with a description), `compare`, `quiz` (question, options, think countdown, answer reveal) and `recap`. Items name the words they should appear on (`"at"`).
+- **Voice:** Kokoro (`am_puck`, `am_michael`, `am_fenrir`, `bm_george`...). `--fx clean` (default, pleasant, no added noise), `cute` (slightly higher), `robot` (buzz and echo, clearly synthetic) or `none`. Set `KOKORO_DTYPE=fp32` for the full-quality (slower, larger) model.
+- **Scene cache:** each scene renders to its own MP4, keyed by a hash of its content, voice and effect. Edit one scene and only that scene re-renders (about 30 s instead of about 160 s for a 100 s video).
+- **Quiz pause:** `||` in the spoken text plus `thinkSeconds`. `chapters.json` lists chapters and each quiz's `pauseAt` / `revealAt` for the player.
+
+## Video Studio (review, mark edits, re-render)
+```bash
+node --env-file=.env src/studio/server.mjs        # http://127.0.0.1:4300
+```
+Open a lesson, watch it, and pause where something should change. Write a note (it is pinned to that moment and scene), then **Propose changes**: the AI revises only the affected scenes and shows a before/after you accept or discard. Accepting creates a new version and re-renders only the changed scenes. Versions are kept, and quiz checkpoints pause the video and ask the student.
+- Needs an AI key in `.env` (`AI_DRAFT`, see above) for proposals. Data lives in `studio-data/` (git-ignored).
+- Binds to `127.0.0.1`. To use it from the Oracle VM set `STUDIO_HOST`, put it behind Cloudflare Access, and set `STUDIO_TOKEN` (open `/?token=...`).
+- Rendering runs in a separate process so the page stays responsive.
 
 ## 1. Create the Oracle VM (one time, in the Oracle Cloud console)
 1. Compute > Instances > Create instance. Image: **Ubuntu 24.04** (aarch64). Shape: **VM.Standard.A1.Flex**, 2 OCPU, **12 GB** RAM. That is now the whole Always Free Ampere allowance (Oracle reduced it from 4 OCPU / 24 GB), so use all of it on one VM; creating more than the allowance can get instances disabled.

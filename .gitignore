@@ -18,3 +18,4 @@ oracle-runner/.env
 oracle-runner/node_modules/
 oracle-runner/sample-output/
 oracle-runner/out/
+oracle-runner/studio-data/
