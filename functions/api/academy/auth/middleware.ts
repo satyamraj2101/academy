@@ -74,21 +74,25 @@ export async function verifyAcademyUser(
   request: Request,
   env: Env
 ): Promise<{ context: AcademyContext } | { error: Response }> {
-  // Global Rate Limiting
+  // Global rate limiting. KV on the free plan allows ~1k writes/day, so a write per request
+  // exhausted it within minutes. We use a fixed one-minute window and write sampled counts
+  // (see below), trading exactness for ~10x fewer writes. Reads are not limited by the KV write quota.
   if (env.ENQUIRY_KV) {
     const ip = request.headers.get('cf-connecting-ip') || 'unknown';
-    const limitKey = `academy:rl:${ip}`;
-    
-    // Simple token bucket: 100 requests per minute
-    const currentStr = await env.ENQUIRY_KV.get(limitKey);
-    const current = currentStr ? parseInt(currentStr, 10) : 0;
-    
-    if (current > 100) {
-      return { error: errorResponse('Too many requests, please try again later.', 429) };
-    }
+    const limitKey = `academy:rl:${ip}:${Math.floor(Date.now() / 60000)}`;
     try {
-      await env.ENQUIRY_KV.put(limitKey, (current + 1).toString(), { expirationTtl: 60 });
-    } catch (e) { console.error('KV error', e); }
+      const current = parseInt((await env.ENQUIRY_KV.get(limitKey)) || '0', 10);
+      if (current >= 100) {
+        return { error: errorResponse('Too many requests, please try again later.', 429) };
+      }
+      // Sampled counting: first hit writes 1, later hits add 10 with probability 1/10, so the
+      // expected count is unbiased while KV writes drop ~10x.
+      if (current === 0) {
+        await env.ENQUIRY_KV.put(limitKey, '1', { expirationTtl: 120 });
+      } else if (Math.random() < 0.1) {
+        await env.ENQUIRY_KV.put(limitKey, String(current + 10), { expirationTtl: 120 });
+      }
+    } catch (e) { console.error('KV rate-limit error', e); }
   }
 
   if (!env.DB) {
