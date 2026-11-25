@@ -7,6 +7,7 @@ import { academyAPI } from '../../academy/api';
 import { BookOpen, Award, Clock, Coins, LogOut, Loader2, Users, Share2, Copy, CheckCircle2, Settings, Flame, Trophy, PlayCircle, Target, GraduationCap } from 'lucide-react';
 import { toast } from '../../lib/toast';
 import { HapticButton } from '../../components/HapticButton';
+import { CourseThumbnail } from '../../components/CourseThumbnail';
 import { motion, AnimatePresence } from 'motion/react';
 
 export function DashboardComponent() {
@@ -57,12 +58,34 @@ export function DashboardComponent() {
     toast.success('Referral link copied to clipboard!');
   };
 
+  // Opens the course player at the right lesson; falls back to the course page if the
+  // start endpoint has nothing to resume.
+  const resumeCourse = async (courseId: string) => {
+    try {
+      const startRes = (await academyAPI.courses.start(courseId)) as { lessonId?: string } | undefined;
+      navigate(startRes?.lessonId ? `/course-player/${courseId}/lesson/${startRes.lessonId}` : `/courses/${courseId}`);
+    } catch {
+      navigate(`/courses/${courseId}`);
+    }
+  };
+
   const hasEnoughReferrals = referralData?.l1?.length >= 2;
   const isApprovedPartner = referralData?.partnerStatus === 'approved';
 
   const overallProgress = enrollments.length > 0
     ? Math.round(enrollments.reduce((acc: number, e: any) => acc + (e.progress_percent || 0), 0) / enrollments.length)
     : 0;
+
+  const completedCount = enrollments.filter((e: any) => (e.progress_percent || 0) >= 100).length;
+  const activeCount = enrollments.length - completedCount;
+
+  // "Up next" prefers the course furthest along that is not finished, then a course not yet
+  // started. When everything is complete there is nothing to resume, so the hero is hidden.
+  const upNext =
+    [...enrollments]
+      .filter((e: any) => (e.progress_percent || 0) > 0 && (e.progress_percent || 0) < 100)
+      .sort((a: any, b: any) => (b.progress_percent || 0) - (a.progress_percent || 0))[0] ||
+    enrollments.find((e: any) => !(e.progress_percent > 0));
 
   return (
     <div className="pt-24 pb-16 min-h-screen bg-surface-50 dark:bg-surface-950">
@@ -91,27 +114,32 @@ export function DashboardComponent() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          <StatCard icon={<BookOpen className="w-5 h-5" />} label="Active Courses" value={enrollments.length.toString()} color="indigo" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8 sm:mb-12">
+          <StatCard icon={<BookOpen className="w-5 h-5" />} label="Active Courses" value={activeCount.toString()} color="indigo" />
           <StatCard icon={<Award className="w-5 h-5" />} label="Certifications" value={certificates.length.toString()} color="emerald" />
-          <StatCard icon={<Clock className="w-5 h-5" />} label="Learning Time" value={`${enrollments.reduce((acc, curr) => acc + Math.round((curr.progress_percent / 100) * 2), 0)}h`} color="sky" />
-          <StatCard icon={<Coins className="w-5 h-5" />} label="Credits Available" value={user.creditBalance.toString()} color="amber" />
+          <StatCard icon={<CheckCircle2 className="w-5 h-5" />} label="Courses Completed" value={completedCount.toString()} color="sky" />
+          {/* creditBalance is stored in paise; show rupees. */}
+          <StatCard icon={<Coins className="w-5 h-5" />} label="Credits Available" value={`₹${((user.creditBalance || 0) / 100).toLocaleString('en-IN')}`} color="amber" />
         </div>
 
         {/* Up Next Hero Section */}
-        {enrollments.length > 0 && (
+        {upNext && (
           <div className="mb-12 bg-gradient-to-r from-indigo-600 to-sky-500 rounded-3xl p-8 md:p-10 text-white flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl shadow-indigo-500/20 relative overflow-hidden group">
             <div className="absolute -right-20 -top-20 w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-700" />
             <div className="relative z-10">
               <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-lg text-xs font-black uppercase tracking-widest mb-4 border border-white/20">Up Next</span>
-              <h2 className="text-3xl md:text-4xl font-black mb-3 tracking-tight">{enrollments[0].title}</h2>
-              <p className="text-white/90 max-w-xl text-lg font-medium">You are {enrollments[0].progress_percent}% through this course. Keep up the great work and earn your certificate!</p>
+              <h2 className="text-3xl md:text-4xl font-black mb-3 tracking-tight">{upNext.title}</h2>
+              <p className="text-white/90 max-w-xl text-lg font-medium">
+                {upNext.progress_percent > 0
+                  ? `You are ${upNext.progress_percent}% through this course. Keep up the great work and earn your certificate!`
+                  : "You're enrolled and ready to begin. Start with the first lesson."}
+              </p>
             </div>
-            <HapticButton 
-              onClick={() => navigate(`/courses/${enrollments[0].course_id}`)}
+            <HapticButton
+              onClick={() => resumeCourse(upNext.course_id)}
               className="relative z-10 px-8 py-4 bg-white text-indigo-600 hover:bg-slate-50 rounded-2xl font-black text-lg shrink-0 transition-transform hover:scale-105 shadow-xl"
             >
-              Resume Learning &rarr;
+              {upNext.progress_percent > 0 ? 'Resume Learning' : 'Start Course'} &rarr;
             </HapticButton>
           </div>
         )}
@@ -159,12 +187,8 @@ export function DashboardComponent() {
                         {enrollments.map((enr: any) => (
                           <div key={enr.enrollment_id} className="border border-slate-200 dark:border-slate-800 rounded-control p-4 flex flex-col gap-4">
                             <div className="flex gap-4">
-                              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-lg flex-shrink-0 flex items-center justify-center">
-                                {enr.image_url ? (
-                                  <img src={enr.image_url} alt={enr.title} className="w-full h-full object-cover rounded-lg" />
-                                ) : (
-                                  <BookOpen className="w-6 h-6 text-slate-400" />
-                                )}
+                              <div className="relative w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-lg flex-shrink-0 overflow-hidden">
+                                <CourseThumbnail imageUrl={enr.image_url} title={enr.title} category={enr.category} iconClassName="w-6 h-6" />
                               </div>
                               <div>
                                 <h3 className="font-bold text-slate-900 dark:text-white line-clamp-2 leading-tight mb-1">{enr.title}</h3>
@@ -185,18 +209,7 @@ export function DashboardComponent() {
                             </div>
                             
                             <HapticButton 
-                              onClick={async () => {
-                                try {
-                                  const startRes = await academyAPI.courses.start(enr.course_id);
-                                  if (startRes?.lessonId) {
-                                    navigate(`/course-player/${enr.course_id}/lesson/${startRes.lessonId}`);
-                                  } else {
-                                    navigate(`/courses/${enr.course_id}`);
-                                  }
-                                } catch {
-                                  navigate(`/courses/${enr.course_id}`);
-                                }
-                              }}
+                              onClick={() => resumeCourse(enr.course_id)}
                               className="w-full py-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 font-bold text-sm rounded hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors"
                             >
                               {enr.progress_percent === 100 ? 'Review Course' : 'Resume Course'}
@@ -630,9 +643,9 @@ const STAT_COLORS = {
 function StatCard({ icon, label, value, color = 'indigo' }: { icon: React.ReactNode, label: string, value: string, color?: keyof typeof STAT_COLORS }) {
   const c = STAT_COLORS[color];
   return (
-    <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-card p-6 shadow-sm hover:shadow-raised hover:-translate-y-0.5 transition-all overflow-hidden flex items-center gap-4">
+    <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-card p-4 sm:p-6 shadow-sm hover:shadow-raised hover:-translate-y-0.5 transition-all overflow-hidden flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
       <div className={`absolute top-0 left-0 right-0 h-1 ${c.accent}`} />
-      <div className={`w-12 h-12 rounded-full ${c.bg} flex items-center justify-center ${c.text}`}>
+      <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${c.bg} flex items-center justify-center ${c.text}`}>
         {icon}
       </div>
       <div>
