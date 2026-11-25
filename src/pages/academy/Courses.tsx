@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Helmet } from 'react-helmet-async';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { BottomCTA } from '../shared';
 import { HapticButton } from '../../components/HapticButton';
+import { CourseThumbnail } from '../../components/CourseThumbnail';
 import { academyAPI } from '../../academy/api';
 import { useAcademy } from '../../academy/context';
 import { Loader2, BookOpen, Star, Users, Clock, Layers, Search, X, Lock } from 'lucide-react';
@@ -22,6 +23,16 @@ export function CoursesComponent({ onOpenProposalModal }: { onOpenProposalModal:
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedLevel, setSelectedLevel] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Escape closes the quick-view panel, as keyboard users expect from a dialog.
+  useEffect(() => {
+    if (!selectedCourseForModal) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedCourseForModal(null);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [selectedCourseForModal]);
 
   useEffect(() => {
     const fetchCourses = academyAPI.courses.list();
@@ -105,6 +116,7 @@ export function CoursesComponent({ onOpenProposalModal }: { onOpenProposalModal:
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search courses..."
+                aria-label="Search courses"
                 className="w-full bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-control pl-9 pr-4 py-2 text-sm font-semibold outline-none focus:border-indigo-500 transition-colors"
               />
             </div>
@@ -112,16 +124,18 @@ export function CoursesComponent({ onOpenProposalModal }: { onOpenProposalModal:
               <select 
                 value={selectedCategory}
                 onChange={e => setSelectedCategory(e.target.value)}
-                className="flex-1 md:w-48 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-control px-4 py-2 text-sm font-semibold outline-none"
+                aria-label="Filter by category"
+                className="flex-1 md:w-48 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-control px-4 py-2 text-sm font-semibold outline-none focus:border-indigo-500 transition-colors"
               >
-                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                {categories.map(c => <option key={c} value={c}>{c === 'All' ? 'All categories' : c}</option>)}
               </select>
-              <select 
+              <select
                 value={selectedLevel}
                 onChange={e => setSelectedLevel(e.target.value)}
-                className="flex-1 md:w-48 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-control px-4 py-2 text-sm font-semibold outline-none"
+                aria-label="Filter by level"
+                className="flex-1 md:w-48 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-control px-4 py-2 text-sm font-semibold outline-none focus:border-indigo-500 transition-colors"
               >
-                {levels.map(l => <option key={l} value={l}>{l}</option>)}
+                {levels.map(l => <option key={l} value={l}>{l === 'All' ? 'All levels' : l}</option>)}
               </select>
             </div>
           </div>
@@ -134,15 +148,19 @@ export function CoursesComponent({ onOpenProposalModal }: { onOpenProposalModal:
           <>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {filteredCourses.map(course => (
-                <div 
+                <div
                   key={course.id}
-                  onClick={() => navigate(`/courses/${course.id}`)}
-                  className="group flex flex-col bg-white dark:bg-slate-900/60 shadow-sm hover:shadow-2xl hover:shadow-indigo-500/10 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden cursor-pointer transition-all duration-500 hover:-translate-y-1.5 backdrop-blur-sm"
+                  className="group relative flex flex-col bg-white dark:bg-slate-900/60 shadow-sm hover:shadow-2xl hover:shadow-indigo-500/10 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden cursor-pointer transition-all duration-500 hover:-translate-y-1.5 backdrop-blur-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 dark:focus-within:ring-offset-slate-950"
                 >
                   <div className="h-40 bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent z-10" />
-                    {course.image_url && <img src={course.image_url} alt={course.title} className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out" />}
-                    <div className="absolute top-3 left-3 flex gap-2 z-20">
+                    <CourseThumbnail
+                      imageUrl={course.image_url}
+                      title={course.title}
+                      category={course.category}
+                      imageClassName="transform group-hover:scale-110 transition-transform duration-700 ease-out"
+                    />
+                    {course.image_url && <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 via-transparent to-transparent z-10" />}
+                    <div className="absolute top-3 left-3 flex gap-2 z-20 pointer-events-none">
                       <span className="px-2.5 py-1 text-[9px] font-black uppercase tracking-widest rounded-md bg-white/95 dark:bg-slate-900/95 text-indigo-600 dark:text-indigo-400 shadow-sm border border-white/20 dark:border-slate-700/50">
                         {course.category}
                       </span>
@@ -155,7 +173,12 @@ export function CoursesComponent({ onOpenProposalModal }: { onOpenProposalModal:
                       <span className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/80 px-2 py-1 rounded-md"><Clock className="w-3.5 h-3.5 text-amber-500" /> {course.duration}</span>
                     </div>
 
-                    <h3 className="text-lg font-black mb-2 text-slate-900 dark:text-white line-clamp-2 leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{course.title}</h3>
+                    <h3 className="text-lg font-black mb-2 text-slate-900 dark:text-white line-clamp-2 leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                      {/* Stretched link: the whole card is clickable and reachable by keyboard, without nesting the Quick View button inside a link. */}
+                      <Link to={`/courses/${course.id}`} className="outline-none after:absolute after:inset-0 after:content-['']">
+                        {course.title}
+                      </Link>
+                    </h3>
 
                     {course.prerequisites?.length > 0 && (
                       <span className="inline-flex items-center gap-1 self-start text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-900/40 px-2 py-1 rounded-md mb-3">
@@ -167,7 +190,7 @@ export function CoursesComponent({ onOpenProposalModal }: { onOpenProposalModal:
                       {course.review_count > 0 ? (
                         <span className="flex items-center gap-1 text-amber-500"><Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" /> {course.avg_rating.toFixed(1)} <span className="text-slate-400 dark:text-slate-500">({course.review_count})</span></span>
                       ) : (
-                        <span className="flex items-center gap-1 text-indigo-500"><Star className="w-3.5 h-3.5" /> New</span>
+                        <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400"><Star className="w-3.5 h-3.5" /> No reviews yet</span>
                       )}
                       {course.enrollment_count > 0 && (
                         <>
@@ -183,7 +206,7 @@ export function CoursesComponent({ onOpenProposalModal }: { onOpenProposalModal:
                       </span>
                       <HapticButton 
                         onClick={(e: any) => { e.stopPropagation(); setSelectedCourseForModal(course); }}
-                        className="px-4 py-2 bg-slate-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+                        className="relative z-10 px-4 py-2 bg-slate-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white rounded-xl text-xs font-bold transition-all shadow-sm"
                       >
                         Quick View
                       </HapticButton>
@@ -205,14 +228,13 @@ export function CoursesComponent({ onOpenProposalModal }: { onOpenProposalModal:
             {enrollments.map((enr: any) => (
               <div key={enr.enrollment_id} className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col hover:-translate-y-1">
                 <div className="h-36 bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent z-10" />
-                  {enr.image_url ? (
-                    <img src={enr.image_url} alt={enr.title} className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <BookOpen className="w-10 h-10 text-slate-300 dark:text-slate-700" />
-                    </div>
-                  )}
+                  <CourseThumbnail
+                    imageUrl={enr.image_url}
+                    title={enr.title}
+                    category={enr.category}
+                    imageClassName="transform group-hover:scale-105 transition-transform duration-500"
+                  />
+                  {enr.image_url && <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 via-transparent to-transparent z-10" />}
                   <div className="absolute top-3 left-3 z-20">
                     <span className="px-2 py-1 text-[9px] font-black uppercase tracking-widest rounded-md bg-emerald-500/90 text-white backdrop-blur-md shadow-sm">
                       Enrolled
@@ -267,9 +289,13 @@ export function CoursesComponent({ onOpenProposalModal }: { onOpenProposalModal:
 
       <BottomCTA onOpenProposalModal={onOpenProposalModal} />
 
-        <AnimatePresence>
-          {selectedCourseForModal && createPortal(
-            <div className="fixed inset-0 z-[100] flex justify-end overflow-hidden">
+        {/* The portal must wrap AnimatePresence, not the other way round: AnimatePresence only tracks
+            real React elements and silently drops a portal child, which is why this panel never opened.
+            The typeof guard keeps the build-time prerender (no DOM) from touching document. */}
+        {typeof document !== 'undefined' && createPortal(
+          <AnimatePresence>
+          {selectedCourseForModal && (
+            <div key="quick-view" className="fixed inset-0 z-[100] flex justify-end overflow-hidden">
               <motion.div 
                 initial={{ opacity: 0 }} 
                 animate={{ opacity: 1 }} 
@@ -282,24 +308,27 @@ export function CoursesComponent({ onOpenProposalModal }: { onOpenProposalModal:
                 animate={{ x: 0 }} 
                 exit={{ x: '100%' }} 
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                role="dialog"
+                aria-modal="true"
+                aria-label={selectedCourseForModal.title}
                 className="relative w-full max-w-md h-full bg-white dark:bg-slate-900 shadow-2xl flex flex-col overflow-hidden"
               >
                 <div className="h-64 relative shrink-0 bg-slate-100 dark:bg-slate-800">
-                  {selectedCourseForModal.image_url ? (
-                    <img src={selectedCourseForModal.image_url} alt={selectedCourseForModal.title} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <BookOpen className="w-16 h-16 text-slate-300 dark:text-slate-600" />
-                    </div>
-                  )}
+                  <CourseThumbnail
+                    imageUrl={selectedCourseForModal.image_url}
+                    title={selectedCourseForModal.title}
+                    category={selectedCourseForModal.category}
+                    iconClassName="w-16 h-16"
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent flex flex-col justify-end p-6">
                     <span className="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-md bg-indigo-600 text-white w-fit mb-3 shadow-sm">
                       {selectedCourseForModal.category}
                     </span>
                     <h2 className="text-2xl font-black text-white leading-tight">{selectedCourseForModal.title}</h2>
                   </div>
-                  <button 
+                  <button
                     onClick={() => setSelectedCourseForModal(null)}
+                    aria-label="Close course preview"
                     className="absolute top-4 right-4 p-2 bg-black/20 hover:bg-black/40 text-white rounded-full backdrop-blur-md transition-colors"
                   >
                     <X className="w-5 h-5" />
@@ -344,10 +373,11 @@ export function CoursesComponent({ onOpenProposalModal }: { onOpenProposalModal:
                   </div>
                 </div>
               </motion.div>
-            </div>,
-            document.body
+            </div>
           )}
-        </AnimatePresence>
+          </AnimatePresence>,
+          document.body
+        )}
     </div>
   );
 }
