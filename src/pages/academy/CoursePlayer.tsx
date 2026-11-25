@@ -16,7 +16,8 @@ import {
   Maximize, Minimize, MonitorPlay, Timer
 } from 'lucide-react';
 import 'katex/dist/katex.min.css';
-import { MarkdownSection, VideoSection, ImageSection, PptSection, QuizSection, AssignmentSection } from './LessonSectionBlocks';
+import { MarkdownSection, VideoSection, ImageSection, PptSection, QuizSection, AssignmentSection, InteractiveVideoSection, VIDEO_PROGRESS_KEY, type VideoProgressData } from './LessonSectionBlocks';
+import { parseContent } from '../../lib/interactiveVideo';
 import { DiscussionPanel } from './DiscussionPanel';
 import { AIAssistantPanel } from './AIAssistantPanel';
 import { useTheme } from '../../hooks/useTheme';
@@ -213,6 +214,18 @@ export function CoursePlayerComponent() {
     })),
   });
 
+  // Mandatory interactive videos must be watched (and their questions answered) before the lesson can be completed.
+  const mandatoryVideoIds = embeddedLessonBlocks
+    .filter((s: any) => (s.section_type === 'interactive_video' || s.type === 'interactive_video') && s.is_mandatory !== 0 && s.is_mandatory !== false)
+    .map((s: any) => parseContent(s.content || '')?.videoId)
+    .filter(Boolean) as string[];
+  const videoProgressQuery = useQuery({
+    queryKey: VIDEO_PROGRESS_KEY(lessonId || ''),
+    queryFn: () => academyAPI.lessons.videoProgress.get(lessonId!) as Promise<VideoProgressData>,
+    enabled: !!lessonId && mandatoryVideoIds.length > 0,
+  });
+  const videosSatisfied = mandatoryVideoIds.length === 0 || (!videoProgressQuery.isLoading && mandatoryVideoIds.every(id => videoProgressQuery.data?.videos.find(v => v.videoId === id)?.completed));
+
   const embeddedBlocksLoading = embeddedQuizQueries.some(q => q.isLoading) || embeddedAssignmentQueries.some(q => q.isLoading);
   const embeddedQuizzesSatisfied = embeddedQuizQueries.every(q => (q.data?.attempts || []).some((a: any) => a.passed));
   const embeddedAssignmentsSatisfied = embeddedAssignmentQueries.every(q => !!q.data?.submission);
@@ -265,9 +278,11 @@ export function CoursePlayerComponent() {
   // answered. Prevents completing a lesson (and any downstream certificate) by
   // reflexively clicking the button the instant the page loads.
   const knowledgeCheckSatisfied = !knowledgeCheck || !!checkResult;
-  const canMarkComplete = engagedEnough && knowledgeCheckSatisfied && embeddedBlocksSatisfied;
+  const canMarkComplete = engagedEnough && knowledgeCheckSatisfied && embeddedBlocksSatisfied && videosSatisfied;
   const markCompleteBlockedReason = !knowledgeCheckSatisfied
     ? 'Answer the Knowledge Check below to unlock Mark Complete'
+    : !videosSatisfied
+    ? 'Watch the lesson video (at least 90%) and answer its questions to unlock Mark Complete'
     : !embeddedBlocksSatisfied
     ? 'Complete the quiz or assignment in this lesson to unlock Mark Complete'
     : !engagedEnough
@@ -543,6 +558,7 @@ export function CoursePlayerComponent() {
                       {section.section_type === 'ppt' && <PptSection content={section.content} />}
                       {section.section_type === 'quiz' && <QuizSection content={section.content} />}
                       {section.section_type === 'assignment' && <AssignmentSection content={section.content} />}
+                      {section.section_type === 'interactive_video' && <InteractiveVideoSection content={section.content} lessonId={lessonId!} />}
                     </div>
                   );
                 })}

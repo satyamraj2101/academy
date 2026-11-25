@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Video, Image as ImageIcon, FileBox, Presentation, GripVertical, Trash2, ClipboardCheck, ClipboardList, FolderOpen, UploadCloud, Loader2 } from 'lucide-react';
+import { Film, FileText, Video, Image as ImageIcon, FileBox, Presentation, GripVertical, Trash2, ClipboardCheck, ClipboardList, FolderOpen, UploadCloud, Loader2 } from 'lucide-react';
 import { MarkdownAiEditor } from './MarkdownAiEditor';
 import { QuizBlockEditor } from './QuizBlockEditor';
 import { AssignmentBlockEditor } from './AssignmentBlockEditor';
@@ -7,7 +7,7 @@ import { AssetManagerModal } from './AssetManagerModal';
 import { adminFetch } from '../../hooks/useD1Query';
 import { toast } from '../../../lib/toast';
 
-export type BlockType = 'markdown' | 'video' | 'image' | 'ppt' | 'quiz' | 'assignment';
+export type BlockType = 'markdown' | 'video' | 'image' | 'ppt' | 'quiz' | 'assignment' | 'interactive_video';
 
 export interface LessonBlock {
   id: string;
@@ -186,6 +186,25 @@ export function LessonBlockEditor({ blocks, onChange, courseId, lessonId }: Less
             onChange={(val) => updateBlock(block.id, val)}
           />
         );
+      case 'interactive_video': {
+        let v: any = null;
+        try { v = JSON.parse(block.content); } catch { /* shown as unreadable below */ }
+        if (!v?.src) return <p className="text-rose-600 text-sm">This interactive video's data is unreadable. Remove it and publish it again from the Video Studio.</p>;
+        const mins = Math.floor(v.duration / 60), secs = String(Math.round(v.duration % 60)).padStart(2, '0');
+        return (
+          <div className="space-y-3">
+            <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-700">
+              <span className="font-bold">{v.title || 'Lesson video'}</span>
+              <span>{mins}:{secs}</span>
+              <span>{v.chapters?.length ?? 0} scenes</span>
+              <span>{(v.stations || []).length} stations</span>
+              <span>{v.checkpoints?.length ?? 0} question{(v.checkpoints?.length ?? 0) === 1 ? '' : 's'}</span>
+            </div>
+            <video src={v.src} controls preload="metadata" className="w-full max-w-xl rounded-lg bg-black aspect-video" />
+            <p className="text-xs text-slate-500">Made in the Video Studio. Students must watch at least 90% and answer the questions to complete the lesson. To change it, publish a new render from the Studio (it replaces this one).</p>
+          </div>
+        );
+      }
       default:
         return <p className="text-slate-500">Editor for {block.type} is not yet implemented.</p>;
     }
@@ -199,6 +218,7 @@ export function LessonBlockEditor({ blocks, onChange, courseId, lessonId }: Less
       case 'ppt': return <Presentation className="w-4 h-4 text-orange-500" />;
       case 'quiz': return <ClipboardCheck className="w-4 h-4 text-indigo-500" />;
       case 'assignment': return <ClipboardList className="w-4 h-4 text-amber-500" />;
+      case 'interactive_video': return <Film className="w-4 h-4 text-sky-500" />;
       default: return <FileBox className="w-4 h-4 text-slate-500" />;
     }
   };
@@ -226,7 +246,7 @@ export function LessonBlockEditor({ blocks, onChange, courseId, lessonId }: Less
                 </span>
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="shrink-0">{getBlockIcon(block.type)}</span>
-                  <span className="text-sm font-bold text-slate-700 capitalize truncate">{block.type} Block</span>
+                  <span className="text-sm font-bold text-slate-700 capitalize truncate">{block.type === 'interactive_video' ? 'Interactive video' : `${block.type} Block`}</span>
                 </div>
               </div>
               <button

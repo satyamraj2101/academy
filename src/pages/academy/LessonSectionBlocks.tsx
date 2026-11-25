@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ReactMarkdown from 'react-markdown';
@@ -7,6 +7,8 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import DOMPurify from 'dompurify';
 import { academyAPI } from '../../academy/api';
+import { InteractiveVideoPlayer, type SavePayload } from '../../components/video/InteractiveVideoPlayer';
+import { parseContent, type IVProgress } from '../../lib/interactiveVideo';
 import { HapticButton } from '../../components/HapticButton';
 import { toast } from '../../lib/toast';
 import { Loader2, ClipboardCheck, Trophy, RotateCcw, ArrowRight, UploadCloud, CheckCircle2, Clock, MessageSquareWarning, ExternalLink, Maximize, Minimize } from 'lucide-react';
@@ -248,4 +250,34 @@ export function AssignmentSection({ content }: { content: string }) {
       </div>
     </div>
   );
+}
+
+// A lesson video made in the Video Studio: the Soomy and Indoo player with campus map, hints and in-video questions.
+// Progress (watched time, answers) is saved per student, and a mandatory video gates Mark Complete.
+export const VIDEO_PROGRESS_KEY = (lessonId: string) => ['video-progress', lessonId];
+export type VideoProgressData = { tracking: boolean; videos: IVProgress[] };
+
+export function InteractiveVideoSection({ content, lessonId }: { content: string; lessonId: string }) {
+  const parsed = useMemo(() => parseContent(content), [content]);
+  const queryClient = useQueryClient();
+  const { data, isLoading } = useQuery({
+    queryKey: VIDEO_PROGRESS_KEY(lessonId),
+    queryFn: () => academyAPI.lessons.videoProgress.get(lessonId) as Promise<VideoProgressData>,
+    enabled: !!lessonId && !!parsed,
+  });
+  const videoId = parsed?.videoId;
+  const onSave = useCallback(async (p: SavePayload) => {
+    if (!videoId) return;
+    const saved = await academyAPI.lessons.videoProgress.save({ lessonId, videoId, ...p }) as IVProgress;
+    queryClient.setQueryData<VideoProgressData>(VIDEO_PROGRESS_KEY(lessonId), (old) => ({
+      tracking: true,
+      videos: [...(old?.videos || []).filter(v => v.videoId !== saved.videoId).map(v => v), { ...saved, mandatory: old?.videos.find(v => v.videoId === saved.videoId)?.mandatory }],
+    }));
+    return saved;
+  }, [lessonId, videoId, queryClient]);
+
+  if (!parsed) return <p className="text-sm text-slate-500">This video could not be loaded.</p>;
+  if (isLoading) return <div className="aspect-video rounded-2xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-indigo-500" /></div>;
+  const initial = data?.videos.find(v => v.videoId === parsed.videoId) || null;
+  return <InteractiveVideoPlayer content={parsed} lessonId={lessonId} initial={initial} tracking={!!data?.tracking} onSave={onSave} />;
 }

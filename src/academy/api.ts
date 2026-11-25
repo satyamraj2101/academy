@@ -76,6 +76,11 @@ export const academyAPI = {
     saveNotes: (lessonId: string, notes: string) => fetchAPI('/lessons/notes', { method: 'POST', body: JSON.stringify({ lessonId, notes }) }),
     getKnowledgeCheck: (lessonId: string) => fetchAPI(`/lessons/knowledge-check?lessonId=${lessonId}`),
     submitKnowledgeCheck: (checkId: string, selectedAnswer: string) => fetchAPI('/lessons/knowledge-check', { method: 'POST', body: JSON.stringify({ checkId, selectedAnswer }) }),
+    videoProgress: {
+      get: (lessonId: string) => fetchAPI(`/lessons/video-progress?lessonId=${encodeURIComponent(lessonId)}`),
+      save: (body: { lessonId: string; videoId: string; position: number; watched: [number, number][]; answers: Record<string, number> }) =>
+        fetchAPI('/lessons/video-progress', { method: 'POST', body: JSON.stringify(body), keepalive: true }),
+    },
   },
   quizzes: {
     get: (id: string) => fetchAPI(`/quizzes/${id}`),

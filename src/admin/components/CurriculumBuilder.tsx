@@ -9,7 +9,7 @@ import { exportCourseZip } from '../utils/exportCourseZip';
 interface Section {
   id: string;
   lesson_id: string;
-  section_type: 'markdown' | 'video' | 'image' | 'ppt' | 'quiz' | 'assignment';
+  section_type: 'markdown' | 'video' | 'image' | 'ppt' | 'quiz' | 'assignment' | 'interactive_video';
   content: string;
   sort_order: number;
 }
