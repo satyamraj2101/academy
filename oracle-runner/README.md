@@ -12,8 +12,11 @@ It makes only outbound HTTPS calls, so the VM needs **no open inbound ports** an
 Enqueue: `POST /api/admin/academy/ai-jobs { "type": "...", "payload": { ... } }`, poll `GET /api/admin/academy/ai-jobs?id=<id>`.
 Jobs wait in D1 if the runner is down; a job whose runner dies is retried (3 attempts, 5-minute lease).
 
+## Multiple AI providers
+`src/ai.mjs` routes each step by role through `AI_DRAFT` / `AI_REVIEW` (see `.env.example`). Supported: `gemini`, `anthropic`, `openai` (and OpenAI-compatible hosts), `cloudflare` (Workers AI). A provider without a key is skipped; on 429/5xx it retries with backoff, then falls through to the next. When `AI_REVIEW` is set, every lesson gets a second-opinion pass by that model, which returns corrections that replace the draft (a failed review never fails the job). Unit tests: `npm test`.
+
 ## 1. Create the Oracle VM (one time, in the Oracle Cloud console)
-1. Compute > Instances > Create instance. Image: **Ubuntu 24.04** (aarch64). Shape: **VM.Standard.A1.Flex**, 2 OCPU, **12 GB** RAM. Leave the other free-tier allowance for a second VM later.
+1. Compute > Instances > Create instance. Image: **Ubuntu 24.04** (aarch64). Shape: **VM.Standard.A1.Flex**, 2 OCPU, **12 GB** RAM. That is now the whole Always Free Ampere allowance (Oracle reduced it from 4 OCPU / 24 GB), so use all of it on one VM; creating more than the allowance can get instances disabled.
 2. Networking: keep the default public subnet and a public IP. Add your SSH public key (or download the generated key).
 3. If creation says "Out of capacity", retry another availability domain or try later; A1 capacity is shared.
 4. Keep the instance busy or monitored: Oracle can reclaim Always Free instances idle for 7 days.

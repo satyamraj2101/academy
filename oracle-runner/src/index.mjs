@@ -20,6 +20,7 @@ function makeReporter(job) {
     setStep(step) { state.step = step; log(`[${job.id.slice(0, 8)}] ${step}`); return flush(); },
     set(patch) { Object.assign(state, patch); return flush(); },
     state,
+    log: (m) => log(`[${job.id.slice(0, 8)}] ${m}`),
     heartbeat: setInterval(flush, HEARTBEAT_MS),
     stop() { clearInterval(this.heartbeat); return pending; },
   };

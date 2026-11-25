@@ -2,7 +2,7 @@
 // All three modes share one assembler. The existing synchronous endpoint only produced lesson stubs
 // ("draft this in AI Studio"); the runner writes real lesson bodies, which is what makes a course usable.
 import { api, patchJob } from './api.mjs';
-import { generateJson, generateText } from './gemini.mjs';
+import { generateJson, generateText, complete, reviewEnabled, stripFences } from './ai.mjs';
 import { fetchSource, toText, cleanTranscript } from './parse.mjs';
 
 const OUTLINE_SHAPE = `{
@@ -39,6 +39,35 @@ Lesson: ${lesson.title}
 Covers: ${lesson.summary}
 
 Write the full lesson in Markdown, 600-900 words: a short intro stating what the learner will be able to do, 3-5 sections with ## headings, a concrete worked example or realistic scenario, and a "Key takeaways" list at the end. Practical and specific, no filler, no title heading (the platform shows it), and do not mention that you are an AI.${source ? `\n\nGround every factual claim in the SOURCE below. Do not invent facts, figures or policies that it does not support.\n\nSOURCE:\n${source}` : ''}`;
+}
+
+function reviewPrompt(course, lesson, draft, source) {
+  return `You are a meticulous subject-matter reviewer for SpotCLM Academy (professional Contract Lifecycle Management training).
+Review this draft lesson "${lesson.title}" from the course "${course.title}" for factual errors, vague or misleading statements, missing steps, tone problems and padding.${source ? ' Treat the SOURCE as ground truth: remove or correct any claim it does not support.' : ''}
+Return ONLY JSON: {"ok": true|false, "issues": ["short issue", ...], "revised_markdown": "the full corrected lesson in Markdown, or an empty string if no changes are needed"}.
+Keep the structure and length; fix only what is wrong.
+
+DRAFT:
+${draft}${source ? `
+
+SOURCE:
+${source}` : ''}`;
+}
+
+// Second-opinion pass by a different model. Never blocks the job: a failed or implausible review
+// just keeps the original draft.
+async function reviewLesson(course, lesson, draft, source, report) {
+  if (!reviewEnabled()) return { text: draft, issues: [] };
+  try {
+    const { text, provider } = await complete('review', reviewPrompt(course, lesson, draft, source), { json: true });
+    const r = JSON.parse(text);
+    const revised = typeof r.revised_markdown === 'string' ? stripFences(r.revised_markdown) : '';
+    const usable = revised.length >= draft.length * 0.5 && revised.length <= draft.length * 2;
+    return { text: !r.ok && usable ? revised : draft, issues: Array.isArray(r.issues) ? r.issues : [], provider };
+  } catch (e) {
+    report.log?.(`review skipped for "${lesson.title}": ${e.message}`);
+    return { text: draft, issues: [] };
+  }
 }
 
 const stripNumbering = (s) => (typeof s === 'string' ? s.replace(/^(module|lesson)\s*\d+\s*[:.\-]\s*/i, '').trim() : s);
@@ -94,7 +123,11 @@ export async function runJob(job, report) {
     let lastLesson = null; // quiz + assignment hang off the module's last lesson
     for (const lesson of mod.lessons) {
       report.setStep(`Writing lesson: ${lesson.title}`);
-      const body = (await generateText(lessonPrompt(outline, mod, lesson, job.type === 'course_from_prompt' ? '' : source))).trim();
+      const lessonSource = job.type === 'course_from_prompt' ? '' : source;
+      const draft = (await generateText(lessonPrompt(outline, mod, lesson, lessonSource))).trim();
+      const reviewed = await reviewLesson(outline, lesson, draft, lessonSource, report);
+      const body = reviewed.text;
+      if (reviewed.issues.length) { stats.reviewed_with_issues = (stats.reviewed_with_issues || 0) + 1; }
       const lessonRes = await api('/academy/lessons', { method: 'POST', body: { module_id: modRes.id, title: lesson.title, content_type: 'blocks' } });
       const sections = [{ section_type: 'markdown', content: body, is_mandatory: true }];
       lastLesson = { id: lessonRes.id, sections };
