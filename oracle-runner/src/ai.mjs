@@ -56,7 +56,7 @@ const timed = (env) => ({ signal: AbortSignal.timeout(Number(env.AI_TIMEOUT_MS) 
 
 // An error that carries what the gateway needs to react: the HTTP status, how long to back off and whether the limit is a daily one.
 class AiError extends Error {
-  constructor(message, { status, retryAfterMs, daily, fatal } = {}) { super(message); Object.assign(this, { status, retryAfterMs, daily, fatal }); }
+  constructor(message, { status, retryAfterMs, daily, fatal, detail } = {}) { super(message); Object.assign(this, { status, retryAfterMs, daily, fatal, detail }); }
 }
 
 // "1m26.4s", "23s", "350ms" or plain seconds -> milliseconds.
@@ -76,7 +76,7 @@ async function failure(res, name) {
   if (res.status === 429) {
     const daily = /per[ _-]?day|\bTPD\b|\bRPD\b|daily|PerDay/i.test(body);
     const hinted = parseDuration(res.headers.get('retry-after')) ?? parseDuration(/"retryDelay"\s*:\s*"([^"]+)"/.exec(body)?.[1]) ?? parseDuration(res.headers.get('x-ratelimit-reset-requests'));
-    return new AiError(`${name} 429${daily ? ' (daily limit)' : ''}`, { status: 429, daily, retryAfterMs: daily ? Math.max(hinted ?? 0, untilMidnightUtc()) : (hinted ?? 60_000) });
+    return new AiError(`${name} 429${daily ? ' (daily limit)' : ''}`, { status: 429, daily, retryAfterMs: daily ? Math.max(hinted ?? 0, untilMidnightUtc()) : (hinted ?? 60_000), detail: body.replace(/\s+/g, ' ').slice(0, 220) });
   }
   if (res.status >= 500) return new AiError(`${name} ${res.status}`, { status: res.status });
   return new AiError(`${name} ${res.status}: ${body.slice(0, 200)}`, { status: res.status, fatal: true });
@@ -119,15 +119,17 @@ const adapters = {
   openai: ({ model, prompt, json }, env) => chatCompletions({ base: env.OPENAI_BASE_URL || 'https://api.openai.com/v1', key: env.OPENAI_API_KEY, model, prompt, json, env, name: 'openai' }),
   groq: ({ model, prompt, json }, env) => chatCompletions({ base: env.GROQ_BASE_URL || 'https://api.groq.com/openai/v1', key: env.GROQ_API_KEY, model, prompt, json, env, name: 'groq' }),
   mistral: ({ model, prompt, json }, env) => chatCompletions({ base: env.MISTRAL_BASE_URL || 'https://api.mistral.ai/v1', key: env.MISTRAL_API_KEY, model, prompt, json, env, name: 'mistral' }),
-  async cloudflare({ model, prompt }, env) {
+  async cloudflare({ model, prompt, json }, env) {
     const base = env.CF_API_BASE || 'https://api.cloudflare.com/client/v4';
     const res = await fetch(`${base}/accounts/${env.CF_ACCOUNT_ID}/ai/run/${model}`, {
       method: 'POST', ...timed(env),
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.CF_API_TOKEN}` },
-      body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] }),
+      body: JSON.stringify({ messages: [{ role: 'user', content: prompt }], max_tokens: 4096, ...(json ? { response_format: { type: 'json_object' } } : {}) }),
     });
     const data = await ok(res, 'cloudflare');
-    return data?.result?.response;
+    const out = data?.result?.response;
+    // In JSON mode Workers AI may hand back an already-parsed object instead of text.
+    return out !== null && typeof out === 'object' ? JSON.stringify(out) : out;
   },
 };
 
@@ -189,7 +191,10 @@ async function attempt(entry, args, env, est, retries) {
       }
     }
   } finally { u.active--; }
-  if (last?.status === 429) { u.cooldownUntil = Date.now() + (last.retryAfterMs ?? 60_000); u.cooldownReason = last.daily ? 'daily limit (provider)' : 'rate limited (provider)'; }
+  if (last?.status === 429) {
+    u.cooldownUntil = Date.now() + (last.retryAfterMs ?? 60_000); u.cooldownReason = last.daily ? 'daily limit (provider)' : 'rate limited (provider)';
+    console.error(`[ai] ${entry.provider}:${entry.model} is rate limited, cooling for ${Math.round((last.retryAfterMs ?? 60_000) / 1000)}s${last.daily ? ' (daily)' : ''}: ${last.detail || ''}`);
+  }
   throw last;
 }
 
@@ -218,6 +223,7 @@ export async function complete(role, prompt, { json = false, env = process.env, 
       } catch (e) {
         errors.push(`${key} — ${e.message}`);
         if (e.status === 429) continue; // cooled; the loop picks another or waits
+        console.error(`[ai] ${key} failed for this call: ${String(e.message).slice(0, 240)}`);
         failed.add(key); // a real failure for this call: do not try this one again for it
       }
     }
@@ -226,6 +232,9 @@ export async function complete(role, prompt, { json = false, env = process.env, 
     // Everything left is cooling or at its limit: wait for the earliest, or give up (a job can pause and come back).
     if (soonest === Infinity) continue; // someone became ready during the pass
     if (Date.now() - started + soonest > maxWait) {
+      // Some providers failed for THIS call and the rest are rate limited: that is a failed call, not "out of capacity".
+      // Only when every provider is limited is the whole role exhausted (and a job may pause until retryAt).
+      if (failed.size) throw new Error(`All usable providers failed for "${role}": ${errors.join('; ')}; the rest are limited (${soonestWhy})`);
       const err = new Error(`AI capacity for "${role}" is used up for now (${soonestWhy}); next slot in about ${Math.ceil(soonest / 60000)} min`);
       err.code = 'AI_EXHAUSTED'; err.retryAt = new Date(Date.now() + soonest).toISOString();
       throw err;

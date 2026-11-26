@@ -43,11 +43,20 @@ image = (
     .add_local_dir(RUNNER / "assets", "/app/assets", copy=True)
 )
 
+work = modal.Volume.from_name("academy-work", create_if_missing=True)  # scripts persist here, so a paused run resumes later
 app = modal.App("academy-video", image=image, secrets=[modal.Secret.from_name("academy-cloud")])
 
 
-def _node(args, cwd="/app", check=True):
-    """Runs a Node step and returns its stdout. Only the tail of stderr is kept if it fails (it can hold URLs, never secrets)."""
+def _node(args, cwd="/app", check=True, stream=False):
+    """Runs a Node step and returns its stdout. Only the tail of stderr is kept if it fails (it can hold URLs, never secrets).
+    With stream=True the step's progress messages go straight to the container log (visible live in `modal app logs` and the
+    Modal dashboard) instead of being held back until it finishes; the scripts only log lesson titles and timings."""
+    if stream:
+        p = subprocess.Popen(["node", *args], cwd=cwd, stdout=subprocess.PIPE, text=True)  # stderr is inherited
+        out = p.communicate()[0]
+        if check and p.returncode != 0:
+            raise RuntimeError(f"node {' '.join(args[:2])} failed with exit code {p.returncode}")
+        return out
     r = subprocess.run(["node", *args], cwd=cwd, capture_output=True, text=True)
     if check and r.returncode != 0:
         raise RuntimeError(f"node {' '.join(args[:2])} failed: {(r.stderr or r.stdout)[-1500:]}")
@@ -107,18 +116,22 @@ def build_lesson(course_id: str, lesson_id: str, intro: bool = False, publish: b
     """One lesson, start to finish: the AI step, then render, join and publish."""
     work = tempfile.mkdtemp()
     script = os.path.join(work, "script.json")
-    s = json.loads(_node(["src/cloud/script.mjs", course_id, lesson_id, script, *(["--intro"] if intro else [])]).strip().splitlines()[-1])
+    s = json.loads(_node(["src/cloud/script.mjs", course_id, lesson_id, script, *(["--intro"] if intro else [])], stream=True).strip().splitlines()[-1])
     with open(script) as f:
         return _build_from_script(f.read(), lesson_id, publish, replace_video_id, s)
 
 
-@app.function(cpu=1, memory=2048, timeout=4 * 3600)
+@app.function(cpu=1, memory=2048, timeout=4 * 3600, volumes={"/work": work})
 def write_scripts(course_id: str, lesson_ids: list, intro_lesson: str = "") -> dict:
     """The AI step for several lessons, one after another in ONE process, so the AI gateway paces every call against the provider
     limits in a single place. A lesson that cannot be written because AI capacity ran out is reported with the time to retry."""
-    out_dir = tempfile.mkdtemp()
+    out_dir = f"/work/scripts/{course_id}"
+    os.makedirs(out_dir, exist_ok=True)
     args = ["src/cloud/scripts.mjs", course_id, out_dir, ",".join(lesson_ids), *(["--intro", intro_lesson] if intro_lesson else [])]
-    summary = json.loads(_node(args).strip().splitlines()[-1])
+    try:
+        summary = json.loads(_node(args, stream=True).strip().splitlines()[-1])
+    finally:
+        work.commit()  # keep every script written so far, even if the step failed part-way
     scripts = {}
     for r in summary["results"]:
         path = os.path.join(out_dir, f"{r['lessonId']}.json")

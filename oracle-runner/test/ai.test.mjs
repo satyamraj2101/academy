@@ -146,3 +146,9 @@ test('server errors are retried on the same provider before giving up on it', as
   assert.equal((await complete('draft', 'x', { env })).text, 'third time');
   assert.equal(n, 3);
 });
+
+test('providers that failed for this call and others that are limited is a failed call, not "out of capacity"', async () => {
+  globalThis.fetch = async (url) => (String(url).includes('generativelanguage') ? withHeaders(429, { error: 'quota' }, { 'retry-after': '3600' }) : reply(400, 'bad request'));
+  const env = { ...baseEnv, AI_MAX_WAIT_MS: '1000', AI_DRAFT: 'anthropic:a1,gemini:g1', ANTHROPIC_API_KEY: 'k', GEMINI_API_KEY: 'k' };
+  await assert.rejects(complete('draft', 'x', { env }), (e) => e.code !== 'AI_EXHAUSTED' && /anthropic:a1/.test(e.message));
+});

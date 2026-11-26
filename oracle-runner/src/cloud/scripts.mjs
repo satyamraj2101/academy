@@ -3,9 +3,9 @@
 // Usage: node scripts.mjs <courseId> <outDir> <lessonId,lessonId,...> [--intro <lessonId>]
 // A lesson that already has a script file in outDir is skipped, so the run can be repeated after a pause. If AI capacity runs
 // out, it waits when the next slot is close (AI_SLEEP_MAX_MS, default 20 minutes) and otherwise stops and reports what is left.
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { fetchLesson, lessonToScript } from '../video/lesson-to-script.mjs';
+import { fetchLesson, lessonToScript, lessonSource } from '../video/lesson-to-script.mjs';
 import { quotaSnapshot } from '../ai.mjs';
 
 const args = process.argv.slice(2);
@@ -20,10 +20,17 @@ const log = (m) => console.error(`${new Date().toISOString().slice(11, 19)} ${m}
 const results = [];
 for (const lessonId of ids.split(',').filter(Boolean)) {
   const file = join(outDir, `${lessonId}.json`);
-  if (existsSync(file)) { results.push({ lessonId, ok: true, skipped: true }); continue; }
+  let found;
+  try { found = await fetchLesson(courseId, lessonId); } catch (e) { results.push({ lessonId, ok: false, error: e.message.slice(0, 300) }); log(`FAILED ${lessonId}: ${e.message.slice(0, 200)}`); continue; }
+  // A saved script is reused only while the lesson text it was written from is unchanged.
+  if (existsSync(file)) {
+    try {
+      const prev = JSON.parse(readFileSync(file, 'utf8'));
+      if (prev.source?.hash === lessonSource(found.lesson).hash) { results.push({ lessonId, ok: true, reused: true, title: prev.title, scenes: prev.scenes.length, warnings: 0, ai: 'saved', attempts: 0 }); log(`reusing saved script for ${found.lesson.title}`); continue; }
+    } catch { /* unreadable: write it again */ }
+  }
   for (let round = 0; ; round++) {
     try {
-      const found = await fetchLesson(courseId, lessonId);
       const r = await lessonToScript(found, { intro: lessonId === introLesson, onProgress: (m) => log(`${found.lesson.title}: ${m}`) });
       writeFileSync(file, JSON.stringify(r.script));
       results.push({ lessonId, ok: true, title: r.script.title, scenes: r.script.scenes.length, warnings: r.warnings.length, ai: `${r.ai.provider}:${r.ai.model}`, attempts: r.attempts });

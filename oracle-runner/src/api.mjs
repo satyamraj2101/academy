@@ -18,7 +18,18 @@ export async function api(path, { method = 'GET', body } = {}) {
     headers['CF-Access-Client-Id'] = CF_ID;
     headers['CF-Access-Client-Secret'] = CF_SECRET;
   }
-  const res = await fetch(`${BASE}${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+  // A connection that never answers must not freeze a job (a cloud worker would sit idle, still being billed). Give up after
+  // ACADEMY_API_TIMEOUT_MS (default 60 s). Reads are tried up to three times; writes are not repeated, so nothing is done twice.
+  let res;
+  for (let attempt = 0; ; attempt++) {
+    try {
+      res = await fetch(`${BASE}${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body), signal: AbortSignal.timeout(Number(process.env.ACADEMY_API_TIMEOUT_MS) || 60_000) });
+      break;
+    } catch (e) {
+      if (method !== 'GET' || attempt >= 2) throw new Error(`${method} ${path} failed: ${e.name === 'TimeoutError' ? 'no answer within the time limit' : e.message}`);
+      await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+    }
+  }
   const text = await res.text();
   let data;
   try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text.slice(0, 300) }; }

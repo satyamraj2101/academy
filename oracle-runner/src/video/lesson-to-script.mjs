@@ -176,7 +176,10 @@ export async function lessonToScript({ course, module, lesson }, { intro = false
       const { text, provider, model } = await complete('draft', buildPrompt({ course, module, lesson, source, feedback }), { json: true, env });
       raw = JSON.parse(text);
       last = { provider, model };
-    } catch (e) { feedback = `The reply could not be used: ${e.message}`; continue; }
+    } catch (e) {
+      if (e.code === 'AI_EXHAUSTED') throw e; // out of AI capacity is not a bad reply: stop here so the caller can wait or report when to retry
+      feedback = `The reply could not be used: ${e.message}`; continue;
+    }
     const out = finalize(raw, source, meta);
     if (out.script) {
       if (intro) out.script.scenes.unshift({ ...INTRO_SCENE });
