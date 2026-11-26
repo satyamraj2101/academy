@@ -47,6 +47,8 @@ image = (
 )
 
 work = modal.Volume.from_name("academy-work", create_if_missing=True)  # scripts persist here, so a paused run resumes later
+# Every finished scene is kept here under a hash of its content, so changing one scene of a video only draws that scene again.
+scene_cache = modal.Volume.from_name("academy-scene-cache", create_if_missing=True)
 app = modal.App("academy-video", image=image, secrets=[modal.Secret.from_name("academy-cloud")])
 
 
@@ -66,17 +68,28 @@ def _node(args, cwd="/app", check=True, stream=False, env=None):
     return r.stdout
 
 
-@app.function(cpu=2, memory=4096, timeout=900, max_containers=16, retries=modal.Retries(max_retries=2, initial_delay=2.0))
+@app.function(cpu=2, memory=4096, timeout=900, max_containers=16, retries=modal.Retries(max_retries=2, initial_delay=2.0), volumes={"/cache": scene_cache})
 def render_item(payload: dict) -> dict:
-    """One scene or ship ride, rendered on its own container. Returns the finished segment so the coordinator can join them."""
+    """One scene or ship ride, rendered on its own container (or taken from the scene cache when it was drawn before).
+    Returns the finished segment so the coordinator can join them."""
+    try:
+        scene_cache.reload()  # see scenes that other containers saved after this one started
+    except Exception:
+        pass  # a missed reload only means a cache miss
     with tempfile.TemporaryDirectory() as t:
-        item_file, cache = os.path.join(t, "item.json"), os.path.join(t, "cache")
+        item_file = os.path.join(t, "item.json")
         with open(item_file, "w") as f:
             json.dump(payload, f)
-        info = json.loads(_node(["src/cloud/scene.mjs", item_file, cache]).strip().splitlines()[-1])
-        d = os.path.join(cache, info["key"])
+        info = json.loads(_node(["src/cloud/scene.mjs", item_file, "/cache"]).strip().splitlines()[-1])
+        d = os.path.join("/cache", info["key"])
         with open(os.path.join(d, "meta.json")) as m, open(os.path.join(d, "segment.mp4"), "rb") as s:
-            return {"key": info["key"], "meta": m.read(), "segment": s.read(), "stats": info.get("stats")}
+            out = {"key": info["key"], "meta": m.read(), "segment": s.read(), "stats": info.get("stats"), "cached": bool(info.get("cached"))}
+        if not out["cached"]:
+            try:
+                scene_cache.commit()  # keep it for the next change to this video
+            except Exception:
+                pass
+        return out
 
 
 def _build_from_script(script_text: str, lesson_id: str, publish: bool, replace_video_id: str, script_info: dict) -> dict:
@@ -104,8 +117,8 @@ def _build_from_script(script_text: str, lesson_id: str, publish: bool, replace_
         chapters = json.load(f)
     summary = {
         "lesson": lesson_id, "title": script_info.get("title"), "scenes": script_info.get("scenes"), "script_warnings": script_info.get("warnings"), "ai": script_info.get("ai"),
-        "video_seconds": chapters["duration"], "rendered_items": len(results),
-        "container_seconds": round(sum((r["stats"] or {}).get("voiceSeconds", 0) + (r["stats"] or {}).get("frameSeconds", 0) + (r["stats"] or {}).get("encodeSeconds", 0) for r in results), 1),
+        "video_seconds": chapters["duration"], "rendered_items": len(results), "drawn_again": sum(1 for r in results if not r.get("cached")),
+        "container_seconds": round(sum((r["stats"] or {}).get("voiceSeconds", 0) + (r["stats"] or {}).get("frameSeconds", 0) + (r["stats"] or {}).get("encodeSeconds", 0) for r in results if not r.get("cached")), 1),
     }
     if publish:
         name = f"{lesson_id}-cloud"

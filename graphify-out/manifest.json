@@ -925,28 +925,28 @@
     "semantic_hash": "88893acc4345ddd12bd4d356cf1b6181"
   },
   "src/admin/components/builder/AssignmentBlockEditor.tsx": {
-    "mtime": 1784449422.6952543,
-    "seen": 1795557236.7355392,
-    "ast_hash": "ece8e338a93c15c497584bc4b5d73e2a",
-    "semantic_hash": "ece8e338a93c15c497584bc4b5d73e2a"
+    "mtime": 1795678092.7752512,
+    "seen": 1795679304.3422096,
+    "ast_hash": "e188b59a0daa457c850493be24a2c549",
+    "semantic_hash": ""
   },
   "src/admin/components/builder/LessonBlockEditor.tsx": {
-    "mtime": 1795677018.7617922,
-    "seen": 1795677190.832574,
-    "ast_hash": "54a0ceb55fcc6b0e68fd125cb33eb99b",
+    "mtime": 1795678360.657941,
+    "seen": 1795679304.3422158,
+    "ast_hash": "909945d54d39a468fc689791ae199fb3",
     "semantic_hash": ""
   },
   "src/admin/components/builder/MarkdownAiEditor.tsx": {
-    "mtime": 1795676543.8874228,
-    "seen": 1795677190.8325763,
-    "ast_hash": "01f26164bfcf29639356a58a6c28cd07",
+    "mtime": 1795677737.6666133,
+    "seen": 1795679304.3422215,
+    "ast_hash": "760f0fe91b8d452e22bb72a9b659a4af",
     "semantic_hash": ""
   },
   "src/admin/components/builder/QuizBlockEditor.tsx": {
-    "mtime": 1784450270.0651317,
-    "seen": 1795557236.736026,
-    "ast_hash": "ce916a760733d1a4be6ceb5791516543",
-    "semantic_hash": "ce916a760733d1a4be6ceb5791516543"
+    "mtime": 1795677982.7770119,
+    "seen": 1795679304.3422315,
+    "ast_hash": "4633eb61a3716f820137c29083c14a0b",
+    "semantic_hash": ""
   },
   "src/admin/hooks/useAdminAuth.ts": {
     "mtime": 1783370646.5893266,
@@ -2288,21 +2288,21 @@
     "semantic_hash": ""
   },
   "functions/api/admin/academy/_improvePrompt.ts": {
-    "mtime": 1795638941.0507536,
-    "seen": 1795677190.832196,
-    "ast_hash": "ae38e6ace357a4a6cc447f128ab76734",
+    "mtime": 1795677737.6620662,
+    "seen": 1795679304.3411891,
+    "ast_hash": "e9712a4c432cd9b84da6bed992458d71",
     "semantic_hash": ""
   },
   "functions/api/admin/academy/_lessonEdit.ts": {
-    "mtime": 1795676446.447488,
-    "seen": 1795677190.8321984,
-    "ast_hash": "797138dda1f3a51e40afe4a4debee363",
+    "mtime": 1795677793.5100389,
+    "seen": 1795679304.341194,
+    "ast_hash": "c335a0f793ad7885301d408a69d1bcba",
     "semantic_hash": ""
   },
   "functions/api/admin/academy/_videoEdit.ts": {
-    "mtime": 1795676824.5060818,
-    "seen": 1795677190.8322003,
-    "ast_hash": "67a4300a72701cfb97a22f4dc0006904",
+    "mtime": 1795678200.4049892,
+    "seen": 1795679304.3412025,
+    "ast_hash": "3c0951948455afe9c889da242496e343",
     "semantic_hash": ""
   },
   "functions/api/admin/academy/ai-jobs.ts": {
@@ -2330,15 +2330,15 @@
     "semantic_hash": ""
   },
   "functions/api/admin/academy/lesson-ai-edit.ts": {
-    "mtime": 1795676523.0415347,
-    "seen": 1795677190.8322518,
-    "ast_hash": "9b35caa137fe3603507df094ef9bbdb6",
+    "mtime": 1795677787.861536,
+    "seen": 1795679304.341295,
+    "ast_hash": "7e7e1e1887045b4bcde731ce207fc5d2",
     "semantic_hash": ""
   },
   "functions/api/admin/academy/lesson-videos.ts": {
-    "mtime": 1795620578.8018217,
-    "seen": 1795677190.8322542,
-    "ast_hash": "ce099b87ed1b60953436101839bd7bf7",
+    "mtime": 1795678200.408716,
+    "seen": 1795679304.341298,
+    "ast_hash": "ac8191a9aa1fe0a85fe878b39643691d",
     "semantic_hash": ""
   },
   "migrations/0030_ai_jobs.sql": {
@@ -2360,9 +2360,9 @@
     "semantic_hash": ""
   },
   "oracle-runner/cloud/modal_app.py": {
-    "mtime": 1795676993.0707202,
-    "seen": 1795677190.8324513,
-    "ast_hash": "cdd821fa82c55621b6b0791515a665d7",
+    "mtime": 1795679150.8705382,
+    "seen": 1795679304.3417556,
+    "ast_hash": "70e3683b517b6557e76ab375377b7246",
     "semantic_hash": ""
   },
   "oracle-runner/cloud/modal_smoke.py": {
@@ -2444,9 +2444,9 @@
     "semantic_hash": ""
   },
   "oracle-runner/src/cloud/video-edit.mjs": {
-    "mtime": 1795677139.923939,
-    "seen": 1795677190.832476,
-    "ast_hash": "0424d393076d31327c6815a2a0ba79fd",
+    "mtime": 1795678294.106457,
+    "seen": 1795679304.341833,
+    "ast_hash": "7dc234d60216e8789db69c05a523c3e9",
     "semantic_hash": ""
   },
   "oracle-runner/src/index.mjs": {
@@ -2594,15 +2594,15 @@
     "semantic_hash": ""
   },
   "src/admin/components/PromptImprover.tsx": {
-    "mtime": 1795639132.800569,
-    "seen": 1795677190.8325632,
-    "ast_hash": "f24bd2e487e2d97a51bbeaa447cc10c9",
+    "mtime": 1795677737.663062,
+    "seen": 1795679304.3421853,
+    "ast_hash": "0aad003ecb424f3f40f0cbd33b231e9a",
     "semantic_hash": ""
   },
   "src/admin/components/builder/VideoAiEditPanel.tsx": {
-    "mtime": 1795677016.2887206,
-    "seen": 1795677190.8325806,
-    "ast_hash": "338f48ac86765d5a5931d0ec8e64a5c9",
+    "mtime": 1795678360.656369,
+    "seen": 1795679304.3422358,
+    "ast_hash": "2b2dab5c89026f8b91294cd062bfbda9",
     "semantic_hash": ""
   },
   "src/components/MermaidDiagram.tsx": {
@@ -2642,9 +2642,9 @@
     "semantic_hash": ""
   },
   "src/test/improvePrompt.test.ts": {
-    "mtime": 1795638951.5817623,
-    "seen": 1795677190.8327613,
-    "ast_hash": "3d7a00118244caddb35584ee48c245de",
+    "mtime": 1795677743.7667854,
+    "seen": 1795679304.3428602,
+    "ast_hash": "a4742ebbf3d01296f1bb0d9a99d5241d",
     "semantic_hash": ""
   },
   "src/test/interactiveVideo.test.ts": {
@@ -2660,9 +2660,9 @@
     "semantic_hash": ""
   },
   "src/test/lessonEdit.test.ts": {
-    "mtime": 1795676456.838866,
-    "seen": 1795677190.8327665,
-    "ast_hash": "4276909ea76baa9bf4421f40201dfc99",
+    "mtime": 1795677793.5120282,
+    "seen": 1795679304.3428795,
+    "ast_hash": "c0d533af6cffe31c11f785eafb557e28",
     "semantic_hash": ""
   },
   "src/test/lessonPath.test.ts": {
@@ -2672,9 +2672,9 @@
     "semantic_hash": ""
   },
   "src/test/videoEdit.test.ts": {
-    "mtime": 1795676830.4080527,
-    "seen": 1795677190.8327715,
-    "ast_hash": "1510e683b97cb58397b3c36d43d6fa9b",
+    "mtime": 1795678200.4059768,
+    "seen": 1795679304.3428996,
+    "ast_hash": "7c6cea53e375f0f13345d2ea99a1af3e",
     "semantic_hash": ""
   },
   "oracle-runner/README.md": {
@@ -2693,6 +2693,66 @@
     "mtime": 1795622819.12737,
     "seen": 1795677190.8328147,
     "ast_hash": "babbfeb36dd850a248a8e12dc7fcbf91",
+    "semantic_hash": ""
+  },
+  "functions/api/admin/academy/_aiText.ts": {
+    "mtime": 1795677783.9569328,
+    "seen": 1795679304.3411791,
+    "ast_hash": "aeb630e6a1e0a7ca8f671da9bd86a46f",
+    "semantic_hash": ""
+  },
+  "functions/api/admin/academy/_quizEdit.ts": {
+    "mtime": 1795677899.7705123,
+    "seen": 1795679304.3411977,
+    "ast_hash": "b427bbb2e4dba10be5f41a66b173c78f",
+    "semantic_hash": ""
+  },
+  "functions/api/admin/academy/quiz-ai-edit.ts": {
+    "mtime": 1795677904.5595624,
+    "seen": 1795679304.3413255,
+    "ast_hash": "dd5487a61657f6393c657d577cb2ffc0",
+    "semantic_hash": ""
+  },
+  "oracle-runner/src/cloud/attach-scripts.mjs": {
+    "mtime": 1795678647.4822981,
+    "seen": 1795679304.341796,
+    "ast_hash": "d70fcb3c101db3e1c27d0bd910e05adc",
+    "semantic_hash": ""
+  },
+  "oracle-runner/test/videoedit.test.mjs": {
+    "mtime": 1795678308.9298632,
+    "seen": 1795679304.3420649,
+    "ast_hash": "3b98cb95813bf8c630590d5cc9ce178c",
+    "semantic_hash": ""
+  },
+  "src/admin/components/builder/AiTextChange.tsx": {
+    "mtime": 1795678089.7859106,
+    "seen": 1795679304.3422017,
+    "ast_hash": "f158577c84220d1497f3be6a0ef4bc18",
+    "semantic_hash": ""
+  },
+  "src/admin/components/builder/QuizAiPanel.tsx": {
+    "mtime": 1795678010.158626,
+    "seen": 1795679304.342225,
+    "ast_hash": "91d8b3814fdae859be736c688b069311",
+    "semantic_hash": ""
+  },
+  "src/admin/components/builder/VideoScenesEditor.tsx": {
+    "mtime": 1795678345.897009,
+    "seen": 1795679304.3422394,
+    "ast_hash": "9aeb49903a2ef9c4c45b35dc48817286",
+    "semantic_hash": ""
+  },
+  "src/test/quizEdit.test.ts": {
+    "mtime": 1795677923.7613618,
+    "seen": 1795679304.342888,
+    "ast_hash": "1e1b6d9eb6bf14103bc6d7d97e2831dc",
+    "semantic_hash": ""
+  },
+  "src/test/videoScenes.test.ts": {
+    "mtime": 1795678360.7132194,
+    "seen": 1795679304.3429031,
+    "ast_hash": "d93e1f8b5d4a8bc673e17d02fb5dc128",
     "semantic_hash": ""
   },
   "mcp-server/package-lock.json": {
