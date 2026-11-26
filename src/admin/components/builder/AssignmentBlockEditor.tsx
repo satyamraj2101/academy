@@ -111,8 +111,8 @@ export function AssignmentBlockEditor({ lessonId, value, onChange }: AssignmentB
     <div className="space-y-4">
       <div>
         <div className="flex items-center justify-between mb-2">
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Assignment Prompt</label>
-          <button onClick={openTemplates} className="flex items-center gap-1.5 text-xs font-bold text-violet-600 hover:text-violet-800">
+          <label className="block text-xs font-medium text-slate-500">Assignment Prompt</label>
+          <button onClick={openTemplates} className="flex items-center gap-1.5 text-xs font-medium text-slate-700 hover:text-slate-900">
             <Library className="w-3.5 h-3.5" /> Use Template
           </button>
         </div>
@@ -127,7 +127,7 @@ export function AssignmentBlockEditor({ lessonId, value, onChange }: AssignmentB
       <AiTextChange what="assignment" label="Ask AI to change this assignment" value={promptText} onApply={setPromptText} placeholder="For example: make it about a supplier contract, ask for a one-page summary, make the task easier" />
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Submission Type</label>
+          <label className="block text-xs font-medium text-slate-500 mb-2">Submission Type</label>
           <select
             value={submissionType}
             onChange={e => setSubmissionType(e.target.value as any)}
@@ -139,7 +139,7 @@ export function AssignmentBlockEditor({ lessonId, value, onChange }: AssignmentB
           </select>
         </div>
         <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Max Score</label>
+          <label className="block text-xs font-medium text-slate-500 mb-2">Max Score</label>
           <input
             type="number"
             value={maxScore}
@@ -149,7 +149,7 @@ export function AssignmentBlockEditor({ lessonId, value, onChange }: AssignmentB
         </div>
       </div>
       <div className="flex justify-end">
-        <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-lg font-bold text-sm shadow-sm transition-all">
+        <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-lg font-medium text-sm shadow-sm transition-colors">
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           {assignmentId ? 'Update Assignment' : 'Create Assignment'}
         </button>
@@ -157,9 +157,9 @@ export function AssignmentBlockEditor({ lessonId, value, onChange }: AssignmentB
 
       {showTemplates && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white sm:rounded-2xl w-full h-full sm:h-auto sm:max-w-lg sm:max-h-[80vh] flex flex-col overflow-hidden shadow-2xl">
+          <div className="bg-white sm:rounded-xl w-full h-full sm:h-auto sm:max-w-lg sm:max-h-[80vh] flex flex-col overflow-hidden shadow-lg">
             <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 shrink-0">
-              <h3 className="font-bold text-slate-800">Choose an Assignment Template</h3>
+              <h3 className="font-medium text-slate-800">Choose an Assignment Template</h3>
               <button onClick={() => setShowTemplates(false)} className="p-2 -mr-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200"><X className="w-4 h-4" /></button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
@@ -174,7 +174,7 @@ export function AssignmentBlockEditor({ lessonId, value, onChange }: AssignmentB
                     onClick={() => applyTemplate(t)}
                     className="w-full text-left p-3 border border-slate-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50/50 transition-colors"
                   >
-                    <p className="font-bold text-sm text-slate-800">{t.title}</p>
+                    <p className="font-medium text-sm text-slate-800">{t.title}</p>
                     <p className="text-xs text-slate-500 mt-1 line-clamp-2">{t.prompt_text}</p>
                   </button>
                 ))

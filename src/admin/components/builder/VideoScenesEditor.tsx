@@ -18,7 +18,7 @@ const inputCls = 'w-full min-h-[40px] rounded-lg border border-slate-200 bg-whit
 function Field({ label, value, onChange, area }: { label: string; value: string; onChange: (v: string) => void; area?: boolean }) {
   return (
     <label className="block">
-      <span className="text-[11px] font-bold uppercase tracking-wide text-slate-500">{label}</span>
+      <span className="text-[11px] font-medium text-slate-500">{label}</span>
       {area
         ? <textarea rows={4} value={value} onChange={e => onChange(e.target.value)} className={`${inputCls} resize-y`} />
         : <input value={value} onChange={e => onChange(e.target.value)} className={inputCls} />}
@@ -81,7 +81,7 @@ export function VideoScenesEditor({ scriptSrc, busy, onSubmit }: Props) {
         const quiz = slide.quiz;
         return (
           <fieldset key={i} className="rounded-lg border border-slate-200 bg-white p-3 space-y-2">
-            <legend className="px-1 text-xs font-bold text-slate-700">Scene {i + 1} · {slide.layout}</legend>
+            <legend className="px-1 text-xs font-medium text-slate-700">Scene {i + 1} · {slide.layout}</legend>
             <Field label="Slide title" value={slide.title || ''} onChange={v => set(i, ['slide', 'title'], v)} />
             {slide.layout === 'hook' && <><Field label="Kicker" value={slide.kicker || ''} onChange={v => set(i, ['slide', 'kicker'], v)} /><Field label="Subtitle" value={slide.subtitle || ''} onChange={v => set(i, ['slide', 'subtitle'], v)} /></>}
             {slide.layout === 'bullets' && list(i, 'bullets', 'Point')}
@@ -98,7 +98,7 @@ export function VideoScenesEditor({ scriptSrc, busy, onSubmit }: Props) {
       })}
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" disabled={!dirty || busy} onClick={() => onSubmit(script)}
-          className="min-h-[44px] inline-flex items-center gap-1.5 px-4 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-sm font-bold disabled:opacity-50">
+          className="min-h-[44px] inline-flex items-center gap-1.5 px-4 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium disabled:opacity-50">
           {busy ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : <Pencil className="w-4 h-4" aria-hidden="true" />} Rebuild with my edits
         </button>
         {!dirty && <span className="text-xs text-slate-500">Change something above first.</span>}

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Check, Loader2, Sparkles, Undo2, X } from 'lucide-react';
+import { Check, Loader2, Undo2, X } from 'lucide-react';
 import { adminFetch } from '../hooks/useD1Query';
 
 export type ImproveKind = 'course_brief' | 'lesson_topic' | 'quiz_topic' | 'assignment' | 'video_note' | 'edit_request' | 'general';
@@ -97,9 +97,9 @@ export function PromptImprover({ kind, text, fields, onApply }: Props) {
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
         <button
           type="button" onClick={() => void run(true)} disabled={length < 3 || status === 'loading'}
-          className="inline-flex items-center gap-1.5 min-h-[36px] text-xs font-bold text-violet-700 hover:text-violet-900 disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 min-h-[36px] text-xs font-medium text-slate-700 hover:text-slate-900 disabled:opacity-50"
         >
-          {status === 'loading' ? <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" /> : <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />}
+          {status === 'loading' ? <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" /> : null}
           {status === 'loading' ? 'Checking your prompt…' : 'Improve with AI'}
         </button>
         <label className="inline-flex items-center gap-1.5 min-h-[36px] text-xs text-slate-500 cursor-pointer">
@@ -117,27 +117,27 @@ export function PromptImprover({ kind, text, fields, onApply }: Props) {
       </div>
 
       {status === 'ready' && result && (
-        <div className="mt-2 rounded-lg border border-violet-200 bg-violet-50 p-3 text-sm">
+        <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm">
           <div className="flex items-start justify-between gap-3">
-            <p className="font-bold text-violet-900 flex items-center gap-1.5"><Sparkles className="w-4 h-4" aria-hidden="true" /> Suggested improvement{result.score ? <span className="font-medium text-violet-700"> · clarity {result.score}/5</span> : null}</p>
+            <p className="font-medium text-slate-700 flex items-center gap-1.5">  Suggested improvement{result.score ? <span className="font-medium text-slate-700"> · clarity {result.score}/5</span> : null}</p>
             <button type="button" onClick={dismiss} aria-label="Dismiss suggestion" className="min-h-[36px] min-w-[36px] -mt-2 -mr-2 inline-flex items-center justify-center text-slate-500 hover:text-slate-800"><X className="w-4 h-4" aria-hidden="true" /></button>
           </div>
           {fields ? (
             <dl className="mt-2 space-y-1.5">
-              {changedFields.map(k => (<div key={k}><dt className="text-xs font-bold uppercase tracking-wide text-violet-800">{FIELD_LABEL[k]}</dt><dd className="text-slate-800 whitespace-pre-wrap">{result.improvedFields![k]}</dd></div>))}
+              {changedFields.map(k => (<div key={k}><dt className="text-xs font-medium text-slate-700">{FIELD_LABEL[k]}</dt><dd className="text-slate-800 whitespace-pre-wrap">{result.improvedFields![k]}</dd></div>))}
             </dl>
           ) : (
-            <p className="mt-2 text-slate-800 whitespace-pre-wrap rounded border border-violet-100 bg-white p-2">{result.improved}</p>
+            <p className="mt-2 text-slate-800 whitespace-pre-wrap rounded border border-slate-200 bg-white p-2">{result.improved}</p>
           )}
           {result.changes.length > 0 && (
             <ul className="mt-2 space-y-0.5 text-xs text-slate-700">
-              {result.changes.map((c, i) => <li key={i}><span className="font-bold text-violet-800">{CHANGE_LABEL[c.type]}:</span> {c.note}</li>)}
+              {result.changes.map((c, i) => <li key={i}><span className="font-medium text-slate-700">{CHANGE_LABEL[c.type]}:</span> {c.note}</li>)}
             </ul>
           )}
-          {result.missing.length > 0 && <p className="mt-2 text-xs text-amber-800"><span className="font-bold">Still missing:</span> {result.missing.join('; ')}</p>}
+          {result.missing.length > 0 && <p className="mt-2 text-xs text-amber-800"><span className="font-medium">Still missing:</span> {result.missing.join('; ')}</p>}
           <div className="mt-3 flex flex-wrap gap-2">
-            <button type="button" onClick={() => apply(result)} className="min-h-[40px] px-4 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold">Use this</button>
-            <button type="button" onClick={dismiss} className="min-h-[40px] px-4 rounded-lg border border-slate-300 text-slate-700 hover:bg-white text-sm font-bold">Keep mine</button>
+            <button type="button" onClick={() => apply(result)} className="min-h-[40px] px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium">Use this</button>
+            <button type="button" onClick={dismiss} className="min-h-[40px] px-4 rounded-lg border border-slate-300 text-slate-700 hover:bg-white text-sm font-medium">Keep mine</button>
           </div>
         </div>
       )}

@@ -45,9 +45,9 @@ function InlineNameModal({ title, label, placeholder, onCancel, onSubmit }: {
   const [value, setValue] = useState('');
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md shadow-2xl overflow-hidden">
+      <div className="bg-white rounded-t-2xl sm:rounded-xl w-full sm:max-w-md shadow-lg overflow-hidden">
         <div className="px-5 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-          <h3 className="font-bold text-slate-800">{title}</h3>
+          <h3 className="font-medium text-slate-800">{title}</h3>
           <button onClick={onCancel} className="p-2 -mr-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors">
             <X className="w-4 h-4" />
           </button>
@@ -57,20 +57,20 @@ function InlineNameModal({ title, label, placeholder, onCancel, onSubmit }: {
           className="p-5 sm:p-6 space-y-4"
         >
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{label}</label>
+            <label className="block text-xs font-medium text-slate-500 mb-2">{label}</label>
             <input
               autoFocus
               value={value}
               onChange={e => setValue(e.target.value)}
               placeholder={placeholder}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 sm:py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-base sm:text-sm"
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 sm:py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors text-base sm:text-sm"
             />
           </div>
           <div className="flex justify-end gap-3 pb-1 sm:pb-0">
             <button type="button" onClick={onCancel} className="px-4 py-2.5 sm:py-2 text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors">
               Cancel
             </button>
-            <button type="submit" disabled={!value.trim()} className="px-4 py-2.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white rounded-lg font-bold text-sm shadow-sm transition-all">
+            <button type="submit" disabled={!value.trim()} className="px-4 py-2.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white rounded-lg font-medium text-sm shadow-sm transition-colors">
               Create
             </button>
           </div>
@@ -89,43 +89,43 @@ function ModuleSettingsModal({ module, onCancel, onSave }: {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md shadow-2xl overflow-hidden">
+      <div className="bg-white rounded-t-2xl sm:rounded-xl w-full sm:max-w-md shadow-lg overflow-hidden">
         <div className="px-5 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-          <h3 className="font-bold text-slate-800">Module Settings: {module.title}</h3>
+          <h3 className="font-medium text-slate-800">Module Settings: {module.title}</h3>
           <button onClick={onCancel} className="p-2 -mr-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
         <div className="p-5 sm:p-6 space-y-4">
           <label className="flex items-center justify-between cursor-pointer">
-            <span className="text-sm font-bold text-slate-700">Published</span>
+            <span className="text-sm font-medium text-slate-700">Published</span>
             <input type="checkbox" checked={isPublished} onChange={e => setIsPublished(e.target.checked)} className="w-5 h-5 accent-indigo-600" />
           </label>
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Drip Delay (days after enrollment)</label>
+            <label className="block text-xs font-medium text-slate-500 mb-2">Drip Delay (days after enrollment)</label>
             <input
               type="number"
               min={0}
               value={dripDays}
               onChange={e => setDripDays(e.target.value)}
               placeholder="Unlocked immediately"
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 transition-all"
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 transition-colors"
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Fixed Unlock Date (optional)</label>
+            <label className="block text-xs font-medium text-slate-500 mb-2">Fixed Unlock Date (optional)</label>
             <input
               type="date"
               value={unlockDate}
               onChange={e => setUnlockDate(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 transition-all"
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 transition-colors"
             />
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <button onClick={onCancel} className="px-4 py-2.5 sm:py-2 text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors">Cancel</button>
             <button
               onClick={() => onSave({ is_published: isPublished, drip_days: dripDays ? Number(dripDays) : null, unlock_date: unlockDate || null })}
-              className="px-4 py-2.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-sm shadow-sm transition-all"
+              className="px-4 py-2.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-sm shadow-sm transition-colors"
             >
               Save
             </button>
@@ -147,47 +147,47 @@ function LessonSettingsModal({ lesson, onCancel, onSave }: {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md shadow-2xl overflow-hidden">
+      <div className="bg-white rounded-t-2xl sm:rounded-xl w-full sm:max-w-md shadow-lg overflow-hidden">
         <div className="px-5 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-          <h3 className="font-bold text-slate-800">Lesson Settings: {lesson.title}</h3>
+          <h3 className="font-medium text-slate-800">Lesson Settings: {lesson.title}</h3>
           <button onClick={onCancel} className="p-2 -mr-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
         <div className="p-5 sm:p-6 space-y-4">
           <label className="flex items-center justify-between cursor-pointer">
-            <span className="text-sm font-bold text-slate-700">Free Preview (accessible without enrollment)</span>
+            <span className="text-sm font-medium text-slate-700">Free Preview (accessible without enrollment)</span>
             <input type="checkbox" checked={isPreview} onChange={e => setIsPreview(e.target.checked)} className="w-5 h-5 accent-indigo-600 shrink-0 ml-3" />
           </label>
           <label className="flex items-center justify-between cursor-pointer">
-            <span className="text-sm font-bold text-slate-700">Published</span>
+            <span className="text-sm font-medium text-slate-700">Published</span>
             <input type="checkbox" checked={isPublished} onChange={e => setIsPublished(e.target.checked)} className="w-5 h-5 accent-indigo-600" />
           </label>
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Drip Delay (days after enrollment)</label>
+            <label className="block text-xs font-medium text-slate-500 mb-2">Drip Delay (days after enrollment)</label>
             <input
               type="number"
               min={0}
               value={dripDays}
               onChange={e => setDripDays(e.target.value)}
               placeholder="Unlocked immediately"
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 transition-all"
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 transition-colors"
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Fixed Unlock Date (optional)</label>
+            <label className="block text-xs font-medium text-slate-500 mb-2">Fixed Unlock Date (optional)</label>
             <input
               type="date"
               value={unlockDate}
               onChange={e => setUnlockDate(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 transition-all"
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 transition-colors"
             />
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <button onClick={onCancel} className="px-4 py-2.5 sm:py-2 text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors">Cancel</button>
             <button
               onClick={() => onSave({ is_preview: isPreview, is_published: isPublished, drip_days: dripDays ? Number(dripDays) : null, unlock_date: unlockDate || null })}
-              className="px-4 py-2.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-sm shadow-sm transition-all"
+              className="px-4 py-2.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-sm shadow-sm transition-colors"
             >
               Save
             </button>
@@ -203,15 +203,15 @@ function ConfirmDeleteModal({ title, message, onCancel, onConfirm }: {
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-sm shadow-2xl overflow-hidden">
+      <div className="bg-white rounded-t-2xl sm:rounded-xl w-full sm:max-w-sm shadow-lg overflow-hidden">
         <div className="p-5 sm:p-6 space-y-4">
-          <h3 className="font-bold text-slate-800">{title}</h3>
+          <h3 className="font-medium text-slate-800">{title}</h3>
           <p className="text-sm text-slate-500">{message}</p>
           <div className="flex justify-end gap-3 pt-2 pb-1 sm:pb-0">
             <button onClick={onCancel} className="px-4 py-2.5 sm:py-2 text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors">
               Cancel
             </button>
-            <button onClick={onConfirm} className="px-4 py-2.5 sm:py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-sm shadow-sm transition-all">
+            <button onClick={onConfirm} className="px-4 py-2.5 sm:py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-medium text-sm shadow-sm transition-colors">
               Delete
             </button>
           </div>
@@ -510,14 +510,14 @@ export function CurriculumBuilder({ courseId, courseTitle }: { courseId: string;
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm sticky top-0 z-10 sm:static">
           <div className="min-w-0">
-            <h3 className="text-lg font-bold text-slate-800 truncate">Editing Lesson: {editingLesson.title}</h3>
+            <h3 className="text-lg font-medium text-slate-800 truncate">Editing Lesson: {editingLesson.title}</h3>
             <p className="text-sm text-slate-500 hidden sm:block">Build your lesson content using blocks.</p>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <button onClick={() => setEditingLesson(null)} disabled={savingLesson} className="px-4 py-2.5 sm:py-2 text-slate-500 hover:text-slate-800 font-medium text-sm transition-colors disabled:opacity-50">
               Cancel
             </button>
-            <button onClick={saveLessonBlocks} disabled={savingLesson} className="flex-1 sm:flex-none justify-center px-4 py-2.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg font-bold text-sm shadow-sm transition-all flex items-center gap-2">
+            <button onClick={saveLessonBlocks} disabled={savingLesson} className="flex-1 sm:flex-none justify-center px-4 py-2.5 sm:py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg font-medium text-sm shadow-sm transition-colors flex items-center gap-2">
               {savingLesson && <Loader2 className="w-4 h-4 animate-spin" />}
               {savingLesson ? 'Saving...' : 'Save Content'}
             </button>
@@ -532,14 +532,14 @@ export function CurriculumBuilder({ courseId, courseTitle }: { courseId: string;
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap justify-between items-center gap-3">
-        <h3 className="text-lg font-bold text-slate-800">Course Curriculum</h3>
+        <h3 className="text-lg font-medium text-slate-800">Course Curriculum</h3>
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <input ref={importInputRef} type="file" accept=".zip" className="hidden" onChange={handleImportFile} />
           <button
             onClick={() => importInputRef.current?.click()}
             disabled={importing}
-            title="Import a zip of numbered Module/Lesson folders to scaffold curriculum instantly"
-            className="flex items-center gap-2 px-2.5 sm:px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg font-bold text-xs sm:text-sm shadow-sm transition-colors disabled:opacity-50"
+            title="Import a zip of numbered Module/Lesson folders to scaffold the curriculum"
+            className="flex items-center gap-2 px-2.5 sm:px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg font-medium text-xs sm:text-sm shadow-sm transition-colors disabled:opacity-50"
           >
             {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />} <span className="hidden sm:inline">Import</span>
           </button>
@@ -547,11 +547,11 @@ export function CurriculumBuilder({ courseId, courseTitle }: { courseId: string;
             onClick={handleExport}
             disabled={exporting || modules.length === 0}
             title="Download this course's full curriculum, quizzes, assignments, and assets as a zip"
-            className="flex items-center gap-2 px-2.5 sm:px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg font-bold text-xs sm:text-sm shadow-sm transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-2.5 sm:px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg font-medium text-xs sm:text-sm shadow-sm transition-colors disabled:opacity-50"
           >
             {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />} <span className="hidden sm:inline">Export</span>
           </button>
-          <button onClick={() => setShowAddModule(true)} className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-xs sm:text-sm shadow-sm transition-all ml-auto sm:ml-0">
+          <button onClick={() => setShowAddModule(true)} className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-xs sm:text-sm shadow-sm transition-colors ml-auto sm:ml-0">
             <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Add </span>Module
           </button>
         </div>
@@ -571,7 +571,7 @@ export function CurriculumBuilder({ courseId, courseTitle }: { courseId: string;
               setDragModuleId(null);
               setDragLesson(null);
             }}
-            className={`bg-white border rounded-xl overflow-hidden shadow-sm transition-all ${dragModuleId === module.id ? 'opacity-50 border-indigo-300' : 'border-slate-200'}`}
+            className={`bg-white border rounded-xl overflow-hidden shadow-sm transition-colors ${dragModuleId === module.id ? 'opacity-50 border-slate-200' : 'border-slate-200'}`}
           >
             <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-slate-50 border-b border-slate-200">
               <span className="hidden sm:inline cursor-grab text-slate-400 hover:text-slate-600 shrink-0" title="Drag to reorder">
@@ -580,14 +580,14 @@ export function CurriculumBuilder({ courseId, courseTitle }: { courseId: string;
               <button onClick={() => toggleModule(module.id)} className="text-slate-500 hover:text-slate-800 shrink-0">
                 {expandedModules[module.id] ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
               </button>
-              <h4 className="font-bold text-slate-800 flex-1 min-w-0 truncate text-sm sm:text-base">Module {mIndex + 1}: {module.title}</h4>
+              <h4 className="font-medium text-slate-800 flex-1 min-w-0 truncate text-sm sm:text-base">Module {mIndex + 1}: {module.title}</h4>
               {(module.drip_days || module.unlock_date) && (
-                <span title="Drip-scheduled" className="hidden sm:flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full shrink-0">
+                <span title="Drip-scheduled" className="hidden sm:flex items-center gap-1 text-[11px] font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full shrink-0">
                   <Clock className="w-3 h-3" /> {module.drip_days ? `Day ${module.drip_days}` : module.unlock_date}
                 </span>
               )}
               {module.is_published === 0 && (
-                <span className="hidden sm:flex items-center gap-1 text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full shrink-0">
+                <span className="hidden sm:flex items-center gap-1 text-[11px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full shrink-0">
                   <EyeOff className="w-3 h-3" /> Unpublished
                 </span>
               )}
@@ -617,7 +617,7 @@ export function CurriculumBuilder({ courseId, courseTitle }: { courseId: string;
                       }
                       setDragLesson(null);
                     }}
-                    className={`flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 bg-white rounded-lg border transition-colors shadow-sm ${dragLesson?.id === lesson.id ? 'opacity-50 border-indigo-300' : 'border-slate-200 hover:border-indigo-300'}`}
+                    className={`flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 bg-white rounded-lg border transition-colors shadow-sm ${dragLesson?.id === lesson.id ? 'opacity-50 border-slate-200' : 'border-slate-200 hover:border-indigo-300'}`}
                   >
                     <span className="hidden sm:inline cursor-grab text-slate-400 hover:text-slate-600 shrink-0" title="Drag to reorder">
                       <GripVertical className="w-4 h-4" />
@@ -627,22 +627,22 @@ export function CurriculumBuilder({ courseId, courseTitle }: { courseId: string;
                     </span>
                     <span className="text-sm font-medium text-slate-700 flex-1 min-w-0 truncate">{lIndex + 1}. {lesson.title}</span>
                     {!!lesson.is_preview && (
-                      <span title="Free preview" className="hidden sm:flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full shrink-0">
+                      <span title="Free preview" className="hidden sm:flex items-center gap-1 text-[11px] font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full shrink-0">
                         <Eye className="w-3 h-3" /> Preview
                       </span>
                     )}
                     {lesson.is_published === 0 && (
-                      <span className="hidden sm:flex items-center gap-1 text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full shrink-0">
+                      <span className="hidden sm:flex items-center gap-1 text-[11px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full shrink-0">
                         <EyeOff className="w-3 h-3" /> Unpublished
                       </span>
                     )}
                     {(lesson.drip_days || lesson.unlock_date) && (
-                      <span title="Drip-scheduled" className="hidden sm:flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full shrink-0">
+                      <span title="Drip-scheduled" className="hidden sm:flex items-center gap-1 text-[11px] font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full shrink-0">
                         <Clock className="w-3 h-3" /> {lesson.drip_days ? `Day ${lesson.drip_days}` : lesson.unlock_date}
                       </span>
                     )}
                     {lesson.sections && lesson.sections.length > 0 && (
-                      <span className="hidden sm:flex items-center gap-1 text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full shrink-0">
+                      <span className="hidden sm:flex items-center gap-1 text-[11px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full shrink-0">
                         <Layers className="w-3 h-3" /> {lesson.sections.length} block{lesson.sections.length === 1 ? '' : 's'}
                       </span>
                     )}
@@ -658,7 +658,7 @@ export function CurriculumBuilder({ courseId, courseTitle }: { courseId: string;
                   </div>
                 ))}
 
-                <button onClick={() => setAddLessonForModule(module.id)} className="w-full mt-2 py-3 border-2 border-dashed border-slate-200 hover:border-indigo-300 rounded-lg text-slate-500 hover:text-indigo-600 text-sm font-bold flex items-center justify-center gap-2 transition-colors bg-slate-50 hover:bg-indigo-50">
+                <button onClick={() => setAddLessonForModule(module.id)} className="w-full mt-2 py-3 border border-dashed border-slate-200 hover:border-indigo-300 rounded-lg text-slate-500 hover:text-indigo-600 text-sm font-medium flex items-center justify-center gap-2 transition-colors bg-slate-50 hover:bg-indigo-50">
                   <Plus className="w-4 h-4" /> Add Lesson
                 </button>
               </div>
@@ -667,9 +667,9 @@ export function CurriculumBuilder({ courseId, courseTitle }: { courseId: string;
         ))}
 
         {modules.length === 0 && (
-          <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">
+          <div className="text-center py-12 border border-dashed border-slate-200 rounded-xl bg-slate-50">
             <p className="text-slate-500 mb-4">No modules yet. Start building your course!</p>
-            <button onClick={() => setShowAddModule(true)} className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg font-bold text-sm mx-auto hover:bg-indigo-100 transition-colors">
+            <button onClick={() => setShowAddModule(true)} className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 border border-slate-200 rounded-lg font-medium text-sm mx-auto hover:bg-indigo-100 transition-colors">
               <Plus className="w-4 h-4" /> Add First Module
             </button>
           </div>

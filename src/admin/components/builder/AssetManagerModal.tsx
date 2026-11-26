@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, UploadCloud, File, Image as ImageIcon, Loader2, Search, Video, Presentation, FileText, Trash2, Copy, Check } from 'lucide-react';
+import { X, UploadCloud, File, Loader2, Search, Video, Presentation, FileText, Trash2, Copy, Check } from 'lucide-react';
 import { toast } from '../../../lib/toast';
 import { adminFetch } from '../../hooks/useD1Query';
 
@@ -175,7 +175,7 @@ export function AssetManagerModal({ onClose, onSelect, inline }: AssetManagerMod
             <div className="w-16 h-16 bg-white border border-slate-200 shadow-sm rounded-full flex items-center justify-center mb-4">
               <File className="w-8 h-8 text-slate-400" />
             </div>
-            <h3 className="text-slate-800 font-bold mb-1">{assets.length === 0 ? 'No assets uploaded yet' : 'No assets match your search'}</h3>
+            <h3 className="text-slate-800 font-medium mb-1">{assets.length === 0 ? 'No assets uploaded yet' : 'No assets match your search'}</h3>
             <p className="text-slate-500 text-sm max-w-md">Upload images, PDFs, videos, or PowerPoint presentations to use them across your courses.</p>
           </>
         ) : (
@@ -183,12 +183,12 @@ export function AssetManagerModal({ onClose, onSelect, inline }: AssetManagerMod
             {filteredAssets.map((asset) => (
               <div
                 key={asset.key}
-                className="border border-slate-200 rounded-xl overflow-hidden hover:border-indigo-400 hover:shadow-md transition-all cursor-pointer bg-white group flex flex-col"
+                className="border border-slate-200 rounded-xl overflow-hidden hover:border-indigo-400 hover:shadow-md transition-colors cursor-pointer bg-white group flex flex-col"
                 onClick={() => onSelect(asset.url)}
               >
                 <div className="h-28 bg-slate-100 flex items-center justify-center p-2 relative">
                   <div className="absolute inset-0 bg-indigo-600/0 group-hover:bg-indigo-600/10 transition-colors z-10 flex items-center justify-center">
-                    <span className="opacity-0 group-hover:opacity-100 bg-white text-indigo-600 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-all transform scale-95 group-hover:scale-100">
+                    <span className="opacity-0 group-hover:opacity-100 bg-white text-indigo-600 px-3 py-1.5 rounded-lg text-xs font-medium shadow-sm transition-colors transform scale-95">
                       Select Asset
                     </span>
                   </div>
@@ -199,8 +199,8 @@ export function AssetManagerModal({ onClose, onSelect, inline }: AssetManagerMod
                   )}
                 </div>
                 <div className="p-2.5 border-t border-slate-200 bg-white flex-1 flex flex-col">
-                  <p className="text-xs font-bold text-slate-700 truncate" title={asset.name}>{asset.name}</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">{formatSize(asset.size)} · {new Date(asset.uploadedAt).toLocaleDateString()}</p>
+                  <p className="text-xs font-medium text-slate-700 truncate" title={asset.name}>{asset.name}</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">{formatSize(asset.size)} · {new Date(asset.uploadedAt).toLocaleDateString()}</p>
                   <div className="flex items-center gap-1 mt-2 pt-2 border-t border-slate-100">
                     <button
                       onClick={e => handleCopy(asset, e)}
@@ -216,7 +216,7 @@ export function AssetManagerModal({ onClose, onSelect, inline }: AssetManagerMod
                       className={`p-1 rounded transition-colors ml-auto ${confirmDeleteId === asset.id ? 'text-rose-600 bg-rose-50' : 'text-slate-400 hover:text-rose-500 hover:bg-rose-50'}`}
                     >
                       {deletingId === asset.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : confirmDeleteId === asset.id ? (
-                        <span className="text-[10px] font-bold px-1">Confirm?</span>
+                        <span className="text-[11px] font-medium px-1">Confirm?</span>
                       ) : <Trash2 className="w-3.5 h-3.5" />}
                     </button>
                   </div>
@@ -235,9 +235,9 @@ export function AssetManagerModal({ onClose, onSelect, inline }: AssetManagerMod
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white sm:rounded-2xl w-full h-full sm:h-auto sm:max-w-4xl sm:max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+      <div className="bg-white sm:rounded-xl w-full h-full sm:h-auto sm:max-w-4xl sm:max-h-[85vh] flex flex-col overflow-hidden shadow-lg">
         <div className="px-4 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 shrink-0">
-          <h2 className="text-lg font-bold text-slate-800">Asset Manager</h2>
+          <h2 className="text-lg font-medium text-slate-800">Asset Manager</h2>
           <button onClick={onClose} className="p-2.5 -mr-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors">
             <X className="w-5 h-5" />
           </button>

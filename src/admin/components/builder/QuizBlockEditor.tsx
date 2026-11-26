@@ -162,19 +162,19 @@ export function QuizBlockEditor({ courseId, value, onChange }: QuizBlockEditorPr
           </select>
           <button
             onClick={openTemplates}
-            className="flex items-center gap-2 px-4 py-2.5 bg-violet-50 hover:bg-violet-100 text-violet-600 rounded-lg font-bold text-sm shadow-sm transition-all whitespace-nowrap"
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg font-medium text-sm shadow-sm transition-colors whitespace-nowrap"
           >
             <Library className="w-4 h-4" /> Use Template
           </button>
           <button
             onClick={() => setCreatingQuiz(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-sm shadow-sm transition-all whitespace-nowrap"
+            className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-sm shadow-sm transition-colors whitespace-nowrap"
           >
             <Plus className="w-4 h-4" /> New Quiz
           </button>
         </div>
       ) : (
-        <div className="flex gap-3 bg-indigo-50 border border-indigo-200 rounded-lg p-3">
+        <div className="flex gap-3 bg-slate-100 border border-slate-200 rounded-lg p-3">
           <input
             autoFocus
             value={newQuizTitle}
@@ -183,7 +183,7 @@ export function QuizBlockEditor({ courseId, value, onChange }: QuizBlockEditorPr
             className="flex-1 bg-white border border-slate-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500"
             onKeyDown={e => e.key === 'Enter' && createQuiz()}
           />
-          <button onClick={createQuiz} disabled={!newQuizTitle.trim()} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white rounded-lg font-bold text-sm transition-all">Create</button>
+          <button onClick={createQuiz} disabled={!newQuizTitle.trim()} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white rounded-lg font-medium text-sm transition-colors">Create</button>
           <button onClick={() => { setCreatingQuiz(false); setNewQuizTitle(''); }} className="px-4 py-2 text-slate-500 hover:text-slate-800 font-medium text-sm transition-colors">Cancel</button>
         </div>
       )}
@@ -216,7 +216,7 @@ export function QuizBlockEditor({ courseId, value, onChange }: QuizBlockEditorPr
             ) : (
               <button
                 onClick={() => setAddingQuestion(true)}
-                className="w-full py-2.5 border-2 border-dashed border-slate-200 hover:border-indigo-300 rounded-lg text-slate-500 hover:text-indigo-600 text-sm font-bold flex items-center justify-center gap-2 transition-colors bg-slate-50 hover:bg-indigo-50"
+                className="w-full py-2.5 border border-dashed border-slate-200 hover:border-indigo-300 rounded-lg text-slate-500 hover:text-indigo-600 text-sm font-medium flex items-center justify-center gap-2 transition-colors bg-slate-50 hover:bg-indigo-50"
               >
                 <Plus className="w-4 h-4" /> Add Question
               </button>
@@ -227,9 +227,9 @@ export function QuizBlockEditor({ courseId, value, onChange }: QuizBlockEditorPr
 
       {showTemplates && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white sm:rounded-2xl w-full h-full sm:h-auto sm:max-w-lg sm:max-h-[80vh] flex flex-col overflow-hidden shadow-2xl">
+          <div className="bg-white sm:rounded-xl w-full h-full sm:h-auto sm:max-w-lg sm:max-h-[80vh] flex flex-col overflow-hidden shadow-lg">
             <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50 shrink-0">
-              <h3 className="font-bold text-slate-800">Choose a Quiz Template</h3>
+              <h3 className="font-medium text-slate-800">Choose a Quiz Template</h3>
               <button onClick={() => setShowTemplates(false)} className="p-2 -mr-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200"><X className="w-4 h-4" /></button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
@@ -245,7 +245,7 @@ export function QuizBlockEditor({ courseId, value, onChange }: QuizBlockEditorPr
                     disabled={applyingTemplate}
                     className="w-full text-left p-3 border border-slate-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50/50 transition-colors disabled:opacity-50"
                   >
-                    <p className="font-bold text-sm text-slate-800">{t.title}</p>
+                    <p className="font-medium text-sm text-slate-800">{t.title}</p>
                     <p className="text-xs text-slate-500 mt-0.5">Passing: {t.passing_score}% · {t.questions.length} question{t.questions.length === 1 ? '' : 's'}</p>
                   </button>
                 ))
@@ -292,7 +292,7 @@ function QuestionRow({ index, question, onChanged }: { index: number; question: 
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-semibold text-slate-800">{index + 1}. {question.question_text}</p>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{QUESTION_TYPE_LABELS[type]}</span>
+          <span className="text-[11px] font-medium text-slate-400">{QUESTION_TYPE_LABELS[type]}</span>
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <button onClick={() => setEditing(true)} title="Edit this question" aria-label={`Edit question ${index + 1}`} className="text-slate-400 hover:text-indigo-600 p-1.5 min-h-[32px] min-w-[32px] inline-flex items-center justify-center">
@@ -393,13 +393,13 @@ function QuestionForm({ quizId, existing, onDone, onCancel }: { quizId: string; 
   };
 
   return (
-    <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 space-y-3">
+    <div className="bg-slate-100 border border-slate-200 rounded-lg p-4 space-y-3">
       <div className="flex gap-2 flex-wrap">
         {(['mcq', 'true_false', 'multi_select', 'short_answer'] as QType[]).map(t => (
           <button
             key={t}
             onClick={() => setQType(t)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${qType === t ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:border-indigo-300'}`}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${qType === t ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:border-indigo-300'}`}
           >
             {QUESTION_TYPE_LABELS[t]}
           </button>
@@ -469,7 +469,7 @@ function QuestionForm({ quizId, existing, onDone, onCancel }: { quizId: string; 
       />
 
       <div className="flex items-center gap-2">
-        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Points</label>
+        <label className="text-xs font-medium text-slate-500">Points</label>
         <input
           type="number"
           min={1}
@@ -481,7 +481,7 @@ function QuestionForm({ quizId, existing, onDone, onCancel }: { quizId: string; 
 
       <div className="flex justify-end gap-2 pt-1">
         <button onClick={onCancel} className="px-3 py-1.5 text-slate-500 hover:text-slate-800 font-medium text-sm transition-colors">Cancel</button>
-        <button onClick={handleSave} disabled={saving} className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg font-bold text-sm transition-all flex items-center gap-2">
+        <button onClick={handleSave} disabled={saving} className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-2">
           {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />} {existing ? 'Save changes' : 'Save Question'}
         </button>
       </div>

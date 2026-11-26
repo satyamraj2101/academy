@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Loader2, ArrowLeft, ArrowRight, CheckCircle2, BookOpen, ChevronDown, RefreshCw } from 'lucide-react';
+import { Loader2, ArrowLeft, ArrowRight, CheckCircle2, BookOpen, ChevronDown, RefreshCw } from 'lucide-react';
 import { adminFetch } from '../../hooks/useD1Query';
 import { useGeminiModels } from '../../hooks/useGeminiModels';
 import { toast } from '../../../lib/toast';
@@ -193,18 +193,16 @@ export default function CourseWizardPage() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="min-w-0">
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2 min-w-0">
-            <Sparkles className="w-5 h-5 text-violet-600 shrink-0" />
-            <span className="truncate">AI Course Wizard</span>
+          <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 flex items-center gap-2 min-w-0"> <span className="truncate">AI Course Wizard</span>
           </h1>
-          <p className="text-sm text-slate-500 mt-0.5">Answer a few questions and generate a full course outline instantly.</p>
+          <p className="text-sm text-slate-500 mt-0.5">Answer a few questions and get a full course outline to review and edit.</p>
         </div>
       </div>
 
       {step === 'brief' && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-5">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-5">
           <div className="flex items-center justify-between gap-3 flex-wrap">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Gemini Model</span>
+            <span className="text-xs font-medium text-slate-500">Gemini Model</span>
             <div className="relative">
               <select
                 value={selectedModel}
@@ -218,7 +216,7 @@ export default function CourseWizardPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Topic <span className="text-rose-500">*</span></label>
+            <label className="block text-xs font-medium text-slate-500 mb-2">Topic <span className="text-rose-500">*</span></label>
             <input
               value={topic}
               onChange={e => setTopic(e.target.value)}
@@ -228,7 +226,7 @@ export default function CourseWizardPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Target Audience <span className="text-rose-500">*</span></label>
+            <label className="block text-xs font-medium text-slate-500 mb-2">Target Audience <span className="text-rose-500">*</span></label>
             <input
               value={audience}
               onChange={e => setAudience(e.target.value)}
@@ -238,7 +236,7 @@ export default function CourseWizardPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Primary Goal / Outcome <span className="text-rose-500">*</span></label>
+            <label className="block text-xs font-medium text-slate-500 mb-2">Primary Goal / Outcome <span className="text-rose-500">*</span></label>
             <textarea
               value={goal}
               onChange={e => setGoal(e.target.value)}
@@ -252,7 +250,7 @@ export default function CourseWizardPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Level</label>
+              <label className="block text-xs font-medium text-slate-500 mb-2">Level</label>
               <select
                 value={level}
                 onChange={e => setLevel(e.target.value)}
@@ -262,7 +260,7 @@ export default function CourseWizardPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2"># Modules</label>
+              <label className="block text-xs font-medium text-slate-500 mb-2"># Modules</label>
               <input
                 type="number"
                 min={2}
@@ -276,7 +274,7 @@ export default function CourseWizardPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Approximate Duration</label>
+              <label className="block text-xs font-medium text-slate-500 mb-2">Approximate Duration</label>
               <input
                 value={duration}
                 onChange={e => setDuration(e.target.value)}
@@ -285,7 +283,7 @@ export default function CourseWizardPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tone / Style</label>
+              <label className="block text-xs font-medium text-slate-500 mb-2">Tone / Style</label>
               <select
                 value={tone}
                 onChange={e => setTone(e.target.value)}
@@ -299,9 +297,9 @@ export default function CourseWizardPage() {
           <button
             onClick={generate}
             disabled={generating || !canGenerate}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white rounded-xl font-bold text-sm shadow-sm transition-all"
+            className="w-full flex items-center justify-center gap-2 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl font-medium text-sm shadow-sm transition-colors"
           >
-            {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+            {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             {generating ? 'Designing your course...' : 'Generate Course Outline'}
           </button>
         </div>
@@ -309,14 +307,14 @@ export default function CourseWizardPage() {
 
       {step === 'preview' && outline && (
         <div className="space-y-4">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-4">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-4">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="text-xs font-medium text-emerald-600 flex items-center gap-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Outline ready — review &amp; edit before creating
               </span>
               <button
                 onClick={() => { setStep('brief'); }}
-                className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-800"
+                className="flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-800"
               >
                 <RefreshCw className="w-3.5 h-3.5" /> Start over
               </button>
@@ -324,7 +322,7 @@ export default function CourseWizardPage() {
             <input
               value={outline.title}
               onChange={e => setOutline({ ...outline, title: e.target.value })}
-              className="w-full text-lg font-black text-slate-900 bg-transparent border-b border-transparent hover:border-slate-200 focus:border-indigo-500 focus:outline-none pb-1"
+              className="w-full text-lg font-semibold text-slate-900 bg-transparent border-b border-transparent hover:border-slate-200 focus:border-indigo-500 focus:outline-none pb-1"
             />
             <textarea
               value={outline.description}
@@ -333,21 +331,21 @@ export default function CourseWizardPage() {
               className="w-full text-sm text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500"
             />
             <div className="flex items-center gap-2 flex-wrap text-xs">
-              <span className="px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 font-bold border border-indigo-200">{outline.level}</span>
-              <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 font-bold border border-slate-200">{outline.category}</span>
-              <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 font-bold border border-slate-200">{outline.modules.length} modules</span>
+              <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 font-medium border border-slate-200">{outline.level}</span>
+              <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 font-medium border border-slate-200">{outline.category}</span>
+              <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 font-medium border border-slate-200">{outline.modules.length} modules</span>
             </div>
           </div>
 
           {outline.modules.map((mod, mIdx) => (
-            <div key={mIdx} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 space-y-3">
+            <div key={mIdx} className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-5 space-y-3">
               <div className="flex items-start gap-2">
-                <span className="shrink-0 w-6 h-6 rounded-full bg-violet-100 text-violet-700 text-xs font-black flex items-center justify-center mt-0.5">{mIdx + 1}</span>
+                <span className="shrink-0 w-6 h-6 rounded-full bg-slate-50 text-slate-700 text-xs font-semibold flex items-center justify-center mt-0.5">{mIdx + 1}</span>
                 <div className="flex-1 min-w-0 space-y-2">
                   <input
                     value={mod.title}
                     onChange={e => updateModuleField(mIdx, 'title', e.target.value)}
-                    className="w-full font-bold text-slate-900 bg-transparent border-b border-transparent hover:border-slate-200 focus:border-indigo-500 focus:outline-none"
+                    className="w-full font-medium text-slate-900 bg-transparent border-b border-transparent hover:border-slate-200 focus:border-indigo-500 focus:outline-none"
                   />
                   <input
                     value={mod.description}
@@ -375,11 +373,11 @@ export default function CourseWizardPage() {
             </div>
           ))}
 
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-4">
-            <h3 className="text-sm font-bold text-slate-800">Pricing &amp; Branding</h3>
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-4">
+            <h3 className="text-sm font-medium text-slate-800">Pricing &amp; Branding</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Price (USD)</label>
+                <label className="block text-xs font-medium text-slate-500 mb-2">Price (USD)</label>
                 <input
                   type="number"
                   min={0}
@@ -389,7 +387,7 @@ export default function CourseWizardPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Price (INR)</label>
+                <label className="block text-xs font-medium text-slate-500 mb-2">Price (INR)</label>
                 <input
                   type="number"
                   min={0}
@@ -400,7 +398,7 @@ export default function CourseWizardPage() {
               </div>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Banner Image URL (optional)</label>
+              <label className="block text-xs font-medium text-slate-500 mb-2">Banner Image URL (optional)</label>
               <input
                 value={bannerUrl}
                 onChange={e => setBannerUrl(e.target.value)}
@@ -409,7 +407,7 @@ export default function CourseWizardPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Thumbnail Image URL (optional)</label>
+              <label className="block text-xs font-medium text-slate-500 mb-2">Thumbnail Image URL (optional)</label>
               <input
                 value={thumbnailUrl}
                 onChange={e => setThumbnailUrl(e.target.value)}
@@ -422,7 +420,7 @@ export default function CourseWizardPage() {
           <button
             onClick={createCourse}
             disabled={creating}
-            className="w-full flex items-center justify-center gap-2 py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl font-bold text-sm shadow-sm transition-all sticky bottom-4"
+            className="w-full flex items-center justify-center gap-2 py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl font-medium text-sm shadow-sm transition-colors sticky bottom-4"
           >
             {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <BookOpen className="w-4 h-4" />}
             {creating ? 'Creating course & curriculum...' : 'Create This Course'}

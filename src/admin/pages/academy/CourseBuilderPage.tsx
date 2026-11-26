@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Save, Loader2, ArrowLeft, Video, FileText, CheckCircle, CloudUpload, Cloud, AlertCircle, Sparkles, LayoutList, Image, GraduationCap, Library, SlidersHorizontal, MoreHorizontal, X, ExternalLink } from 'lucide-react';
+import { Save, Loader2, ArrowLeft, FileText, CloudUpload, Cloud, AlertCircle, Sparkles, LayoutList, Image, GraduationCap, Library, SlidersHorizontal, MoreHorizontal, X, ExternalLink } from 'lucide-react';
 import { useD1Query, adminFetch } from '../../hooks/useD1Query';
 import { toast } from '../../../lib/toast';
 import { CurriculumBuilder } from '../../components/CurriculumBuilder';
@@ -182,16 +182,16 @@ export default function CourseBuilderPage() {
 
   return (
     <div className="space-y-0 sm:space-y-6 -mx-4 sm:mx-0">
-      <div className="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-4 py-3 sm:p-0 sm:static sm:bg-transparent border-b border-slate-200 sm:border-0 mb-4 sm:mb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4 min-w-0">
+      <div className="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 px-4 py-3 sm:p-0 sm:static sm:bg-transparent border-b border-slate-200 sm:border-0 mb-4 sm:mb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4 min-w-0">
         <div className="min-w-0">
-          <button onClick={handleBackNavigation} className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors mb-2">
+          <button onClick={handleBackNavigation} className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors mb-2">
             <ArrowLeft className="w-4 h-4" /> Back to Courses
           </button>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 truncate">{isNew ? 'Create New Course' : 'Edit Course: ' + course.title}</h1>
+          <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 truncate">{isNew ? 'Create New Course' : 'Edit Course: ' + course.title}</h1>
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           {!isNew && (
-            <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-bold px-1 sm:px-3 py-1.5 rounded-full order-last sm:order-none w-full sm:w-auto">
+            <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-medium px-1 sm:px-3 py-1.5 rounded-full order-last sm:order-none w-full sm:w-auto">
               {autosaveStatus === 'pending' && <span className="text-slate-400 flex items-center gap-1.5"><Cloud className="w-3.5 h-3.5" /> Unsaved changes</span>}
               {autosaveStatus === 'saving' && <span className="text-indigo-500 flex items-center gap-1.5"><Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving...</span>}
               {autosaveStatus === 'saved' && <span className="text-emerald-500 flex items-center gap-1.5"><CloudUpload className="w-3.5 h-3.5" /> All changes saved</span>}
@@ -201,7 +201,7 @@ export default function CourseBuilderPage() {
           {!isNew && course.id && (
             <button
               onClick={() => window.open(`/courses/${course.id}`, '_blank')}
-              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg font-bold text-xs sm:text-sm shadow-sm transition-colors"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-slate-100 hover:bg-indigo-100 text-slate-700 border border-slate-200 rounded-lg font-medium text-xs sm:text-sm shadow-sm transition-colors"
               title="Preview exactly what students see"
             >
               <ExternalLink className="w-4 h-4" />
@@ -211,7 +211,7 @@ export default function CourseBuilderPage() {
           <button
             onClick={() => handleSave(false)}
             disabled={saving}
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg font-bold text-xs sm:text-sm shadow-sm transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg font-medium text-xs sm:text-sm shadow-sm transition-colors disabled:opacity-50"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             <span className="hidden sm:inline">Save Draft</span><span className="sm:hidden">Save</span>
@@ -219,7 +219,7 @@ export default function CourseBuilderPage() {
           <button
             onClick={() => handleSave(true)}
             disabled={saving || !course.title}
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-xs sm:text-sm shadow-sm transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-xs sm:text-sm shadow-sm transition-colors disabled:opacity-50"
           >
             Publish<span className="hidden sm:inline"> Course</span>
           </button>
@@ -231,13 +231,13 @@ export default function CourseBuilderPage() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab as any)}
-            className={`px-4 py-3 font-bold text-sm border-b-2 transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-              activeTab === tab
-                ? 'border-indigo-600 text-indigo-600'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
-            }`}
+            className={`px-4 py-3 font-medium text-sm border-b-2 transition-colors whitespace-nowrap flex items-center gap-1.5 ${
+ activeTab === tab
+ ? 'border-indigo-600 text-indigo-600'
+ : 'border-transparent text-slate-500 hover:text-slate-800'
+ }`}
           >
-            {tab === 'ai' ? <>AI Studio <Sparkles className="w-3.5 h-3.5" /></> : tab.charAt(0).toUpperCase() + tab.slice(1)}
+            {tab === 'ai' ? 'AI Studio' : tab.charAt(0).toUpperCase() + tab.slice(1)}
           </button>
         ))}
       </div>
@@ -246,32 +246,32 @@ export default function CourseBuilderPage() {
         {activeTab === 'details' && (
           <div className="space-y-6 max-w-2xl">
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Course Title</label>
+              <label className="block text-xs font-medium text-slate-500 mb-2">Course Title</label>
               <input 
                 type="text"
                 value={course.title}
                 onChange={e => setCourse({ ...course, title: e.target.value })}
                 placeholder="e.g. Advanced Negotiation Skills"
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Short Description</label>
+              <label className="block text-xs font-medium text-slate-500 mb-2">Short Description</label>
               <textarea 
                 value={course.description}
                 onChange={e => setCourse({ ...course, description: e.target.value })}
                 rows={3}
                 placeholder="A brief summary of the course..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Level</label>
+                <label className="block text-xs font-medium text-slate-500 mb-2">Level</label>
                 <select 
                   value={course.level}
                   onChange={e => setCourse({ ...course, level: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
                 >
                   <option value="Beginner">Beginner</option>
                   <option value="Intermediate">Intermediate</option>
@@ -280,13 +280,13 @@ export default function CourseBuilderPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Duration (Text)</label>
+                <label className="block text-xs font-medium text-slate-500 mb-2">Duration (Text)</label>
                 <input 
                   type="text"
                   value={course.duration}
                   onChange={e => setCourse({ ...course, duration: e.target.value })}
                   placeholder="e.g. 4 Weeks"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
                 />
               </div>
             </div>
@@ -319,14 +319,14 @@ export default function CourseBuilderPage() {
 
         {activeTab === 'branding' && (
           <div className="space-y-6 max-w-2xl">
-            <h3 className="text-lg font-bold text-slate-800">Visual Branding Customizer</h3>
+            <h3 className="text-lg font-medium text-slate-800">Visual Branding Customizer</h3>
             <p className="text-sm text-slate-500 mb-4">Upload high-resolution course banners, promotional thumbnails, and marketing preview cards.</p>
             
             <div className="space-y-4">
               {['banner_url', 'thumbnail_url', 'promo_card_url'].map(field => (
                 <div key={field} className="border border-slate-200 rounded-lg p-4 flex items-center justify-between bg-slate-50">
                   <div>
-                    <h4 className="font-bold text-sm text-slate-800 capitalize">{field.replace('_url', '').replace('_', ' ')}</h4>
+                    <h4 className="font-medium text-sm text-slate-800 capitalize">{field.replace('_url', '').replace('_', ' ')}</h4>
                     <p className="text-xs text-slate-500 truncate max-w-xs">{course[field as keyof typeof course] || 'No image selected'}</p>
                   </div>
                   <button 
@@ -352,26 +352,26 @@ export default function CourseBuilderPage() {
 
         {activeTab === 'grading' && (
           <div className="space-y-6 max-w-2xl">
-            <h3 className="text-lg font-bold text-slate-800">Global Grading Configuration</h3>
+            <h3 className="text-lg font-medium text-slate-800">Global Grading Configuration</h3>
             <p className="text-sm text-slate-500 mb-4">Configure the overall course passing grade and assign weights to specific quizzes and assignments.</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Overall Passing Score (%)</label>
+                <label className="block text-xs font-medium text-slate-500 mb-2">Overall Passing Score (%)</label>
                 <input
                   type="number"
                   min={0}
                   max={100}
                   value={course.passing_score_overall ?? 70}
                   onChange={e => setCourse(c => ({ ...c, passing_score_overall: Math.min(100, Math.max(0, Number(e.target.value) || 0)) }))}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Assessment Type</label>
+                <label className="block text-xs font-medium text-slate-500 mb-2">Assessment Type</label>
                 <select
                   value={gradingPolicy.assessmentType}
                   onChange={e => updateGradingPolicy({ assessmentType: e.target.value as GradingPolicy['assessmentType'] })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 focus:outline-none focus:border-indigo-500 transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 focus:outline-none focus:border-indigo-500 transition-colors"
                 >
                   <option value="quizzes_only">Quizzes Only</option>
                   <option value="assignments_only">Assignments Only</option>
@@ -382,7 +382,7 @@ export default function CourseBuilderPage() {
 
             {gradingPolicy.assessmentType === 'hybrid' && (
               <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl">
-                <h4 className="text-sm font-bold text-slate-800 mb-2">Weight Distribution</h4>
+                <h4 className="text-sm font-medium text-slate-800 mb-2">Weight Distribution</h4>
                 <p className="text-xs text-slate-500 mb-4">Define how much each assessment type contributes to the final grade. The two always sum to 100%.</p>
 
                 <div className="space-y-3">
@@ -400,7 +400,7 @@ export default function CourseBuilderPage() {
                         }}
                         className="w-32"
                       />
-                      <span className="text-sm font-bold text-slate-900 w-12 text-right">{gradingPolicy.quizWeight}%</span>
+                      <span className="text-sm font-medium text-slate-900 w-12 text-right">{gradingPolicy.quizWeight}%</span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
@@ -417,7 +417,7 @@ export default function CourseBuilderPage() {
                         }}
                         className="w-32"
                       />
-                      <span className="text-sm font-bold text-slate-900 w-12 text-right">{gradingPolicy.assignmentWeight}%</span>
+                      <span className="text-sm font-medium text-slate-900 w-12 text-right">{gradingPolicy.assignmentWeight}%</span>
                     </div>
                   </div>
                 </div>
@@ -429,7 +429,7 @@ export default function CourseBuilderPage() {
         {activeTab === 'assets' && (
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-bold text-slate-800">Asset Library</h3>
+              <h3 className="text-lg font-medium text-slate-800">Asset Library</h3>
               <p className="text-sm text-slate-500">Every image, video, PDF, and slide deck you've uploaded — reused across all your courses. Click any asset to copy its selection into whatever you're currently editing.</p>
             </div>
 
@@ -448,27 +448,27 @@ export default function CourseBuilderPage() {
           <div className="space-y-6 max-w-2xl">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Price (USD)</label>
+                <label className="block text-xs font-medium text-slate-500 mb-2">Price (USD)</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                   <input
                     type="number"
                     value={course.price_usd ? course.price_usd / 100 : 0}
                     onChange={e => setCourse({ ...course, price_usd: Math.round(parseFloat(e.target.value) * 100) })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 pl-8 text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 pl-8 text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
                   />
                 </div>
                 <p className="text-xs text-slate-500 mt-1">Enter 0 for free courses.</p>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Price (INR)</label>
+                <label className="block text-xs font-medium text-slate-500 mb-2">Price (INR)</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">₹</span>
                   <input
                     type="number"
                     value={course.price_inr ? course.price_inr / 100 : 0}
                     onChange={e => setCourse({ ...course, price_inr: Math.round(parseFloat(e.target.value) * 100) })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 pl-8 text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 pl-8 text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
                   />
                 </div>
                 <p className="text-xs text-slate-500 mt-1">Shown to students browsing in India. Enter 0 for free courses.</p>
@@ -476,36 +476,36 @@ export default function CourseBuilderPage() {
             </div>
 
             <div className="border-t border-slate-200 pt-6">
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Subtitle</label>
+              <label className="block text-xs font-medium text-slate-500 mb-2">Subtitle</label>
               <input
                 type="text"
                 value={course.subtitle || ''}
                 onChange={e => setCourse({ ...course, subtitle: e.target.value })}
                 placeholder="A short one-line hook shown under the course title"
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Keywords / SEO Tags</label>
+              <label className="block text-xs font-medium text-slate-500 mb-2">Keywords / SEO Tags</label>
               <input
                 type="text"
                 value={course.keywords || ''}
                 onChange={e => setCourse({ ...course, keywords: e.target.value })}
                 placeholder="e.g. contract law, negotiation, redlining"
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
               />
               <p className="text-xs text-slate-500 mt-1">Comma-separated. Used for search and discovery.</p>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Language(s)</label>
+              <label className="block text-xs font-medium text-slate-500 mb-2">Language(s)</label>
               <input
                 type="text"
                 value={course.language_tags || ''}
                 onChange={e => setCourse({ ...course, language_tags: e.target.value })}
                 placeholder="e.g. English, Hindi"
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
               />
               <p className="text-xs text-slate-500 mt-1">Comma-separated. First entry is treated as the primary language.</p>
             </div>
@@ -521,19 +521,19 @@ export default function CourseBuilderPage() {
                   className="mt-1 w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                 />
                 <div>
-                  <span className="block text-sm font-bold text-slate-800">Offer a certificate on completion</span>
+                  <span className="block text-sm font-medium text-slate-800">Offer a certificate on completion</span>
                   <span className="block text-xs text-slate-500 mt-0.5">Students who reach 100% course progress automatically receive a downloadable, verifiable certificate.</span>
                 </div>
               </label>
               {course.has_certification && (
                 <div className="mt-4">
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Certificate Name (optional)</label>
+                  <label className="block text-xs font-medium text-slate-500 mb-2">Certificate Name (optional)</label>
                   <input
                     type="text"
                     value={course.certification_name || ''}
                     onChange={e => setCourse({ ...course, certification_name: e.target.value })}
                     placeholder="e.g. Certified NDA Redlining Specialist"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
                   />
                   <p className="text-xs text-slate-500 mt-1">Defaults to the course title if left blank.</p>
                 </div>
@@ -548,42 +548,42 @@ export default function CourseBuilderPage() {
         <div className="flex items-stretch justify-around px-1">
           <button onClick={() => setActiveTab('details')} className="flex flex-col items-center justify-center gap-1 flex-1 py-2.5">
             <FileText className={`w-5 h-5 ${activeTab === 'details' ? 'text-indigo-600' : 'text-slate-400'}`} />
-            <span className={`text-[10px] font-bold ${activeTab === 'details' ? 'text-indigo-600' : 'text-slate-500'}`}>Details</span>
+            <span className={`text-[11px] font-medium ${activeTab === 'details' ? 'text-indigo-600' : 'text-slate-500'}`}>Details</span>
           </button>
           <button onClick={() => setActiveTab('curriculum')} className="flex flex-col items-center justify-center gap-1 flex-1 py-2.5">
             <LayoutList className={`w-5 h-5 ${activeTab === 'curriculum' ? 'text-indigo-600' : 'text-slate-400'}`} />
-            <span className={`text-[10px] font-bold ${activeTab === 'curriculum' ? 'text-indigo-600' : 'text-slate-500'}`}>Curriculum</span>
+            <span className={`text-[11px] font-medium ${activeTab === 'curriculum' ? 'text-indigo-600' : 'text-slate-500'}`}>Curriculum</span>
           </button>
           <button onClick={() => setActiveTab('ai')} className="flex flex-col items-center justify-end gap-1 flex-1 py-1.5 relative">
-            <span className={`absolute -top-5 flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-all ${
-              activeTab === 'ai' ? 'bg-gradient-to-tr from-indigo-600 to-violet-600 scale-105' : 'bg-gradient-to-tr from-indigo-500 to-violet-500'
-            }`}>
+            <span className={`absolute -top-5 flex items-center justify-center w-12 h-12 rounded-full shadow-lg transition-colors ${
+ activeTab === 'ai' ? 'bg-indigo-700' : 'bg-indigo-600'
+ }`}>
               <Sparkles className="w-5 h-5 text-white" />
             </span>
-            <span className={`text-[10px] font-bold mt-6 ${activeTab === 'ai' ? 'text-indigo-600' : 'text-slate-500'}`}>AI Studio</span>
+            <span className={`text-[11px] font-medium mt-6 ${activeTab === 'ai' ? 'text-indigo-600' : 'text-slate-500'}`}>AI Studio</span>
           </button>
           <button onClick={() => setActiveTab('grading')} className="flex flex-col items-center justify-center gap-1 flex-1 py-2.5">
             <GraduationCap className={`w-5 h-5 ${activeTab === 'grading' ? 'text-indigo-600' : 'text-slate-400'}`} />
-            <span className={`text-[10px] font-bold ${activeTab === 'grading' ? 'text-indigo-600' : 'text-slate-500'}`}>Grading</span>
+            <span className={`text-[11px] font-medium ${activeTab === 'grading' ? 'text-indigo-600' : 'text-slate-500'}`}>Grading</span>
           </button>
           <button onClick={() => setShowMoreSheet(true)} className="flex flex-col items-center justify-center gap-1 flex-1 py-2.5">
             <MoreHorizontal className={`w-5 h-5 ${['branding', 'assets', 'settings'].includes(activeTab) ? 'text-indigo-600' : 'text-slate-400'}`} />
-            <span className={`text-[10px] font-bold ${['branding', 'assets', 'settings'].includes(activeTab) ? 'text-indigo-600' : 'text-slate-500'}`}>More</span>
+            <span className={`text-[11px] font-medium ${['branding', 'assets', 'settings'].includes(activeTab) ? 'text-indigo-600' : 'text-slate-500'}`}>More</span>
           </button>
         </div>
       </nav>
 
       {showMoreSheet && (
         <div className="sm:hidden fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowMoreSheet(false)}>
-          <div className="bg-white rounded-t-2xl w-full p-4 pb-8 space-y-1 shadow-2xl" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-t-2xl w-full p-4 pb-8 space-y-1 shadow-lg" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-2">
-              <h3 className="font-bold text-slate-800">More Options</h3>
+              <h3 className="font-medium text-slate-800">More Options</h3>
               <button onClick={() => setShowMoreSheet(false)} className="p-2 -mr-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"><X className="w-4 h-4" /></button>
             </div>
             {!isNew && course.id && (
               <button
                 onClick={() => { window.open(`/courses/${course.id}`, '_blank'); setShowMoreSheet(false); }}
-                className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left font-bold text-sm text-slate-700 hover:bg-slate-50 transition-colors mb-1"
+                className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left font-medium text-sm text-slate-700 hover:bg-slate-50 transition-colors mb-1"
               >
                 <ExternalLink className="w-4 h-4" /> Preview as Student
               </button>
@@ -596,9 +596,9 @@ export default function CourseBuilderPage() {
               <button
                 key={tab}
                 onClick={() => { setActiveTab(tab as any); setShowMoreSheet(false); }}
-                className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left font-bold text-sm transition-colors ${
-                  activeTab === tab ? 'bg-indigo-50 text-indigo-700' : 'text-slate-700 hover:bg-slate-50'
-                }`}
+                className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left font-medium text-sm transition-colors ${
+ activeTab === tab ? 'bg-slate-100 text-slate-700' : 'text-slate-700 hover:bg-slate-50'
+ }`}
               >
                 <Icon className="w-4 h-4" /> {label}
               </button>
@@ -609,12 +609,12 @@ export default function CourseBuilderPage() {
 
       {showLeaveWarning && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl">
-            <h3 className="font-black text-lg text-slate-900 mb-2">Unsaved Changes</h3>
+          <div className="bg-white rounded-xl w-full max-w-sm p-6 shadow-lg">
+            <h3 className="font-semibold text-lg text-slate-900 mb-2">Unsaved Changes</h3>
             <p className="text-slate-500 text-sm mb-6">You have unsaved changes that will be lost if you leave. Are you sure?</p>
             <div className="flex gap-3 justify-end">
-              <button onClick={() => setShowLeaveWarning(false)} className="px-4 py-2 font-bold text-sm text-slate-600 hover:text-slate-900 transition-colors">Cancel</button>
-              <button onClick={() => navigate('/admin/academy/courses')} className="px-4 py-2 font-bold text-sm text-white bg-rose-500 hover:bg-rose-600 rounded-lg transition-colors shadow-sm">Leave Anyway</button>
+              <button onClick={() => setShowLeaveWarning(false)} className="px-4 py-2 font-medium text-sm text-slate-600 hover:text-slate-900 transition-colors">Cancel</button>
+              <button onClick={() => navigate('/admin/academy/courses')} className="px-4 py-2 font-medium text-sm text-white bg-rose-500 hover:bg-rose-600 rounded-lg transition-colors shadow-sm">Leave Anyway</button>
             </div>
           </div>
         </div>
@@ -693,7 +693,7 @@ function CoursePrerequisitesEditor({ courseId }: { courseId: string }) {
 
   return (
     <div className="border-t border-slate-200 pt-6">
-      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Prerequisites</label>
+      <label className="block text-xs font-medium text-slate-500 mb-2">Prerequisites</label>
       <p className="text-xs text-slate-500 mb-3">Students must complete these courses first. "Hard" blocks enrollment server-side; "Soft" just shows a dismissible warning.</p>
 
       {prerequisites.length > 0 && (
@@ -702,7 +702,7 @@ function CoursePrerequisitesEditor({ courseId }: { courseId: string }) {
             <div key={p.id} className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
               <span className="text-sm font-medium text-slate-700">{p.title}</span>
               <div className="flex items-center gap-2">
-                <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${p.enforcement === 'hard' ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600'}`}>{p.enforcement}</span>
+                <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${p.enforcement === 'hard' ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600'}`}>{p.enforcement}</span>
                 <button onClick={() => removePrerequisite(p.id)} className="text-slate-400 hover:text-rose-500 p-1"><X className="w-3.5 h-3.5" /></button>
               </div>
             </div>
@@ -719,7 +719,7 @@ function CoursePrerequisitesEditor({ courseId }: { courseId: string }) {
             <option value="hard">Hard (blocks enrollment)</option>
             <option value="soft">Soft (warning only)</option>
           </select>
-          <button onClick={addPrerequisite} disabled={saving} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg font-bold text-sm whitespace-nowrap">Add</button>
+          <button onClick={addPrerequisite} disabled={saving} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg font-medium text-sm whitespace-nowrap">Add</button>
         </div>
       ) : (
         <p className="text-xs text-slate-400 italic">No other courses available to set as a prerequisite yet.</p>

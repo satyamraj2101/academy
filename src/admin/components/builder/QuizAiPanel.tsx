@@ -1,5 +1,5 @@
 import { useId, useState } from 'react';
-import { CheckCircle2, Loader2, Sparkles, Undo2, Wand2 } from 'lucide-react';
+import { CheckCircle2, Loader2, Undo2, Wand2 } from 'lucide-react';
 import { adminFetch } from '../../hooks/useD1Query';
 import { toast } from '../../../lib/toast';
 import { PromptImprover } from '../PromptImprover';
@@ -104,31 +104,31 @@ export function QuizAiPanel({ quizId, questions, onChanged }: Props) {
   const same = (proposal?.plan.length ?? 0) - shown.length;
 
   return (
-    <div className="rounded-xl border border-violet-200 bg-violet-50/60 p-3 sm:p-4">
-      <label htmlFor={`quiz-ai-${id}`} className="flex items-center gap-1.5 text-sm font-bold text-violet-900"><Wand2 className="w-4 h-4" aria-hidden="true" /> Ask AI to change this quiz</label>
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
+      <label htmlFor={`quiz-ai-${id}`} className="flex items-center gap-1.5 text-sm font-medium text-slate-700"><Wand2 className="w-4 h-4" aria-hidden="true" /> Ask AI to change this quiz</label>
       <p className="text-xs text-slate-600 mt-0.5">For example: make question 2 easier, add two questions about renewals, remove the true/false ones. You review the result before anything changes.</p>
       <div className="mt-2 flex flex-col sm:flex-row gap-2">
         <textarea id={`quiz-ai-${id}`} rows={2} value={instruction} maxLength={1500} onChange={e => setInstruction(e.target.value)}
           placeholder="What should change in this quiz?"
-          className="flex-1 min-h-[44px] rounded-lg border border-violet-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-violet-400 resize-y" />
+          className="flex-1 min-h-[44px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-slate-200 resize-y" />
         <button type="button" onClick={ask} disabled={busy !== null || questions.length === 0 || instruction.trim().length < 3}
-          className="sm:self-start min-h-[44px] inline-flex items-center justify-center gap-1.5 px-4 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold disabled:opacity-50">
-          {busy === 'ask' ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : <Sparkles className="w-4 h-4" aria-hidden="true" />}
+          className="sm:self-start min-h-[44px] inline-flex items-center justify-center gap-1.5 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium disabled:opacity-50">
+          {busy === 'ask' ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : null}
           {busy === 'ask' ? 'Changing…' : 'Change it'}
         </button>
       </div>
       <PromptImprover kind="edit_request" text={instruction} onApply={v => { if (typeof v.improved === 'string') setInstruction(v.improved); }} />
 
       {proposal && (
-        <div className="mt-3 rounded-lg border border-violet-200 bg-white p-3" role="region" aria-label="Proposed quiz changes">
-          <p className="text-sm font-bold text-slate-800">The AI would change {shown.length} question{shown.length === 1 ? '' : 's'}{same ? ` (${same} stay as they are)` : ''}</p>
+        <div className="mt-3 rounded-lg border border-slate-200 bg-white p-3" role="region" aria-label="Proposed quiz changes">
+          <p className="text-sm font-medium text-slate-800">The AI would change {shown.length} question{shown.length === 1 ? '' : 's'}{same ? ` (${same} stay as they are)` : ''}</p>
           {proposal.changes.length > 0 && <ul className="mt-1 list-disc list-inside text-xs text-slate-600">{proposal.changes.map((c, i) => <li key={i}>{c}</li>)}</ul>}
           <ul className="mt-2 space-y-2">
             {shown.map((c, i) => {
               const q = c.kind === 'remove' ? c.before : c.after;
               return (
                 <li key={i} className="rounded-md border border-slate-200 p-2 text-sm">
-                  <span className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${BADGE[c.kind]}`}>{LABEL[c.kind]}</span>
+                  <span className={`inline-block rounded px-1.5 py-0.5 text-[11px] font-medium ${BADGE[c.kind]}`}>{LABEL[c.kind]}</span>
                   {c.kind === 'edit' && c.before.question_text !== c.after.question_text && <p className="mt-1 text-xs text-slate-400 line-through">{c.before.question_text}</p>}
                   <p className="mt-1 font-semibold text-slate-800">{q.question_text}</p>
                   {q.question_type !== 'short_answer' && (
@@ -144,10 +144,10 @@ export function QuizAiPanel({ quizId, questions, onChanged }: Props) {
           </ul>
           {proposal.dropped > 0 && <p className="mt-2 text-xs text-amber-800">{proposal.dropped} question{proposal.dropped === 1 ? '' : 's'} from the AI could not be used (no valid right answer) and {proposal.dropped === 1 ? 'was' : 'were'} left out.</p>}
           <div className="mt-3 flex flex-wrap gap-2">
-            <button type="button" onClick={apply} disabled={busy !== null} className="min-h-[40px] px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold disabled:opacity-50 inline-flex items-center gap-2">
+            <button type="button" onClick={apply} disabled={busy !== null} className="min-h-[40px] px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium disabled:opacity-50 inline-flex items-center gap-2">
               {busy === 'apply' && <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />} Apply to the quiz
             </button>
-            <button type="button" onClick={() => setProposal(null)} disabled={busy !== null} className="min-h-[40px] px-4 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-bold">Discard</button>
+            <button type="button" onClick={() => setProposal(null)} disabled={busy !== null} className="min-h-[40px] px-4 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-medium">Discard</button>
           </div>
         </div>
       )}

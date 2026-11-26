@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { CheckCircle2, Clapperboard, Loader2, Sparkles, TriangleAlert } from 'lucide-react';
+import { CheckCircle2, Clapperboard, Loader2, TriangleAlert } from 'lucide-react';
 import { adminFetch } from '../../hooks/useD1Query';
 import { toast } from '../../../lib/toast';
 import { PromptImprover } from '../PromptImprover';
@@ -100,15 +100,15 @@ export function VideoAiEditPanel({ courseId, lessonId, videoId, scriptSrc, onReb
   const step = job?.progress?.step || (job?.status === 'queued' ? 'Waiting for the cloud worker' : 'Working');
 
   return (
-    <div className="rounded-xl border border-sky-200 bg-sky-50/60 p-3 sm:p-4">
-      <p className="flex items-center gap-1.5 text-sm font-bold text-sky-900"><Clapperboard className="w-4 h-4" aria-hidden="true" /> Change this video with AI</p>
+    <div className="rounded-xl border border-slate-200 bg-slate-100 p-3 sm:p-4">
+      <p className="flex items-center gap-1.5 text-sm font-medium text-slate-700"><Clapperboard className="w-4 h-4" aria-hidden="true" /> Change this video with AI</p>
       <p className="text-xs text-slate-600 mt-0.5">The AI rewrites only the scenes your request touches and makes a new video in the cloud (about 2 to 5 minutes). The current video stays live until the new one is ready. The video is built from the <strong>saved</strong> lesson text, so click Save Content first if you edited the text.</p>
 
       {!active ? (
         <>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {QUICK.map(q => (
-              <button key={q} type="button" onClick={() => setRequest(q)} className="min-h-[36px] px-3 rounded-full border border-sky-200 bg-white text-xs font-semibold text-sky-800 hover:bg-sky-100">{q}</button>
+              <button key={q} type="button" onClick={() => setRequest(q)} className="min-h-[36px] px-3 rounded-full border border-slate-200 bg-white text-xs font-semibold text-slate-700 hover:bg-sky-100">{q}</button>
             ))}
           </div>
           <div className="mt-2 flex flex-col sm:flex-row gap-2">
@@ -116,19 +116,19 @@ export function VideoAiEditPanel({ courseId, lessonId, videoId, scriptSrc, onReb
               rows={2} value={request} maxLength={1500} onChange={e => setRequest(e.target.value)}
               aria-label="What should change in the video"
               placeholder="For example: change the quiz question to be about renewals, and make the second scene shorter"
-              className="flex-1 min-h-[44px] rounded-lg border border-sky-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-sky-400 resize-y"
+              className="flex-1 min-h-[44px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-sky-400 resize-y"
             />
             <button type="button" onClick={() => start()} disabled={sending}
-              className="sm:self-start min-h-[44px] inline-flex items-center justify-center gap-1.5 px-4 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-sm font-bold disabled:opacity-50">
-              {sending ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : <Sparkles className="w-4 h-4" aria-hidden="true" />}
+              className="sm:self-start min-h-[44px] inline-flex items-center justify-center gap-1.5 px-4 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium disabled:opacity-50">
+              {sending ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : null}
               {request.trim() ? 'Change video' : 'Rebuild video'}
             </button>
           </div>
           <PromptImprover kind="edit_request" text={request} onApply={v => { if (typeof v.improved === 'string') setRequest(v.improved); }} />
-          <div className="mt-3 border-t border-sky-200 pt-3">
+          <div className="mt-3 border-t border-slate-200 pt-3">
             {scriptSrc ? (
               <>
-                <button type="button" onClick={() => setShowScenes(v => !v)} aria-expanded={showScenes} className="min-h-[40px] text-sm font-bold text-sky-800 hover:text-sky-950 underline underline-offset-2">
+                <button type="button" onClick={() => setShowScenes(v => !v)} aria-expanded={showScenes} className="min-h-[40px] text-sm font-medium text-slate-700 hover:text-sky-950 underline underline-offset-2">
                   {showScenes ? 'Hide the scenes' : 'Edit the scenes yourself'}
                 </button>
                 {showScenes && <VideoScenesEditor scriptSrc={scriptSrc} busy={sending} onSubmit={s => void start(s)} />}

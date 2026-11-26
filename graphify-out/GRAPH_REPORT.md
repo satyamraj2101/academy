@@ -1,7 +1,7 @@
 # Graph Report - academy-main  (2026-11-26)
 
 ## Corpus Check
-- 361 files · ~241,547 words
+- 361 files · ~241,385 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 21 file(s) not represented in the graph (top: (none) 7, .ttf 4, .stackdump 3)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `1bf7d174`
+- Built from commit: `bcede863`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -147,8 +147,8 @@
   src/admin/components/builder/QuizAiPanel.tsx → functions/api/admin/academy/_quizEdit.ts
 - `build()` --calls--> `buildVideoContent()`  [EXTRACTED]
   src/test/interactiveVideo.test.ts → functions/api/academy/_interactiveVideo.ts
-- `onRequestOptions()` --calls--> `corsOptionsResponse()`  [EXTRACTED]
-  functions/api/admin/academy/ai-quota.ts → functions/api/admin/middleware.ts
+- `Proposal` --references--> `QuizChange`  [EXTRACTED]
+  src/admin/components/builder/QuizAiPanel.tsx → functions/api/admin/academy/_quizEdit.ts
 
 ## Import Cycles
 - None detected.
@@ -165,7 +165,7 @@ Nodes (4): prune(), _size(), PruneTest, scene()
 
 ### Community 2 - "react"
 Cohesion: 0.07
-Nodes (62): react-helmet-async, react-router-dom, @tanstack/react-query, academyAPI, API_BASE, APIError, fetchAPI(), AcademyContext (+54 more)
+Nodes (59): react-helmet-async, react-router-dom, @tanstack/react-query, academyAPI, API_BASE, APIError, fetchAPI(), AcademyContext (+51 more)
 
 ### Community 3 - "verifyAcademyUser"
 Cohesion: 0.07
@@ -252,8 +252,8 @@ Cohesion: 0.13
 Nodes (18): academyNavItems, AdminLayout(), bottomNavItems, navItems, PermissionGate(), RoleGate(), AdminAuthContext, AdminAuthProvider() (+10 more)
 
 ### Community 24 - "InstructorCourseBuilder.tsx"
-Cohesion: 0.23
-Nodes (11): Block, BlockType, Course, InstructorAssignmentBlock(), InstructorCourseBuilderComponent(), InstructorLessonEditor(), InstructorQuizBlock(), Lesson (+3 more)
+Cohesion: 0.15
+Nodes (14): instructorAPI, Block, BlockType, Course, InstructorAssignmentBlock(), InstructorCourseBuilderComponent(), InstructorLessonEditor(), InstructorQuizBlock() (+6 more)
 
 ### Community 25 - "prerender.mjs"
 Cohesion: 0.19
@@ -285,7 +285,7 @@ Nodes (11): academy_lesson_progress, academy_lessons, idx_lessons_module, academ
 
 ### Community 32 - "adminFetch"
 Cohesion: 0.04
-Nodes (89): AiStudioTab(), GeneratedQuestion, LessonOption, Mode, Module, AiTextChange(), Props, Asset (+81 more)
+Nodes (88): AiStudioTab(), GeneratedQuestion, LessonOption, Mode, Module, AiTextChange(), Props, Asset (+80 more)
 
 ### Community 33 - "vitest"
 Cohesion: 0.20
@@ -441,7 +441,7 @@ Nodes (7): onRequestOptions(), onRequestPost(), onRequestOptions(), onRequestPos
 
 ### Community 88 - "react"
 Cohesion: 0.07
-Nodes (63): lucide-react, react, AdminApp(), AdminAppInner(), ActivityFeed(), Event, eventConfig, timeAgo() (+55 more)
+Nodes (64): lucide-react, react, AdminApp(), AdminAppInner(), ActivityFeed(), Event, eventConfig, timeAgo() (+56 more)
 
 ### Community 89 - "lesson-videos.ts"
 Cohesion: 0.38
@@ -526,15 +526,15 @@ Nodes (3): sonner@^2.0.7, sonner, Toast()
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `react` connect `react` to `CoursePlayer.tsx`, `react`, `App.tsx`, `NotFound.tsx`, `dependencies`, `package.json`, `AdminLayout.tsx`, `InstructorCourseBuilder.tsx`, `adminFetch`, `LessonPath.tsx`, `main.tsx`, `InteractiveVideoPlayer.tsx`, `VideoAiEditPanel.tsx`, `MermaidDiagram.tsx`, `useTheme.ts`, `AIAssistantPanel.tsx`, `TawkWidget.tsx`, `useTracking.ts`, `AIAssistantWidget.tsx`?**
-  _High betweenness centrality (0.132) - this node is a cross-community bridge._
+  _High betweenness centrality (0.172) - this node is a cross-community bridge._
 - **Should `react` be split into smaller, more focused modules?**
-  _Cohesion score 0.06818181818181818 - nodes in this community are weakly interconnected._
-- **Why does `jose` connect `corsOptionsResponse` to `dependencies`, `register.ts`, `package.json`, `setup-2fa.ts`?**
-  _High betweenness centrality (0.090) - this node is a cross-community bridge._
+  _Cohesion score 0.07377295995182175 - nodes in this community are weakly interconnected._
+- **Why does `lucide-react` connect `react` to `adminFetch`, `CoursePlayer.tsx`, `react`, `App.tsx`, `NotFound.tsx`, `dependencies`, `AIAssistantPanel.tsx`, `LessonPath.tsx`, `package.json`, `main.tsx`, `InteractiveVideoPlayer.tsx`, `VideoAiEditPanel.tsx`, `AdminLayout.tsx`, `AIAssistantWidget.tsx`, `InstructorCourseBuilder.tsx`?**
+  _High betweenness centrality (0.104) - this node is a cross-community bridge._
 - **Should `verifyAcademyUser` be split into smaller, more focused modules?**
   _Cohesion score 0.0728744939271255 - nodes in this community are weakly interconnected._
-- **Why does `lucide-react` connect `react` to `adminFetch`, `CoursePlayer.tsx`, `react`, `App.tsx`, `NotFound.tsx`, `dependencies`, `AIAssistantPanel.tsx`, `LessonPath.tsx`, `package.json`, `main.tsx`, `InteractiveVideoPlayer.tsx`, `VideoAiEditPanel.tsx`, `AdminLayout.tsx`, `AIAssistantWidget.tsx`, `InstructorCourseBuilder.tsx`?**
-  _High betweenness centrality (0.085) - this node is a cross-community bridge._
+- **Why does `jose` connect `corsOptionsResponse` to `dependencies`, `register.ts`, `package.json`, `setup-2fa.ts`?**
+  _High betweenness centrality (0.076) - this node is a cross-community bridge._
 - **Should `App.tsx` be split into smaller, more focused modules?**
   _Cohesion score 0.09268292682926829 - nodes in this community are weakly interconnected._
 - **Should `corsOptionsResponse` be split into smaller, more focused modules?**

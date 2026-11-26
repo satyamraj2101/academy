@@ -195,7 +195,7 @@ export function LessonBlockEditor({ blocks, onChange, courseId, lessonId }: Less
         return (
           <div className="space-y-3">
             <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-700">
-              <span className="font-bold">{v.title || 'Lesson video'}</span>
+              <span className="font-medium">{v.title || 'Lesson video'}</span>
               <span>{mins}:{secs}</span>
               <span>{v.chapters?.length ?? 0} scenes</span>
               <span>{(v.stations || []).length} stations</span>
@@ -223,7 +223,7 @@ export function LessonBlockEditor({ blocks, onChange, courseId, lessonId }: Less
     switch (type) {
       case 'markdown': return <FileText className="w-4 h-4 text-emerald-500" />;
       case 'video': return <Video className="w-4 h-4 text-blue-500" />;
-      case 'image': return <ImageIcon className="w-4 h-4 text-purple-500" />;
+      case 'image': return <ImageIcon className="w-4 h-4 text-slate-700" />;
       case 'ppt': return <Presentation className="w-4 h-4 text-orange-500" />;
       case 'quiz': return <ClipboardCheck className="w-4 h-4 text-indigo-500" />;
       case 'assignment': return <ClipboardList className="w-4 h-4 text-amber-500" />;
@@ -242,7 +242,7 @@ export function LessonBlockEditor({ blocks, onChange, courseId, lessonId }: Less
             onDragStart={() => setDragIndex(index)}
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => { e.preventDefault(); if (dragIndex !== null) reorderByDrag(dragIndex, index); setDragIndex(null); }}
-            className={`bg-white border rounded-xl overflow-hidden shadow-sm transition-all ${dragIndex === index ? 'opacity-50 border-indigo-300' : 'border-slate-200'}`}
+            className={`bg-white border rounded-xl overflow-hidden shadow-sm transition-colors ${dragIndex === index ? 'opacity-50 border-slate-200' : 'border-slate-200'}`}
           >
             <div className="bg-slate-50 border-b border-slate-200 px-3 sm:px-4 py-2 flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -255,7 +255,7 @@ export function LessonBlockEditor({ blocks, onChange, courseId, lessonId }: Less
                 </span>
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="shrink-0">{getBlockIcon(block.type)}</span>
-                  <span className="text-sm font-bold text-slate-700 capitalize truncate">{block.type === 'interactive_video' ? 'Interactive video' : `${block.type} Block`}</span>
+                  <span className="text-sm font-medium text-slate-700 capitalize truncate">{block.type === 'interactive_video' ? 'Interactive video' : `${block.type} Block`}</span>
                 </div>
               </div>
               <button
@@ -273,7 +273,7 @@ export function LessonBlockEditor({ blocks, onChange, courseId, lessonId }: Less
       </div>
 
       <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-slate-200">
-        <span className="text-sm font-bold text-slate-500 uppercase tracking-wider mr-2">Add Block:</span>
+        <span className="text-sm font-medium text-slate-500 mr-2">Add Block:</span>
         <button onClick={() => addBlock('markdown')} className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors">
           <FileText className="w-4 h-4" /> Text / Markdown
         </button>
@@ -286,7 +286,7 @@ export function LessonBlockEditor({ blocks, onChange, courseId, lessonId }: Less
         <button onClick={() => addBlock('ppt')} className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors">
           <Presentation className="w-4 h-4" /> PPT / PDF Slide
         </button>
-        <button onClick={() => addBlock('quiz')} className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-sm font-medium transition-colors">
+        <button onClick={() => addBlock('quiz')} className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-indigo-100 text-slate-700 rounded-lg text-sm font-medium transition-colors">
           <ClipboardCheck className="w-4 h-4" /> Quiz
         </button>
         <button onClick={() => addBlock('assignment')} className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg text-sm font-medium transition-colors">

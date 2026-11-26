@@ -40,7 +40,7 @@ export default function CourseManagerPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0">
         <div className="min-w-0">
-          <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2 min-w-0">
+          <h1 className="text-2xl font-semibold text-slate-900 flex items-center gap-2 min-w-0">
             <BookOpen className="w-6 h-6 text-indigo-600 shrink-0" />
             <span className="truncate">Course Manager</span>
           </h1>
@@ -49,7 +49,7 @@ export default function CourseManagerPage() {
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => navigate('/admin/academy/courses/wizard')}
-            className="flex items-center gap-2 h-10 bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:shadow transition-all"
+            className="flex items-center gap-2 h-10 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:shadow transition-colors"
           >
             <Sparkles className="w-4 h-4" />
             <span className="hidden sm:inline">Generate with AI</span>
@@ -57,7 +57,7 @@ export default function CourseManagerPage() {
           </button>
           <button
             onClick={() => navigate('/admin/academy/courses/new')}
-            className="flex items-center gap-2 h-10 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:shadow transition-all"
+            className="flex items-center gap-2 h-10 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:shadow transition-colors"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Create Course</span>
@@ -74,21 +74,21 @@ export default function CourseManagerPage() {
         <div className="bg-white rounded-xl border border-slate-200 p-1 shadow-sm">
           <DataTable<Course>
             columns={[
-              { key: 'title', label: 'Course Title', render: c => <p className="font-bold text-slate-900 text-sm">{c.title}</p> },
+              { key: 'title', label: 'Course Title', render: c => <p className="font-medium text-slate-900 text-sm">{c.title}</p> },
               {
                 key: 'instructor_name', label: 'Instructor', hideOnMobile: true, render: c => (
                   c.instructor_name
                     ? <span className="text-sm text-slate-700" title={c.instructor_email || ''}>{c.instructor_name}</span>
-                    : <span className="text-xs text-slate-400 uppercase tracking-wide">In-house</span>
+                    : <span className="text-xs text-slate-400">In-house</span>
                 )
               },
               {
                 key: 'status', label: 'Status', hideOnMobile: true, render: c => (
-                  <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
-                    c.status === 'published'
-                      ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
-                      : 'bg-slate-100 text-slate-500 border border-slate-200'
-                  }`}>
+                  <span className={`inline-flex items-center px-2 py-1 rounded-md text-[11px] font-medium ${
+ c.status === 'published'
+ ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+ : 'bg-slate-100 text-slate-500 border border-slate-200'
+ }`}>
                     {c.status}
                   </span>
                 )
@@ -102,13 +102,13 @@ export default function CourseManagerPage() {
                       onClick={() => handleDuplicate(c.id)}
                       disabled={duplicatingId === c.id}
                       title="Duplicate course"
-                      className="text-slate-500 hover:text-slate-700 text-sm font-bold transition-colors bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg disabled:opacity-50 flex items-center gap-1.5"
+                      className="text-slate-500 hover:text-slate-700 text-sm font-medium transition-colors bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg disabled:opacity-50 flex items-center gap-1.5"
                     >
                       {duplicatingId === c.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Copy className="w-3.5 h-3.5" />}
                     </button>
                     <button
                       onClick={() => navigate(`/admin/academy/courses/${c.id}`)}
-                      className="text-indigo-600 hover:text-indigo-700 text-sm font-bold transition-colors bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg"
+                      className="text-indigo-600 hover:text-indigo-700 text-sm font-medium transition-colors bg-slate-100 hover:bg-indigo-100 px-3 py-1.5 rounded-lg"
                     >
                       Edit
                     </button>

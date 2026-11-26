@@ -1,6 +1,6 @@
 import { PromptImprover } from '../PromptImprover';
 import { useState, useEffect } from 'react';
-import { Sparkles, Loader2, FileText, ClipboardCheck, ClipboardList, Copy, Check, PlusCircle, Cpu, Trash2 } from 'lucide-react';
+import { Loader2, FileText, ClipboardCheck, ClipboardList, Copy, Check, PlusCircle, Cpu, Trash2 } from 'lucide-react';
 import { adminFetch } from '../../hooks/useD1Query';
 import { toast } from '../../../lib/toast';
 import { useGeminiModels } from '../../hooks/useGeminiModels';
@@ -204,11 +204,8 @@ export function AiStudioTab({ courseId }: { courseId: string }) {
   return (
     <div className="space-y-6 max-w-3xl">
       <div className="flex items-center gap-3">
-        <div className="p-2.5 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-xl shadow-lg shadow-indigo-500/20">
-          <Sparkles className="w-5 h-5 text-white" />
-        </div>
         <div>
-          <h3 className="text-lg font-bold text-slate-800">AI Content Studio</h3>
+          <h3 className="text-lg font-medium text-slate-800">AI Content Studio</h3>
           <p className="text-sm text-slate-500">Generate a lesson, quiz, or assignment from a topic — then drop it straight into your curriculum.</p>
         </div>
       </div>
@@ -222,7 +219,7 @@ export function AiStudioTab({ courseId }: { courseId: string }) {
           <button
             key={m.key}
             onClick={() => setMode(m.key)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-colors ${mode === m.key ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${mode === m.key ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
           >
             <m.icon className="w-4 h-4" /> {m.label}
           </button>
@@ -231,7 +228,7 @@ export function AiStudioTab({ courseId }: { courseId: string }) {
 
       <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-4 shadow-sm">
         <div>
-          <label className="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2"><Cpu className="w-3.5 h-3.5" /> Model</label>
+          <label className="flex items-center gap-1.5 text-xs font-medium text-slate-500 mb-2"><Cpu className="w-3.5 h-3.5" /> Model</label>
           <select
             value={selectedModel}
             onChange={e => setSelectedModel(e.target.value)}
@@ -241,7 +238,7 @@ export function AiStudioTab({ courseId }: { courseId: string }) {
           </select>
         </div>
         <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Topic</label>
+          <label className="block text-xs font-medium text-slate-500 mb-2">Topic</label>
           <input
             value={topic}
             onChange={e => setTopic(e.target.value)}
@@ -251,7 +248,7 @@ export function AiStudioTab({ courseId }: { courseId: string }) {
           <PromptImprover kind={mode === 'lesson' ? 'lesson_topic' : mode === 'quiz' ? 'quiz_topic' : 'assignment'} text={topic} onApply={r => { if (r.improved) setTopic(r.improved); }} />
         </div>
         <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Extra Context <span className="normal-case text-slate-400 font-medium">(optional)</span></label>
+          <label className="block text-xs font-medium text-slate-500 mb-2">Extra Context <span className="normal-case text-slate-400 font-medium">(optional)</span></label>
           <textarea
             value={context}
             onChange={e => setContext(e.target.value)}
@@ -262,7 +259,7 @@ export function AiStudioTab({ courseId }: { courseId: string }) {
         </div>
         {mode === 'quiz' && (
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Number of Questions</label>
+            <label className="block text-xs font-medium text-slate-500 mb-2">Number of Questions</label>
             <input
               type="number"
               min={1}
@@ -276,18 +273,18 @@ export function AiStudioTab({ courseId }: { courseId: string }) {
         <button
           onClick={handleGenerate}
           disabled={generating || !topic.trim()}
-          className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg font-bold text-sm shadow-sm transition-all"
+          className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg font-medium text-sm shadow-sm transition-colors"
         >
-          {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+          {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
           {generating ? 'Generating...' : 'Generate'}
         </button>
       </div>
 
       {mode === 'lesson' && lessonMarkdown && (
-        <div className="bg-white border border-indigo-200 rounded-xl p-5 space-y-4 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <h4 className="font-bold text-slate-800 text-sm">Generated Lesson Markdown</h4>
-            <button onClick={() => copyToClipboard(lessonMarkdown, 'lesson')} className="flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800">
+            <h4 className="font-medium text-slate-800 text-sm">Generated Lesson Markdown</h4>
+            <button onClick={() => copyToClipboard(lessonMarkdown, 'lesson')} className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800">
               {copiedField === 'lesson' ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />} Copy
             </button>
           </div>
@@ -295,25 +292,25 @@ export function AiStudioTab({ courseId }: { courseId: string }) {
             value={lessonMarkdown}
             onChange={(e) => setLessonMarkdown(e.target.value)}
             rows={10}
-            className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none rounded-lg px-4 py-3 text-sm text-slate-700 font-mono transition-all"
+            className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none rounded-lg px-4 py-3 text-sm text-slate-700 font-mono transition-colors"
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100">
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Target Module</label>
+              <label className="block text-xs font-medium text-slate-500 mb-1.5">Target Module</label>
               <select value={targetModuleId} onChange={e => setTargetModuleId(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
                 {modules.map(m => <option key={m.id} value={m.id}>{m.title}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">New Lesson Title</label>
+              <label className="block text-xs font-medium text-slate-500 mb-1.5">New Lesson Title</label>
               <input value={newLessonTitle} onChange={e => setNewLessonTitle(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" />
             </div>
           </div>
           <button
             onClick={createLesson}
             disabled={creating || modules.length === 0}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-lg font-bold text-sm shadow-sm transition-all"
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-lg font-medium text-sm shadow-sm transition-colors"
           >
             {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlusCircle className="w-4 h-4" />} Create as New Lesson
           </button>
@@ -322,12 +319,12 @@ export function AiStudioTab({ courseId }: { courseId: string }) {
       )}
 
       {mode === 'quiz' && quizResult && (
-        <div className="bg-white border border-indigo-200 rounded-xl p-5 space-y-4 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-4 shadow-sm">
           <div>
             <input
               value={quizResult.title}
               onChange={e => setQuizResult({ ...quizResult, title: e.target.value })}
-              className="w-full font-bold text-slate-800 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 outline-none mb-1 text-lg"
+              className="w-full font-medium text-slate-800 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 outline-none mb-1 text-lg"
             />
             <div className="flex items-center gap-2 text-xs text-slate-500">
               Passing score:
@@ -371,8 +368,8 @@ export function AiStudioTab({ courseId }: { courseId: string }) {
                           updateQuizQuestion(i, { options: opts, correct_answer: wasCorrect ? e.target.value : q.correct_answer });
                         }}
                         className={`flex-1 border rounded-md px-2 py-1 text-xs outline-none transition-colors ${
-                          opt === q.correct_answer ? 'bg-emerald-50 border-emerald-300 text-emerald-800 focus:border-emerald-500' : 'bg-white border-slate-200 focus:border-indigo-500'
-                        }`}
+ opt === q.correct_answer ? 'bg-emerald-50 border-emerald-300 text-emerald-800 focus:border-emerald-500' : 'bg-white border-slate-200 focus:border-indigo-500'
+ }`}
                       />
                     </div>
                   ))}
@@ -381,7 +378,7 @@ export function AiStudioTab({ courseId }: { courseId: string }) {
             ))}
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Target Module</label>
+            <label className="block text-xs font-medium text-slate-500 mb-1.5">Target Module</label>
             <select value={targetModuleId} onChange={e => setTargetModuleId(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
               {modules.map(m => <option key={m.id} value={m.id}>{m.title}</option>)}
             </select>
@@ -389,7 +386,7 @@ export function AiStudioTab({ courseId }: { courseId: string }) {
           <button
             onClick={createQuiz}
             disabled={creating || modules.length === 0}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-lg font-bold text-sm shadow-sm transition-all"
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-lg font-medium text-sm shadow-sm transition-colors"
           >
             {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlusCircle className="w-4 h-4" />} Create Quiz
           </button>
@@ -397,10 +394,10 @@ export function AiStudioTab({ courseId }: { courseId: string }) {
       )}
 
       {mode === 'assignment' && assignmentResult && (
-        <div className="bg-white border border-indigo-200 rounded-xl p-5 space-y-3 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-3 shadow-sm">
           <div className="flex items-center justify-between">
-            <h4 className="font-bold text-slate-800 text-sm">Generated Assignment</h4>
-            <button onClick={() => copyToClipboard(assignmentResult.prompt_text, 'assignment')} className="flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800">
+            <h4 className="font-medium text-slate-800 text-sm">Generated Assignment</h4>
+            <button onClick={() => copyToClipboard(assignmentResult.prompt_text, 'assignment')} className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800">
               {copiedField === 'assignment' ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />} Copy Prompt
             </button>
           </div>
@@ -408,7 +405,7 @@ export function AiStudioTab({ courseId }: { courseId: string }) {
             value={assignmentResult.prompt_text}
             onChange={(e) => setAssignmentResult({ ...assignmentResult, prompt_text: e.target.value })}
             rows={5}
-            className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none rounded-lg p-3 text-sm text-slate-700 transition-all"
+            className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none rounded-lg p-3 text-sm text-slate-700 transition-colors"
           />
           <div className="flex items-center gap-4 text-xs text-slate-500">
             <span>
@@ -435,13 +432,13 @@ export function AiStudioTab({ courseId }: { courseId: string }) {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100">
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Target Module</label>
+              <label className="block text-xs font-medium text-slate-500 mb-1.5">Target Module</label>
               <select value={targetModuleId} onChange={e => setTargetModuleId(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
                 {modules.map(m => <option key={m.id} value={m.id}>{m.title}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Target Lesson</label>
+              <label className="block text-xs font-medium text-slate-500 mb-1.5">Target Lesson</label>
               <select value={targetLessonId} onChange={e => setTargetLessonId(e.target.value)} disabled={loadingLessons || moduleLessons.length === 0} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm disabled:opacity-50">
                 {moduleLessons.map(l => <option key={l.id} value={l.id}>{l.title}</option>)}
               </select>
@@ -453,7 +450,7 @@ export function AiStudioTab({ courseId }: { courseId: string }) {
           <button
             onClick={createAssignment}
             disabled={creating || !targetLessonId}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-lg font-bold text-sm shadow-sm transition-all"
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-lg font-medium text-sm shadow-sm transition-colors"
           >
             {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlusCircle className="w-4 h-4" />} Create Assignment
           </button>

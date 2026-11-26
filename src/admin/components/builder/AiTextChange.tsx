@@ -1,5 +1,5 @@
 import { useId, useState } from 'react';
-import { CheckCircle2, Loader2, Sparkles, Undo2, Wand2 } from 'lucide-react';
+import { CheckCircle2, Loader2, Undo2, Wand2 } from 'lucide-react';
 import { adminFetch } from '../../hooks/useD1Query';
 import { toast } from '../../../lib/toast';
 import { PromptImprover } from '../PromptImprover';
@@ -34,27 +34,27 @@ export function AiTextChange({ what, label, value, onApply, placeholder }: Props
   };
 
   return (
-    <div className="rounded-xl border border-violet-200 bg-violet-50/60 p-3">
-      <label htmlFor={`ai-text-${id}`} className="flex items-center gap-1.5 text-sm font-bold text-violet-900"><Wand2 className="w-4 h-4" aria-hidden="true" /> {label}</label>
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+      <label htmlFor={`ai-text-${id}`} className="flex items-center gap-1.5 text-sm font-medium text-slate-700"><Wand2 className="w-4 h-4" aria-hidden="true" /> {label}</label>
       <div className="mt-2 flex flex-col sm:flex-row gap-2">
         <textarea id={`ai-text-${id}`} rows={2} value={instruction} maxLength={1500} onChange={e => setInstruction(e.target.value)}
           placeholder={placeholder || 'What should change?'}
-          className="flex-1 min-h-[44px] rounded-lg border border-violet-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-violet-400 resize-y" />
+          className="flex-1 min-h-[44px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-slate-200 resize-y" />
         <button type="button" onClick={ask} disabled={busy || value.trim().length < 20 || instruction.trim().length < 3}
-          className="sm:self-start min-h-[44px] inline-flex items-center justify-center gap-1.5 px-4 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold disabled:opacity-50">
-          {busy ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : <Sparkles className="w-4 h-4" aria-hidden="true" />}
+          className="sm:self-start min-h-[44px] inline-flex items-center justify-center gap-1.5 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium disabled:opacity-50">
+          {busy ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : null}
           {busy ? 'Changing…' : 'Change it'}
         </button>
       </div>
       <PromptImprover kind="edit_request" text={instruction} onApply={v => { if (typeof v.improved === 'string') setInstruction(v.improved); }} />
       {proposal && (
-        <div className="mt-3 rounded-lg border border-violet-200 bg-white p-3" role="region" aria-label="Proposed change">
-          <p className="text-sm font-bold text-slate-800">What the AI changed</p>
+        <div className="mt-3 rounded-lg border border-slate-200 bg-white p-3" role="region" aria-label="Proposed change">
+          <p className="text-sm font-medium text-slate-800">What the AI changed</p>
           <ul className="mt-1 list-disc list-inside text-xs text-slate-600">{proposal.changes.map((c, i) => <li key={i}>{c}</li>)}</ul>
           <p className="mt-2 whitespace-pre-wrap rounded border border-slate-200 bg-slate-50 p-2 text-sm text-slate-800">{proposal.revised}</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <button type="button" onClick={() => { setBefore(value); onApply(proposal.revised); setProposal(null); setInstruction(''); }} className="min-h-[40px] px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold">Use this</button>
-            <button type="button" onClick={() => setProposal(null)} className="min-h-[40px] px-4 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-bold">Discard</button>
+            <button type="button" onClick={() => { setBefore(value); onApply(proposal.revised); setProposal(null); setInstruction(''); }} className="min-h-[40px] px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium">Use this</button>
+            <button type="button" onClick={() => setProposal(null)} className="min-h-[40px] px-4 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-medium">Discard</button>
           </div>
         </div>
       )}
