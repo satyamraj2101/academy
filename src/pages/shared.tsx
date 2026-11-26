@@ -151,30 +151,27 @@ export const BottomCTA: React.FC<{
   onOpenProposalModal: (service?: string) => void;
   serviceName?: string;
 }> = ({ onOpenProposalModal, serviceName = '' }) => (
-  <div className="w-full mt-24 mb-12 px-4 sm:px-8 md:px-12 lg:px-16">
-    <div className="w-full mx-auto rounded-feature bg-gradient-to-tr from-slate-950 via-slate-900 to-indigo-950 border border-slate-800 p-8 md:p-16 text-center relative overflow-hidden shadow-floating">
-      {/* Decorative Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-indigo-500/20 blur-[100px] rounded-full pointer-events-none"></div>
-      
-      <div className="relative z-10 max-w-3xl mx-auto space-y-6">
-        <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight">Ready to transform your Legal Ops?</h2>
-        <p className="text-slate-400 text-sm md:text-lg leading-relaxed">
-          Stop struggling with generic deployments. Let our certified engineers configure a CLM environment that actually maps to your business velocity.
+  <div className="w-full mx-auto max-w-[1280px] mt-24 mb-12 px-4 sm:px-6 lg:px-8">
+    <div className="rounded-feature border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 p-8 md:p-12 grid md:grid-cols-[minmax(0,1fr)_auto] gap-8 items-center">
+      <div className="max-w-2xl">
+        <h2 className="text-2xl md:text-3xl font-medium text-slate-900 dark:text-white">Training a whole team?</h2>
+        <p className="mt-3 text-slate-600 dark:text-slate-400 leading-relaxed">
+          Our certified engineers can set up a CLM environment around how your business works, and train your people on it.
         </p>
-        <div className="pt-6 flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <HapticButton 
-            onClick={() => onOpenProposalModal(serviceName)}
-            className="px-8 py-4 bg-white text-slate-900 hover:bg-slate-100 font-black uppercase tracking-widest text-xs rounded-control shadow-raised shadow-white/10 transition-all hover:scale-105"
-          >
-            Request Custom Proposal
-          </HapticButton>
-          <HapticButton 
-            onClick={() => window.location.href = '/contact'}
-            className="px-8 py-4 bg-transparent border border-slate-600 text-slate-300 hover:text-white hover:border-slate-400 font-bold uppercase tracking-widest text-xs rounded-control transition-all"
-          >
-            Speak to an Architect
-          </HapticButton>
-        </div>
+      </div>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <HapticButton
+          onClick={() => onOpenProposalModal(serviceName)}
+          className="min-h-[48px] px-6 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-control transition-colors"
+        >
+          Request a proposal
+        </HapticButton>
+        <HapticButton
+          onClick={() => window.location.href = '/contact'}
+          className="min-h-[48px] px-6 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white hover:bg-white dark:hover:bg-slate-800 text-sm font-medium rounded-control transition-colors"
+        >
+          Speak to an architect
+        </HapticButton>
       </div>
     </div>
   </div>

@@ -37,12 +37,12 @@ function FullscreenMediaFrame({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div ref={containerRef} className={`relative w-full ${isFullscreen ? 'h-screen' : 'aspect-video'} rounded-xl overflow-hidden bg-black shadow-lg group`}>
+    <div ref={containerRef} className={`relative w-full ${isFullscreen ? 'h-screen' : 'aspect-video'} rounded-control overflow-hidden bg-black shadow-raised group`}>
       {children}
       <button
         onClick={toggleFullscreen}
         title={isFullscreen ? 'Exit full screen' : 'Full screen'}
-        className="absolute bottom-3 right-3 p-2.5 rounded-lg bg-black/60 hover:bg-black/80 text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 z-10"
+        className="absolute bottom-3 right-3 p-2.5 rounded-lg bg-black/60 hover:bg-black/80 text-white backdrop-blur-sm transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 z-10"
       >
         {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
       </button>
@@ -57,7 +57,7 @@ const HTML_CONTENT = /^\s*<(?:h[1-6]|p|div|ul|ol|table|section|article|blockquot
 
 // Reading text keeps a comfortable line length (about 75 characters) instead of stretching across a wide screen.
 const PROSE_CLASSES =
-  'prose prose-slate dark:prose-invert prose-lg max-w-[75ch] text-slate-700 dark:text-slate-300 prose-headings:font-black prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-img:rounded-xl prose-img:shadow-lg';
+  'prose prose-slate dark:prose-invert prose-lg max-w-[75ch] text-slate-700 dark:text-slate-300 prose-headings:font-semibold prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-img:rounded-control prose-img:shadow-raised';
 
 // HTML lessons: the sanitised markup is set once, then any diagram blocks in it are drawn.
 function HtmlSection({ content }: { content: string }) {
@@ -106,7 +106,7 @@ export function VideoSection({ content }: { content: string }) {
 }
 
 export function ImageSection({ content }: { content: string }) {
-  return <img src={content} className="w-full rounded-xl shadow-lg max-h-[600px] object-contain bg-slate-100 dark:bg-slate-900" alt="Lesson visual" />;
+  return <img src={content} className="w-full rounded-control shadow-raised max-h-[600px] object-contain bg-slate-100 dark:bg-slate-900" alt="Lesson visual" />;
 }
 
 export function PptSection({ content }: { content: string }) {
@@ -119,7 +119,7 @@ export function PptSection({ content }: { content: string }) {
         href={content}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+        className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
       >
         <ExternalLink className="w-3.5 h-3.5" /> Deck not loading above? Open or download it directly
       </a>
@@ -138,20 +138,20 @@ export function QuizSection({ content }: { content: string }) {
   });
 
   if (!quizId) return null;
-  if (isLoading) return <div className="py-6 flex justify-center"><Loader2 className="w-5 h-5 animate-spin text-indigo-500" /></div>;
+  if (isLoading) return <div className="py-6 flex justify-center"><Loader2 className="w-5 h-5 animate-spin text-slate-500" /></div>;
 
   const quiz = data?.quiz;
   const attempts = data?.attempts || [];
   const bestAttempt = attempts.find((a: any) => a.passed) || attempts[0];
 
   return (
-    <div className="rounded-2xl border-2 border-indigo-200 dark:border-indigo-800/50 bg-gradient-to-br from-indigo-50 to-sky-50 dark:from-indigo-950/30 dark:to-sky-950/20 p-6 md:p-8">
+    <div className="rounded-card border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-6 md:p-8">
       <div className="flex items-start gap-4">
-        <div className="p-3 rounded-xl bg-indigo-600 text-white shadow-md shrink-0"><ClipboardCheck className="w-6 h-6" /></div>
+        <div className="p-3 rounded-control bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 shrink-0"><ClipboardCheck className="w-6 h-6" /></div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-1">Knowledge Assessment</p>
-          <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">{quiz?.title || 'Quiz'}</h3>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-slate-500 dark:text-slate-400 mb-5">
+          <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-1">Knowledge Assessment</p>
+          <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">{quiz?.title || 'Quiz'}</h3>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-slate-500 dark:text-slate-400 mb-5">
             <span>Passing score: {quiz?.passing_score}%</span>
             {attempts.length > 0 && <span>Attempts: {attempts.length}</span>}
             {bestAttempt && (
@@ -162,7 +162,7 @@ export function QuizSection({ content }: { content: string }) {
           </div>
           <HapticButton
             onClick={() => navigate(`/quiz-player/${quizId}`)}
-            className="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm flex items-center gap-2 shadow-sm transition-all"
+            className="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm flex items-center gap-2 shadow-sm transition-colors"
           >
             {bestAttempt?.passed ? <><RotateCcw className="w-4 h-4" /> Retake Quiz</> : attempts.length > 0 ? <><RotateCcw className="w-4 h-4" /> Try Again</> : <>Start Quiz <ArrowRight className="w-4 h-4" /></>}
           </HapticButton>
@@ -209,33 +209,33 @@ export function AssignmentSection({ content }: { content: string }) {
   const needsFile = assignment?.submission_type === 'file' || assignment?.submission_type === 'both';
 
   return (
-    <div className="rounded-2xl border-2 border-amber-200 dark:border-amber-800/50 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/10 p-6 md:p-8">
+    <div className="rounded-card border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-6 md:p-8">
       <div className="flex items-start gap-4 mb-5">
-        <div className="p-3 rounded-xl bg-amber-500 text-white shadow-md shrink-0"><ClipboardCheck className="w-6 h-6" /></div>
+        <div className="p-3 rounded-control bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 shrink-0"><ClipboardCheck className="w-6 h-6" /></div>
         <div>
-          <p className="text-xs font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-1">Graded Assignment {assignment?.max_score ? `· ${assignment.max_score} pts` : ''}</p>
+          <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 mb-1">Graded Assignment {assignment?.max_score ? `· ${assignment.max_score} pts` : ''}</p>
           <p className="text-slate-800 dark:text-slate-200 font-semibold leading-relaxed">{assignment?.prompt_text}</p>
         </div>
       </div>
 
       {submission?.status === 'graded' ? (
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-emerald-200 dark:border-emerald-800/50 p-5 mb-4">
+        <div className="bg-white dark:bg-slate-900 rounded-control border border-emerald-200 dark:border-emerald-800/50 p-5 mb-4">
           <div className="flex items-center gap-2 mb-2">
             <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-            <span className="font-black text-slate-900 dark:text-white">Graded: {submission.grade_score}{assignment?.max_score ? ` / ${assignment.max_score}` : ''}</span>
+            <span className="font-semibold text-slate-900 dark:text-white">Graded: {submission.grade_score}{assignment?.max_score ? ` / ${assignment.max_score}` : ''}</span>
           </div>
           {submission.feedback_text && <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{submission.feedback_text}</p>}
         </div>
       ) : submission?.status === 'needs_revision' ? (
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-red-200 dark:border-red-800/50 p-5 mb-4">
+        <div className="bg-white dark:bg-slate-900 rounded-control border border-red-200 dark:border-red-800/50 p-5 mb-4">
           <div className="flex items-center gap-2 mb-2">
             <MessageSquareWarning className="w-5 h-5 text-red-500" />
-            <span className="font-black text-slate-900 dark:text-white">Revision requested</span>
+            <span className="font-semibold text-slate-900 dark:text-white">Revision requested</span>
           </div>
           {submission.feedback_text && <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{submission.feedback_text}</p>}
         </div>
       ) : submission?.status === 'pending' ? (
-        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 mb-4 flex items-center gap-2 text-sm font-bold text-slate-500">
+        <div className="bg-white dark:bg-slate-900 rounded-control border border-slate-200 dark:border-slate-700 p-4 mb-4 flex items-center gap-2 text-sm font-medium text-slate-500">
           <Clock className="w-4 h-4" /> Submitted — awaiting grading
         </div>
       ) : null}
@@ -265,7 +265,7 @@ export function AssignmentSection({ content }: { content: string }) {
           <HapticButton
             onClick={() => submitMutation.mutate()}
             disabled={submitMutation.isPending}
-            className="px-5 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-bold text-sm flex items-center gap-2 shadow-sm transition-all"
+            className="px-5 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-medium text-sm flex items-center gap-2 shadow-sm transition-colors"
           >
             {submitMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : submission ? 'Resubmit' : 'Submit Assignment'}
           </HapticButton>
@@ -300,7 +300,7 @@ export function InteractiveVideoSection({ content, lessonId }: { content: string
   }, [lessonId, videoId, queryClient]);
 
   if (!parsed) return <p className="text-sm text-slate-500">This video could not be loaded.</p>;
-  if (isLoading) return <div className="aspect-video rounded-2xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-indigo-500" /></div>;
+  if (isLoading) return <div className="aspect-video rounded-card bg-slate-100 dark:bg-slate-900 flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-slate-500" /></div>;
   const initial = data?.videos.find(v => v.videoId === parsed.videoId) || null;
   return <InteractiveVideoPlayer content={parsed} lessonId={lessonId} initial={initial} tracking={!!data?.tracking} onSave={onSave} />;
 }

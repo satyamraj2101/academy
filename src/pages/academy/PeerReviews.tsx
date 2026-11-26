@@ -48,30 +48,30 @@ export function PeerReviewsComponent() {
       </Helmet>
       <div className="max-w-3xl mx-auto px-6">
         <div className="flex items-center gap-3 mb-2">
-          <Users className="w-7 h-7 text-indigo-500" />
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Peer Reviews</h1>
+          <Users className="w-7 h-7 text-slate-500" />
+          <h1 className="text-3xl font-semibold text-slate-900 dark:text-white">Peer Reviews</h1>
         </div>
         <p className="text-slate-600 dark:text-slate-400 mb-8">Review assignments submitted by fellow students.</p>
 
         {isLoading ? (
-          <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-indigo-500" /></div>
+          <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-slate-500" /></div>
         ) : reviews.length === 0 ? (
-          <p className="text-center text-slate-400 italic py-16">No peer reviews assigned to you yet.</p>
+          <p className="text-center text-slate-400 py-16">No peer reviews assigned to you yet.</p>
         ) : (
           <div className="space-y-6">
             {pending.length > 0 && (
               <div className="space-y-4">
-                <h2 className="text-xs font-black uppercase tracking-wider text-slate-500 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> To Review ({pending.length})</h2>
+                <h2 className="text-xs font-semibold text-slate-500 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> To Review ({pending.length})</h2>
                 {pending.map(r => {
                   const draft = drafts[r.id] || { feedback: '', score: '' };
                   return (
                     <div key={r.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-card p-5 shadow-sm">
-                      <p className="text-xs font-bold text-slate-400 mb-1">Submission by {r.author_name}</p>
+                      <p className="text-xs font-medium text-slate-400 mb-1">Submission by {r.author_name}</p>
                       <p className="font-semibold text-slate-800 dark:text-slate-200 mb-3">{r.prompt_text}</p>
                       <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 mb-3 text-sm text-slate-600 dark:text-slate-400 whitespace-pre-wrap">
                         {r.submission_text || 'No text submitted.'}
                         {r.submission_file_url && (
-                          <div className="mt-2"><a href={r.submission_file_url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline text-xs font-bold">View submitted file</a></div>
+                          <div className="mt-2"><a href={r.submission_file_url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline text-xs font-medium">View submitted file</a></div>
                         )}
                       </div>
                       <textarea
@@ -97,7 +97,7 @@ export function PeerReviewsComponent() {
                         <HapticButton
                           onClick={() => submitMutation.mutate({ id: r.id, feedback: draft.feedback, score: draft.score ? Number(draft.score) : undefined })}
                           disabled={!draft.feedback.trim() || submitMutation.isPending}
-                          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg font-bold text-sm"
+                          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg font-medium text-sm"
                         >
                           Submit Review
                         </HapticButton>
@@ -110,7 +110,7 @@ export function PeerReviewsComponent() {
 
             {submitted.length > 0 && (
               <div className="space-y-3">
-                <h2 className="text-xs font-black uppercase tracking-wider text-slate-500 flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> Reviewed ({submitted.length})</h2>
+                <h2 className="text-xs font-semibold text-slate-500 flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> Reviewed ({submitted.length})</h2>
                 {submitted.map(r => (
                   <div key={r.id} className="bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-lg p-4 text-sm">
                     <p className="font-semibold text-slate-700 dark:text-slate-300 mb-1">{r.prompt_text}</p>

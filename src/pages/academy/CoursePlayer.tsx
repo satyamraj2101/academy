@@ -25,11 +25,11 @@ import { AIAssistantPanel } from './AIAssistantPanel';
 import { useTheme } from '../../hooks/useTheme';
 
 // A tool in the lesson's right-hand rail: an icon with its name written under it.
-function RailButton({ icon: Icon, label, active, onClick }: { icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean }>; label: string; active: boolean; onClick: () => void }) {
+function RailButton({ icon: Icon, label, active, onClick }: { icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean }>; label: string;  boolean; onClick: () => void }) {
   return (
     <button
       onClick={onClick} aria-pressed={active} aria-label={label}
-      className={`flex flex-col items-center justify-center gap-1 w-16 min-h-[56px] rounded-xl text-[11px] leading-none font-semibold transition-colors ${active ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-700 dark:hover:text-indigo-300'}`}
+      className={`flex flex-col items-center justify-center gap-1 w-16 min-h-[56px] rounded-control text-[11px] leading-none font-semibold transition-colors ${active ? 'bg-indigo-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-700 dark:hover:text-indigo-300'}`}
     >
       <Icon className="w-5 h-5" aria-hidden={true} />
       {label}
@@ -106,7 +106,7 @@ export function CoursePlayerComponent() {
       queryClient.invalidateQueries({ queryKey: ['lesson', lessonId] });
       queryClient.invalidateQueries({ queryKey: ['course', courseId] });
       if (res?.credentialId) {
-        toast.success('Course completed — certificate earned!', res.credentialId);
+        toast.success('Course complete: certificate earned', res.credentialId);
       }
       
       if (nextLessonInfo) {
@@ -287,7 +287,7 @@ export function CoursePlayerComponent() {
   }, [autoplayCountdown, nextLessonInfo, navigate, courseId]);
 
   if (courseLoading || userLoading) {
-    return <div className="min-h-screen pt-32 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-indigo-500" /></div>;
+    return <div className="min-h-screen pt-32 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-slate-500" /></div>;
   }
 
 
@@ -310,7 +310,6 @@ export function CoursePlayerComponent() {
   const totalLessons = allLessons.length;
   const completedLessons = allLessons.filter((l: any) => l.completed).length;
   const progressPercent = totalLessons === 0 ? 0 : Math.round((completedLessons / totalLessons) * 100);
-  const progressColor = progressPercent === 100 ? 'from-emerald-500 to-teal-500' : progressPercent >= 50 ? 'from-indigo-500 to-sky-400' : 'from-amber-400 to-orange-500';
 
   const toggleModule = (modId: string) => {
     setCollapsedModules(prev => {
@@ -367,17 +366,17 @@ export function CoursePlayerComponent() {
             <ArrowLeft className="w-4 h-4 text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400" />
           </button>
           <div className="flex-1 min-w-0">
-            <h3 className="font-black text-sm text-slate-900 dark:text-white truncate">{course?.title}</h3>
+            <h3 className="font-semibold text-sm text-slate-900 dark:text-white truncate">{course?.title}</h3>
             <p className="text-xs text-slate-500 font-semibold">Course Curriculum</p>
           </div>
         </div>
         <div className="bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
-          <div className="flex justify-between text-xs font-bold mb-1.5">
+          <div className="flex justify-between text-xs font-medium mb-1.5">
             <span className="text-slate-500">Your Progress</span>
-            <span className={`${progressPercent === 100 ? 'text-emerald-500' : progressPercent >= 50 ? 'text-indigo-500' : 'text-amber-500'}`}>{progressPercent}%</span>
+            <span className={`${progressPercent === 100 ? 'text-emerald-500' : progressPercent >= 50 ? 'text-slate-500' : 'text-amber-500'}`}>{progressPercent}%</span>
           </div>
           <div className="w-full h-2 bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden">
-            <div className={`h-full bg-gradient-to-r ${progressColor} rounded-full transition-all duration-700`} style={{ width: `${progressPercent}%` }} />
+            <div className={`h-full bg-indigo-600 dark:bg-indigo-400 rounded-full transition-colors duration-700`} style={{ width: `${progressPercent}%` }} />
           </div>
         </div>
       </div>
@@ -393,11 +392,11 @@ export function CoursePlayerComponent() {
                 className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800/70 border-b border-slate-200 dark:border-slate-800/50 flex items-center justify-between gap-2 transition-colors"
               >
                 <div className="text-left">
-                  <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-0.5">Module {i + 1}</h4>
-                  <p className="font-bold text-sm text-slate-900 dark:text-white leading-tight line-clamp-1">{mod.title}</p>
+                  <h4 className="text-[11px] font-semibold text-slate-400 mb-0.5">Module {i + 1}</h4>
+                  <p className="font-medium text-sm text-slate-900 dark:text-white leading-tight line-clamp-1">{mod.title}</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${modCompleted === modLessons.length && modLessons.length > 0 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}`}>
+                  <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full ${modCompleted === modLessons.length && modLessons.length > 0 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}`}>
                     {modCompleted}/{modLessons.length}
                   </span>
                   {isCollapsed ? <ChevronDown className="w-4 h-4 text-slate-400" /> : <ChevronUp className="w-4 h-4 text-slate-400" />}
@@ -413,8 +412,8 @@ export function CoursePlayerComponent() {
                           key={l.id}
                           onClick={() => { navigate(`/course-player/${courseId}/lesson/${l.id}`); setMobileMenuOpen(false); }}
                           className={`w-full text-left px-4 py-3 flex items-start gap-3 transition-colors border-l-2 ${
-                            isActive ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-600' : 'hover:bg-white/70 dark:hover:bg-slate-800/40 border-transparent'
-                          }`}
+ isActive ? 'bg-slate-100 dark:bg-slate-800 border-indigo-600' : 'hover:bg-white/70 dark:hover:bg-slate-800/40 border-transparent'
+ }`}
                         >
                           <div className="mt-0.5 shrink-0">
                             {l.completed ? (
@@ -426,7 +425,7 @@ export function CoursePlayerComponent() {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className={`text-sm font-semibold truncate leading-tight ${isActive ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-700 dark:text-slate-300'}`}>{l.title}</p>
+                            <p className={`text-sm font-semibold truncate leading-tight ${isActive ? 'text-slate-700 dark:text-slate-300' : 'text-slate-700 dark:text-slate-300'}`}>{l.title}</p>
                             {l.video_duration_minutes && <p className="text-xs text-slate-400 mt-0.5">{l.video_duration_minutes} min</p>}
                           </div>
                         </button>
@@ -451,31 +450,31 @@ export function CoursePlayerComponent() {
       <Helmet><title>{lesson?.title || 'Loading'} | SpotCLM Academy</title></Helmet>
 
       {/* Mobile Header Nav (since main nav is hidden on player) */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 z-30 flex items-center justify-between px-2 sm:px-4">
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/90 dark:bg-slate-950/90 border-b border-slate-200 dark:border-slate-800 z-30 flex items-center justify-between px-2 sm:px-4">
         <HapticButton onClick={() => setMobileMenuOpen(true)} aria-label="Open lesson list" className="p-2.5 text-slate-700 dark:text-slate-300 shrink-0">
           <Menu className="w-6 h-6" />
         </HapticButton>
-        <span className="font-bold text-sm truncate px-2 hidden sm:block text-slate-900 dark:text-white">{course?.title}</span>
+        <span className="font-medium text-sm truncate px-2 hidden sm:block text-slate-900 dark:text-white">{course?.title}</span>
         <div className="flex items-center gap-1 sm:gap-2 ml-auto shrink-0">
-          <HapticButton onClick={() => setSidePanel(sidePanel === 'ai' ? 'none' : 'ai')} aria-label="AI tutor" title="AI tutor" className={`p-1.5 sm:p-2 rounded-lg transition-colors ${sidePanel === 'ai' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'text-slate-500 dark:text-slate-400'}`}>
+          <HapticButton onClick={() => setSidePanel(sidePanel === 'ai' ? 'none' : 'ai')} aria-label="AI tutor" title="AI tutor" className={`p-1.5 sm:p-2 rounded-lg transition-colors ${sidePanel === 'ai' ? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}>
             <Lightbulb className="w-5 h-5" />
           </HapticButton>
-          <HapticButton onClick={() => setSidePanel(sidePanel === 'notes' ? 'none' : 'notes')} aria-label="Notes" title="Notes" className={`p-1.5 sm:p-2 rounded-lg transition-colors ${sidePanel === 'notes' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'text-slate-500 dark:text-slate-400'}`}>
+          <HapticButton onClick={() => setSidePanel(sidePanel === 'notes' ? 'none' : 'notes')} aria-label="Notes" title="Notes" className={`p-1.5 sm:p-2 rounded-lg transition-colors ${sidePanel === 'notes' ? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}>
             <StickyNote className="w-5 h-5" />
           </HapticButton>
-          <HapticButton onClick={() => setSidePanel(sidePanel === 'discussion' ? 'none' : 'discussion')} aria-label="Q&A" title="Q&A" className={`p-1.5 sm:p-2 rounded-lg transition-colors ${sidePanel === 'discussion' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'text-slate-500 dark:text-slate-400'}`}>
+          <HapticButton onClick={() => setSidePanel(sidePanel === 'discussion' ? 'none' : 'discussion')} aria-label="Q&A" title="Q&A" className={`p-1.5 sm:p-2 rounded-lg transition-colors ${sidePanel === 'discussion' ? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' : 'text-slate-500 dark:text-slate-400'}`}>
             <MessageCircle className="w-5 h-5" />
           </HapticButton>
           <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-0.5" />
           <HapticButton onClick={toggleTheme} aria-label="Toggle light or dark mode" title="Toggle light or dark mode" className="p-1.5 sm:p-2 min-h-[44px] min-w-[44px] text-slate-500 dark:text-slate-400">
-            {theme === 'dark' ? <Moon className="w-5 h-5 text-indigo-400" /> : <Sun className="w-5 h-5 text-amber-500" />}
+            {theme === 'dark' ? <Moon className="w-5 h-5 text-slate-400" /> : <Sun className="w-5 h-5 text-amber-500" />}
           </HapticButton>
         </div>
       </div>
 
       {/* Desktop Sidebar */}
       {!theaterMode && (
-        <div className="hidden lg:flex w-80 border-r border-slate-200 dark:border-slate-800 flex-col shrink-0 transition-all duration-300 ease-in-out">
+        <div className="hidden lg:flex w-80 border-r border-slate-200 dark:border-slate-800 flex-col shrink-0 transition-colors duration-300 ease-in-out">
           <CurriculumSidebar />
         </div>
       )}
@@ -499,19 +498,19 @@ export function CoursePlayerComponent() {
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         {/* Progress Bar */}
         <div className="absolute top-0 left-0 w-full h-1 bg-slate-100 dark:bg-slate-800 z-20">
-          <div className={`h-full bg-gradient-to-r ${progressColor} transition-all duration-700`} style={{ width: `${progressPercent}%` }} />
+          <div className={`h-full bg-indigo-600 dark:bg-indigo-400 transition-colors duration-700`} style={{ width: `${progressPercent}%` }} />
         </div>
 
         {lessonLoading ? (
           <div className="flex-1 flex justify-center items-center">
-            <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+            <Loader2 className="w-8 h-8 animate-spin text-slate-500" />
           </div>
         ) : lessonError || !lesson ? (
           <div className="flex-1 pt-32 text-center px-6">
             <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-            <h2 className="text-xl font-bold mb-2">Could not load lesson</h2>
+            <h2 className="text-xl font-medium mb-2">Could not load lesson</h2>
             <p className="text-slate-500 mb-6">{(lessonError as Error)?.message}</p>
-            <button onClick={() => navigate('/dashboard')} className="px-6 py-2.5 bg-indigo-600 text-white rounded-control font-bold">Back to Dashboard</button>
+            <button onClick={() => navigate('/dashboard')} className="px-6 py-2.5 bg-indigo-600 text-white rounded-control font-medium">Back to Dashboard</button>
           </div>
         ) : (
           <>
@@ -542,21 +541,21 @@ export function CoursePlayerComponent() {
                     exit={{ opacity: 0 }}
                     className="absolute inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center text-white"
                   >
-                    <MonitorPlay className="w-16 h-16 text-indigo-400 mb-6" />
-                    <h3 className="text-2xl font-black mb-2">Up Next: {nextLessonInfo?.title}</h3>
+                    <MonitorPlay className="w-16 h-16 text-slate-400 mb-6" />
+                    <h3 className="text-2xl font-semibold mb-2">Up Next: {nextLessonInfo?.title}</h3>
                     <p className="text-slate-300 font-semibold mb-8 flex items-center gap-2">
-                      <Timer className="w-5 h-5 animate-pulse text-indigo-400" /> Playing in {autoplayCountdown} seconds...
+                      <Timer className="w-5 h-5 text-slate-400" /> Playing in {autoplayCountdown} seconds...
                     </p>
                     <div className="flex gap-4">
                       <HapticButton 
                         onClick={() => { setAutoplayCountdown(0); }}
-                        className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-xl shadow-lg transition-transform hover:scale-105"
+                        className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 font-medium rounded-control shadow-raised transition-transform"
                       >
                         Play Now
                       </HapticButton>
                       <HapticButton 
                         onClick={() => { setAutoplayCountdown(null); }}
-                        className="px-6 py-3 bg-slate-700 hover:bg-slate-600 font-bold rounded-xl transition-all"
+                        className="px-6 py-3 bg-slate-700 hover:bg-slate-600 font-medium rounded-control transition-colors"
                       >
                         Cancel
                       </HapticButton>
@@ -568,7 +567,7 @@ export function CoursePlayerComponent() {
           )}
           <div className="max-w-4xl xl:max-w-6xl 2xl:max-w-[88rem] mx-auto px-6 pt-6 pb-10 lg:px-12 2xl:px-16">
             <div className="mb-3 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-              <h1 className="text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight text-balance">{lesson.title}</h1>
+              <h1 className="text-2xl lg:text-3xl font-semibold text-slate-900 dark:text-white leading-tight text-balance">{lesson.title}</h1>
               <p className="flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-400">
                 {hasWatch ? <MonitorPlay className="w-4 h-4 self-center" aria-hidden="true" /> : <FileText className="w-4 h-4 self-center" aria-hidden="true" />}
                 <span>{hasWatch ? 'Video lesson' : 'Reading'}</span>
@@ -595,7 +594,7 @@ export function CoursePlayerComponent() {
             {/* 2. Read: the written lesson. */}
             {hasRead && (
               <section id="lesson-read" aria-label="Lesson notes" className={`scroll-mt-16 ${hasWatch || hasCheck ? 'mt-10' : 'mt-6'}`}>
-                {hasWatch && <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight mb-5">Lesson notes</h2>}
+                {hasWatch && <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-5">Lesson notes</h2>}
                 {readSections.length > 0 ? (
                   <div className="space-y-8">
                     {readSections.map((section: any) => (
@@ -623,22 +622,22 @@ export function CoursePlayerComponent() {
                 ) : (
                   cleanContent && (
                     <div
-                      className="prose prose-slate dark:prose-invert prose-lg max-w-[75ch] text-slate-700 dark:text-slate-300 prose-headings:font-black prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-img:rounded-xl prose-img:shadow-lg"
+                      className="prose prose-slate dark:prose-invert prose-lg max-w-[75ch] text-slate-700 dark:text-slate-300 prose-headings:font-semibold prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-img:rounded-control prose-img:shadow-raised"
                       dangerouslySetInnerHTML={{ __html: cleanContent }}
                     />
                   )
                 )}
 
                 {lesson.pdf_url && (
-                  <div className="mt-8 p-5 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4 flex-wrap">
+                  <div className="mt-8 p-5 bg-slate-50 dark:bg-slate-900/50 rounded-card border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4 flex-wrap">
                     <div className="flex items-center gap-3">
                       <div className="p-2.5 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-lg"><FileText className="w-5 h-5" aria-hidden="true" /></div>
                       <div>
-                        <h3 className="font-bold text-slate-900 dark:text-white text-sm">Lesson Resources</h3>
+                        <h3 className="font-medium text-slate-900 dark:text-white text-sm">Lesson Resources</h3>
                         <p className="text-xs text-slate-600 dark:text-slate-400">Download the companion PDF guide.</p>
                       </div>
                     </div>
-                    <a href={lesson.pdf_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center min-h-[44px] px-4 font-bold text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:shadow-sm transition-all text-slate-700 dark:text-slate-300">Download PDF</a>
+                    <a href={lesson.pdf_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center min-h-[44px] px-4 font-medium text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:shadow-sm transition-colors text-slate-700 dark:text-slate-300">Download PDF</a>
                   </div>
                 )}
               </section>
@@ -647,18 +646,18 @@ export function CoursePlayerComponent() {
             {/* 3. Check: the video's questions and the lesson's Knowledge Check, in one place. */}
             {hasCheck && (
               <section id="lesson-check" aria-label="Check your understanding" className="mt-12 scroll-mt-16">
-                <h2 className="flex items-center gap-2 text-xl font-black text-slate-900 dark:text-white tracking-tight mb-5">
+                <h2 className="flex items-center gap-2 text-xl font-semibold text-slate-900 dark:text-white mb-5">
                   <ListChecks className="w-5 h-5 text-indigo-600 dark:text-indigo-400" aria-hidden="true" /> Check your understanding
                 </h2>
 
                 {totalCheckpoints > 0 && (
-                  <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-800 p-4 max-w-3xl">
+                  <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-control border border-slate-200 dark:border-slate-800 p-4 max-w-3xl">
                     <div className="flex items-center gap-3">
                       {answeredCheckpoints >= totalCheckpoints
                         ? <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0" aria-hidden="true" />
-                        : <span aria-hidden="true" className="w-6 h-6 shrink-0 rounded-full border-2 border-amber-500" />}
+                        : <span aria-hidden="true" className="w-6 h-6 shrink-0 rounded-full border border-amber-500" />}
                       <div>
-                        <p className="font-bold text-slate-900 dark:text-white">Questions in the video</p>
+                        <p className="font-medium text-slate-900 dark:text-white">Questions in the video</p>
                         <p className="text-sm text-slate-600 dark:text-slate-400">{answeredCheckpoints} of {totalCheckpoints} answered</p>
                       </div>
                     </div>
@@ -668,7 +667,7 @@ export function CoursePlayerComponent() {
                           document.getElementById('lesson-watch')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                           window.setTimeout(() => window.dispatchEvent(new CustomEvent(OPEN_VIDEO_QUESTION, { detail: { lessonId } })), 350);
                         }}
-                        className="inline-flex items-center min-h-[44px] px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold"
+                        className="inline-flex items-center min-h-[44px] px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium"
                       >
                         Answer in the video
                       </button>
@@ -677,8 +676,8 @@ export function CoursePlayerComponent() {
                 )}
 
                 {knowledgeCheck && (
-                  <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 max-w-3xl">
-                    <p className="font-bold text-slate-900 dark:text-white mb-5 text-lg leading-snug">{knowledgeCheck.question_text}</p>
+                  <div className="rounded-control border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 max-w-3xl">
+                    <p className="font-medium text-slate-900 dark:text-white mb-5 text-lg leading-snug">{knowledgeCheck.question_text}</p>
                     <div className="space-y-3 mb-6">
                       {(knowledgeCheck.options || []).map((option: string) => {
                         const isSelected = selectedAnswer === option;
@@ -691,18 +690,18 @@ export function CoursePlayerComponent() {
                             disabled={!!checkResult}
                             onClick={() => !checkResult && setSelectedAnswer(option)}
                             aria-pressed={isSelected}
-                            className={`w-full text-left px-4 py-3 min-h-[48px] rounded-xl border-2 transition-colors font-semibold text-sm flex items-center gap-3 ${
-                              isCorrect ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-900 dark:text-emerald-200' :
-                              isWrong ? 'border-rose-400 bg-rose-50 dark:bg-rose-900/20 text-rose-800 dark:text-rose-300' :
-                              isSelected ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-900 dark:text-indigo-100' :
-                              'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-indigo-400'
-                            }`}
+                            className={`w-full text-left px-4 py-3 min-h-[48px] rounded-control border transition-colors font-semibold text-sm flex items-center gap-3 ${
+ isCorrect ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-900 dark:text-emerald-200' :
+ isWrong ? 'border-rose-400 bg-rose-50 dark:bg-rose-900/20 text-rose-800 dark:text-rose-300' :
+ isSelected ? 'border-indigo-500 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-indigo-100' :
+ 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-indigo-400'
+ }`}
                           >
-                            <span aria-hidden="true" className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-                              isCorrect ? 'border-emerald-500 bg-emerald-500' :
-                              isWrong ? 'border-rose-400 bg-rose-400' :
-                              isSelected ? 'border-indigo-500 bg-indigo-500' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'
-                            }`}>
+                            <span aria-hidden="true" className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
+ isCorrect ? 'border-emerald-500 bg-emerald-500' :
+ isWrong ? 'border-rose-400 bg-rose-400' :
+ isSelected ? 'border-indigo-500 bg-indigo-500' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'
+ }`}>
                               {(isCorrect || isSelected) && <span className="w-2 h-2 rounded-full bg-white" />}
                             </span>
                             <span className="flex-1">{option}</span>
@@ -712,10 +711,10 @@ export function CoursePlayerComponent() {
                     </div>
 
                     {checkResult ? (
-                      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} aria-live="polite" className={`p-4 rounded-xl flex gap-3 ${checkResult.isCorrect ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800' : 'bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800'}`}>
+                      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} aria-live="polite" className={`p-4 rounded-control flex gap-3 ${checkResult.isCorrect ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800' : 'bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800'}`}>
                         {checkResult.isCorrect ? <CheckCheck className="w-6 h-6 text-emerald-600 shrink-0" aria-hidden="true" /> : <AlertCircle className="w-6 h-6 text-rose-600 shrink-0" aria-hidden="true" />}
                         <div>
-                          <p className={`font-bold ${checkResult.isCorrect ? 'text-emerald-900 dark:text-emerald-300' : 'text-rose-800 dark:text-rose-300'}`}>
+                          <p className={`font-medium ${checkResult.isCorrect ? 'text-emerald-900 dark:text-emerald-300' : 'text-rose-800 dark:text-rose-300'}`}>
                             {checkResult.isCorrect ? 'Correct' : 'Not quite right'}
                           </p>
                           {checkResult.explanation && <p className="text-sm text-slate-700 dark:text-slate-300 mt-1 leading-relaxed">{checkResult.explanation}</p>}
@@ -726,7 +725,7 @@ export function CoursePlayerComponent() {
                         <HapticButton
                           disabled={!selectedAnswer || submitKcMutation.isPending}
                           onClick={() => submitKcMutation.mutate()}
-                          className="px-6 min-h-[48px] bg-slate-900 dark:bg-white hover:opacity-90 disabled:opacity-50 text-white dark:text-slate-900 font-bold rounded-xl transition-opacity flex items-center justify-center gap-2"
+                          className="px-6 min-h-[48px] bg-slate-900 dark:bg-white hover:opacity-90 disabled:opacity-50 text-white dark:text-slate-900 font-medium rounded-control transition-opacity flex items-center justify-center gap-2"
                         >
                           {submitKcMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Submit answer'}
                         </HapticButton>
@@ -740,19 +739,19 @@ export function CoursePlayerComponent() {
         </div>
 
         {/* Bottom Nav */}
-        <div className="absolute bottom-0 left-0 right-0 border-t border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-4 px-6 flex items-center justify-between z-20 shadow-lg">
+        <div className="absolute bottom-0 left-0 right-0 border-t border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 p-4 px-6 flex items-center justify-between z-20 shadow-raised">
           <button
             disabled={!prevLessonInfo}
             onClick={() => prevLessonInfo && navigate(`/course-player/${courseId}/lesson/${prevLessonInfo.id}`)}
             aria-label="Previous lesson"
-            className={`flex items-center justify-center gap-2 min-h-[44px] min-w-[44px] text-sm font-bold transition-colors ${prevLessonInfo ? 'text-slate-600 dark:text-slate-400 hover:text-indigo-600' : 'text-slate-300 dark:text-slate-700 cursor-not-allowed'}`}
+            className={`flex items-center justify-center gap-2 min-h-[44px] min-w-[44px] text-sm font-medium transition-colors ${prevLessonInfo ? 'text-slate-600 dark:text-slate-400 hover:text-indigo-600' : 'text-slate-300 dark:text-slate-700 cursor-not-allowed'}`}
           >
             <ChevronLeft className="w-5 h-5" /> <span className="hidden sm:inline">Previous</span>
           </button>
 
           <div className="flex gap-3 ml-auto sm:ml-0">
             {lesson.completed ? (
-              <div className="px-5 py-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-2 text-sm">
+              <div className="px-5 py-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-2 text-sm">
                 <CheckCircle2 className="w-4 h-4" /> Completed
               </div>
             ) : (
@@ -762,7 +761,7 @@ export function CoursePlayerComponent() {
                   disabled={markCompleteMutation.isPending || !canMarkComplete}
                   title={markCompleteBlockedReason || undefined}
                   aria-describedby={!canMarkComplete ? 'mark-complete-hint' : undefined}
-                  className="px-5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-bold tracking-tight flex items-center gap-2 transition-all text-sm"
+                  className="px-5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-medium flex items-center gap-2 transition-colors text-sm"
                 >
                   {markCompleteMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle2 className="w-4 h-4" /> Mark Complete</>}
                 </HapticButton>
@@ -778,7 +777,7 @@ export function CoursePlayerComponent() {
                 if (nextLessonInfo) navigate(`/course-player/${courseId}/lesson/${nextLessonInfo.id}`);
                 else navigate(`/courses/${courseId}`);
               }}
-              className={`px-5 py-2.5 rounded-lg font-bold tracking-tight flex items-center gap-2 transition-all text-sm whitespace-nowrap shrink-0 ${nextLessonInfo || lesson.completed ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'}`}
+              className={`px-5 py-2.5 rounded-lg font-medium flex items-center gap-2 transition-colors text-sm whitespace-nowrap shrink-0 ${nextLessonInfo || lesson.completed ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'}`}
             >
               {nextLessonInfo ? 'Next Lesson' : 'Finish Course'} <ChevronRight className="w-4 h-4" />
             </HapticButton>
@@ -817,15 +816,15 @@ export function CoursePlayerComponent() {
 
         <AnimatePresence>
           {sidePanel === 'notes' && (
-            <motion.div initial={{ width: 0, opacity: 0 }} animate={{ width: 360, opacity: 1 }} exit={{ width: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="absolute right-0 lg:static h-full w-full max-w-[360px] border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col overflow-hidden pointer-events-auto z-50 shadow-2xl lg:shadow-none">
+            <motion.div initial={{ width: 0, opacity: 0 }} animate={{ width: 360, opacity: 1 }} exit={{ width: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="absolute right-0 lg:static h-full w-full max-w-[360px] border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col overflow-hidden pointer-events-auto z-50 shadow-floating lg:shadow-none">
               <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <StickyNote className="w-4 h-4 text-indigo-500" />
-                  <h4 className="font-bold text-sm text-slate-900 dark:text-white">My Notes</h4>
+                  <StickyNote className="w-4 h-4 text-slate-500" />
+                  <h4 className="font-medium text-sm text-slate-900 dark:text-white">My Notes</h4>
                 </div>
                 <div className="flex items-center gap-2">
-                  {saveNotesMutation.isPending && <span className="text-[10px] text-slate-400 font-medium">Saving...</span>}
-                  {saveNotesMutation.isSuccess && !saveNotesMutation.isPending && <span className="text-[10px] text-emerald-500 font-bold">Saved ✓</span>}
+                  {saveNotesMutation.isPending && <span className="text-[11px] text-slate-400 font-medium">Saving...</span>}
+                  {saveNotesMutation.isSuccess && !saveNotesMutation.isPending && <span className="text-[11px] text-emerald-500 font-medium">Saved ✓</span>}
                   <button onClick={() => setSidePanel('none')} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><X className="w-5 h-5 lg:w-4 lg:h-4" /></button>
                 </div>
               </div>
@@ -835,13 +834,13 @@ export function CoursePlayerComponent() {
             </motion.div>
           )}
           {sidePanel === 'discussion' && (
-            <motion.div initial={{ width: 0, opacity: 0 }} animate={{ width: 360, opacity: 1 }} exit={{ width: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="absolute right-0 lg:static h-full w-full max-w-[360px] border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col overflow-hidden pointer-events-auto z-50 shadow-2xl lg:shadow-none relative">
+            <motion.div initial={{ width: 0, opacity: 0 }} animate={{ width: 360, opacity: 1 }} exit={{ width: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="absolute right-0 lg:static h-full w-full max-w-[360px] border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col overflow-hidden pointer-events-auto z-50 shadow-floating lg:shadow-none relative">
               <button onClick={() => setSidePanel('none')} className="absolute top-4 right-4 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 z-10"><X className="w-5 h-5 lg:w-4 lg:h-4" /></button>
               <DiscussionPanel lessonId={lessonId!} />
             </motion.div>
           )}
           {sidePanel === 'ai' && (
-            <motion.div initial={{ width: 0, opacity: 0 }} animate={{ width: 360, opacity: 1 }} exit={{ width: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="absolute right-0 lg:static h-full w-full max-w-[360px] border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col overflow-hidden pointer-events-auto z-50 shadow-2xl lg:shadow-none relative">
+            <motion.div initial={{ width: 0, opacity: 0 }} animate={{ width: 360, opacity: 1 }} exit={{ width: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="absolute right-0 lg:static h-full w-full max-w-[360px] border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col overflow-hidden pointer-events-auto z-50 shadow-floating lg:shadow-none relative">
               <button onClick={() => setSidePanel('none')} className="absolute top-3 right-3 p-1 text-white/70 hover:text-white z-10"><X className="w-5 h-5 lg:w-4 lg:h-4" /></button>
               <AIAssistantPanel lessonId={lessonId!} lessonTitle={lesson?.title || ''} />
             </motion.div>

@@ -1,39 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'motion/react';
 import { HapticButton, playPremiumHapticSound } from '../../components/HapticButton';
-import {
-  GraduationCap,
-  BookOpen,
-  Users,
-  Award,
-  Video,
-  Play,
-  Briefcase,
-  Star,
-  CheckCircle2,
-  Calendar,
-  Layers,
-  ArrowRight,
-  UserPlus,
-  Rocket
-} from 'lucide-react';
+import { Check } from 'lucide-react';
 import { BottomCTA } from '../shared';
-import { ActivePage } from '../../types';
 import { academyAPI } from '../../academy/api';
 import { useAcademy } from '../../academy/context';
+import { CourseThumbnail } from '../../components/CourseThumbnail';
+import { LifecycleLine } from '../../components/LifecycleLine';
+import { CertificateSheet } from '../../components/CertificateSheet';
 
 const JOURNEY_STEPS = [
-  { icon: UserPlus, title: 'Enroll', desc: 'Pick a role-based track or a single course from the catalog.' },
-  { icon: Video, title: 'Learn', desc: 'Work through live sessions, videos, and hands-on labs at your pace.' },
-  { icon: CheckCircle2, title: 'Practice', desc: 'Prove your understanding with knowledge checks and graded assignments.' },
-  { icon: Award, title: 'Get Certified', desc: 'Pass the certification exam and earn a verifiable, shareable credential.' },
+  { title: 'Enroll', desc: 'Pick a role-based track or a single course from the catalog.' },
+  { title: 'Learn', desc: 'Work through video lessons and hands-on labs at your own pace.' },
+  { title: 'Practice', desc: 'Check your understanding with quizzes and graded assignments.' },
+  { title: 'Get certified', desc: 'Finish the course and earn a certificate anyone can verify.' },
 ];
 
-export function AcademyHomeComponent({ onNavigate, onOpenProposalModal }: any) {
+const PATHWAYS = [
+  {
+    id: 'live', title: 'Live sessions',
+    desc: 'Expert-led cohorts for hands-on CLM configuration. Build real workflows in sandbox environments with certified architects guiding you live.',
+    bullets: ['Small cohorts', 'Live Q&A and troubleshooting', 'Sandbox environment access', 'Direct feedback from architects'],
+  },
+  {
+    id: 'job', title: 'Job ready',
+    desc: 'Move into legal operations or CLM administration. The bootcamps teach what enterprise employers look for in a platform manager.',
+    bullets: ['Real-world implementation scenarios', 'Resume and interview preparation', 'Introductions to our partner network', 'One-to-one career coaching'],
+  },
+  {
+    id: 'cert', title: 'Certifications',
+    desc: 'Earn verifiable credentials that show you can deploy and manage enterprise CLM platforms such as Leah, Ironclad and Sirion.',
+    bullets: ['Proctored online examinations', 'Shareable digital badges', 'Administrator track', 'Workflow architect track'],
+  },
+  {
+    id: 'role', title: 'Role based',
+    desc: 'Learning paths for end users, legal administrators and IT workflow architects, so each team learns what it will actually use.',
+    bullets: ['Custom corporate training portals', 'Role-specific curriculum', 'Adoption tracking dashboards', 'Post-launch refresher courses'],
+  },
+];
+
+export function AcademyHomeComponent(_props: any) {
   const { user } = useAcademy();
-  const [activeTab, setActiveTab] = useState(0);
-  const [orbitHovered, setOrbitHovered] = useState(false);
+  const [activePath, setActivePath] = useState(0);
   const [catalogStats, setCatalogStats] = useState<{ courses: number, categories: number } | null>(null);
 
   useEffect(() => {
@@ -49,292 +58,115 @@ export function AcademyHomeComponent({ onNavigate, onOpenProposalModal }: any) {
       .catch(() => {});
   }, []);
 
-  const tabs = [
-    { id: 'live', title: 'Live Sessions', icon: Video, color: 'rose' },
-    { id: 'job', title: 'Job Ready', icon: Briefcase, color: 'emerald' },
-    { id: 'cert', title: 'Certifications', icon: Award, color: 'amber' },
-    { id: 'role', title: 'Role-Based', icon: Users, color: 'indigo' },
-  ];
-
-  const activeTabData = [
-    {
-      title: 'Interactive Live Training Sessions',
-      desc: 'Join expert-led cohorts for hands-on CLM configuration. No pre-recorded theory — build real workflows in sandbox environments with certified architects guiding you live.',
-      bullets: ['Small Cohort Sizes (<15 students)', 'Live Q&A and Troubleshooting', 'Sandbox Environment Access', 'Direct feedback from Architects'],
-      metrics: [
-        { label: 'Avg Duration', value: '3 Days', color: '#f43f5e' },
-        { label: 'Pass Rate', value: '98%', color: '#f43f5e' }
-      ]
-    },
-    {
-      title: 'Job-Ready CLM Career Paths',
-      desc: 'Transition into Legal Ops or CLM Administration. Our comprehensive bootcamps teach you exactly what top enterprise employers are looking for in a platform manager.',
-      bullets: ['Real-world implementation scenarios', 'Resume and interview prep', 'Direct introduction to partner network', '1-on-1 career coaching'],
-      metrics: [
-        { label: 'Placement Rate', value: '92%', color: '#10b981' },
-        { label: 'Starting Avg', value: '$85k+', color: '#10b981' }
-      ]
-    },
-    {
-      title: 'Industry-Recognized Certifications',
-      desc: 'Earn verifiable credentials that prove your expertise in deploying and managing enterprise CLM solutions like Leah, Ironclad, and Sirion.',
-      bullets: ['Proctored online examinations', 'Shareable digital badges', 'Advanced Administrator tracks', 'Workflow Architect tracks'],
-      metrics: [
-        { label: 'Certified Pros', value: '500+', color: '#f59e0b' },
-        { label: 'Exam Formats', value: '3', color: '#f59e0b' }
-      ]
-    },
-    {
-      title: 'Role-Based Team Upskilling',
-      desc: 'Tailored learning paths designed specifically for End Users, Legal Administrators, and IT Workflow Architects to ensure maximum platform adoption.',
-      bullets: ['Custom corporate training portals', 'Role-specific curriculum', 'Adoption tracking dashboards', 'Post-launch refresher courses'],
-      metrics: [
-        { label: 'User Adoption', value: '90%+', color: '#6366f1' },
-        { label: 'Time-to-Value', value: 'Fast', color: '#6366f1' }
-      ]
-    }
-  ];
-
-  const currentData = activeTabData[activeTab];
-  const activeColorHex = tabs[activeTab].color === 'rose' ? '#f43f5e' : tabs[activeTab].color === 'emerald' ? '#10b981' : tabs[activeTab].color === 'amber' ? '#f59e0b' : '#6366f1';
+  const path = PATHWAYS[activePath];
+  const go = (to: string) => { playPremiumHapticSound('click'); window.location.href = to; };
 
   return (
     <div className="w-full">
       <Helmet>
         <title>SpotCLM Academy | Master Contract Lifecycle Management</title>
-        <meta name="description" content="The industry's premier training destination for enterprise CLM professionals. Live sessions, job-ready tracks, and official certifications." />
+        <meta name="description" content="Contract lifecycle management training for working professionals: video lessons, quizzes, graded assignments and certificates anyone can verify." />
       </Helmet>
 
-      {/* Full Width Hero Split Layout */}
-      <div className="relative w-full flex flex-col min-h-[90vh] bg-surface-50 dark:bg-surface-950 overflow-hidden border-b border-slate-200 dark:border-slate-800 pt-[80px] md:pt-[100px]">
-        
-        <div className="relative z-10 flex-1 w-full px-4 sm:px-8 md:px-12 lg:px-16 flex flex-col lg:flex-row lg:items-center py-10">
-          
-          {/* Left Half - Text */}
-          <div className="w-full lg:w-1/2 pr-0 lg:pr-12 flex flex-col justify-center text-left relative z-20">
-            <span className="text-[11px] uppercase tracking-widest font-extrabold text-indigo-600 dark:text-indigo-400 mb-4 block">
-              SpotCLM Academy
-            </span>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-tight mb-6">
-              Master Contract <br />
-              <span className="text-indigo-600 dark:text-sky-400">Lifecycle Management.</span>
+      {/* Hero: the copy on one side, the product on the other */}
+      <section className="w-full border-b border-slate-200 dark:border-slate-800 pt-[88px] md:pt-[112px] pb-16">
+        <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8 grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-12 lg:gap-16 items-center">
+          <div>
+            <h1 className="text-4xl md:text-5xl lg:text-[56px] font-medium text-slate-900 dark:text-white leading-[1.08] max-w-[16ch]">
+              Learn contract lifecycle management
             </h1>
-            <p className="text-sm md:text-lg text-slate-600 dark:text-slate-400 leading-relaxed font-light mb-8">
-              The premier training destination for enterprise professionals. Go from beginner to Certified Architect with our interactive live sessions, job-ready bootcamps, and role-based upskilling.
+            <p className="mt-6 text-lg leading-relaxed text-slate-600 dark:text-slate-400 max-w-[36rem]">
+              Video lessons, quizzes and graded assignments for legal, procurement and operations teams, from the first request to renewal. Finish a course and earn a certificate anyone can verify.
             </p>
-            <div className="flex flex-wrap gap-4 mt-2">
-              <HapticButton
-                onClick={() => { playPremiumHapticSound('click'); window.location.href = '/courses'; }}
-                className="px-8 py-3.5 bg-indigo-600 text-white font-bold text-xs uppercase tracking-widest rounded-control hover:bg-indigo-700 shadow-raised shadow-indigo-500/20"
-              >
-                Explore Courses
+            <div className="mt-8 flex flex-wrap gap-3">
+              <HapticButton onClick={() => go('/courses')} className="min-h-[48px] px-6 rounded-control bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors">
+                Browse courses
               </HapticButton>
-              {!user ? (
-                <HapticButton
-                  onClick={() => { playPremiumHapticSound('click'); window.location.href = '/login'; }}
-                  className="px-8 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs uppercase tracking-widest rounded-control hover:bg-slate-50 dark:hover:bg-slate-700"
-                >
-                  Student Sign In
-                </HapticButton>
-              ) : (
-                <HapticButton
-                  onClick={() => { playPremiumHapticSound('click'); window.location.href = '/dashboard'; }}
-                  className="px-8 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs uppercase tracking-widest rounded-control hover:bg-slate-50 dark:hover:bg-slate-700"
-                >
-                  Go to Dashboard
-                </HapticButton>
-              )}
+              <HapticButton onClick={() => go(user ? '/dashboard' : '/login')} className="min-h-[48px] px-6 rounded-control border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                {user ? 'Go to dashboard' : 'Sign in'}
+              </HapticButton>
             </div>
-            
-            <div className="mt-12 flex items-center gap-4 text-xs font-semibold text-slate-500">
-              <span className="flex items-center gap-1.5"><Video className="w-4 h-4 text-rose-500" /> Live Cohorts</span>
-              <span className="flex items-center gap-1.5"><Briefcase className="w-4 h-4 text-emerald-500" /> Job Ready</span>
-              <span className="flex items-center gap-1.5"><Award className="w-4 h-4 text-amber-500" /> Certified</span>
-            </div>
-
             {catalogStats && (
-              <div className="mt-6 flex items-center gap-6 text-sm">
-                <div>
-                  <span className="text-xl font-black text-slate-900 dark:text-white">{catalogStats.courses}</span>
-                  <span className="ml-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Courses Live</span>
-                </div>
-                <div className="w-px h-6 bg-slate-200 dark:bg-slate-800" />
-                <div>
-                  <span className="text-xl font-black text-slate-900 dark:text-white">{catalogStats.categories}</span>
-                  <span className="ml-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Learning Tracks</span>
-                </div>
-              </div>
+              <p className="mt-8 font-mono text-sm text-slate-500">
+                {catalogStats.courses} course{catalogStats.courses === 1 ? '' : 's'} · {catalogStats.categories} track{catalogStats.categories === 1 ? '' : 's'}
+              </p>
             )}
           </div>
 
-          {/* Right Half - Animated Knowledge Orbit */}
-          <div className="w-full lg:w-1/2 py-12 lg:py-0 flex items-center justify-center relative z-10">
-            <div 
-              className="relative w-full max-w-[500px] aspect-square overflow-hidden rounded-full border border-slate-200/50 dark:border-slate-800/50 shadow-floating"
-              onMouseEnter={() => setOrbitHovered(true)}
-              onMouseLeave={() => setOrbitHovered(false)}
-            >
-              <div className="absolute inset-0 pointer-events-none opacity-[0.05]"
-                   style={{ backgroundImage: 'linear-gradient(rgba(15,23,42,0.7) 1px, transparent 1px), linear-gradient(90deg, rgba(15,23,42,0.7) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
-              
-              <motion.div
-                className="absolute inset-0 pointer-events-none"
-                animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 40, ease: 'linear' }}
-              >
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.8)]" />
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.8)]" />
-                <div className="absolute top-1/2 left-0 -translate-y-1/2 w-5 h-5 rounded-full bg-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.8)]" />
-                <div className="absolute top-1/2 right-0 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.8)]" />
-              </motion.div>
-
-              <div className="absolute inset-10 rounded-full border border-slate-300/40 dark:border-slate-700/40" />
-              <div className="absolute inset-20 rounded-full border border-slate-300/30 dark:border-slate-700/30" />
-              
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <motion.div 
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  whileHover={{ scale: 1.1 }}
-                  className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center shadow-raised shadow-indigo-500/30 z-20 cursor-pointer"
-                >
-                  <GraduationCap className="w-10 h-10 text-white" />
-                </motion.div>
+          {/* What a learner gets: where they are in a course, and the certificate at the end */}
+          <div className="relative mx-auto w-full max-w-[520px] pb-10 sm:pb-16">
+            <div className="relative z-10 rounded-card border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-raised overflow-hidden sm:w-[78%]">
+              <div className="relative aspect-[16/9] bg-slate-100 dark:bg-slate-800">
+                <CourseThumbnail title="Introduction to CLM World" category="CLM Fundamentals" />
               </div>
+              <div className="p-5">
+                <p className="text-sm text-slate-500">In progress</p>
+                <h2 className="mt-1 font-medium text-slate-900 dark:text-white leading-snug">Introduction to CLM World</h2>
+                <LifecycleLine percent={60} labels className="mt-5" label="Example progress through a course" />
+              </div>
+            </div>
+            <div className="absolute z-0 right-0 bottom-0 w-[64%] hidden sm:block">
+              <CertificateSheet title="Introduction to CLM World" holder="Your name" issuedAt="2026-11-26T00:00:00Z" credentialId="SPC-2026-0001" />
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* How It Works — Learner Journey Diagram */}
-      <div className="py-20 px-4 sm:px-8 md:px-12 lg:px-16 w-full max-w-6xl mx-auto">
-        <div className="text-center space-y-3 mb-14">
-          <span className="inline-block px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest text-indigo-700 dark:text-indigo-400 bg-indigo-100/40 dark:bg-indigo-950/30 border border-indigo-500/15">
-            How It Works
-          </span>
-          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-            Your Path to Certification
-          </h2>
+      {/* How it works */}
+      <section className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8 py-20">
+        <h2 className="text-3xl font-medium text-slate-900 dark:text-white">From enrolment to certificate</h2>
+        <ol className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4 border-t border-slate-200 dark:border-slate-800">
+          {JOURNEY_STEPS.map((step, i) => (
+            <li key={step.title} className="pt-6 pb-8 pr-6 lg:border-r border-slate-200 dark:border-slate-800 last:border-r-0 lg:pl-6 first:lg:pl-0">
+              <p className="font-mono text-sm text-slate-500">{String(i + 1).padStart(2, '0')}</p>
+              <h3 className="mt-3 font-medium text-slate-900 dark:text-white">{step.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400 max-w-[28ch]">{step.desc}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {/* Pathways */}
+      <section className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8 pb-24">
+        <h2 className="text-3xl font-medium text-slate-900 dark:text-white">How do you want to learn</h2>
+        <div role="tablist" aria-label="Learning pathways" className="mt-8 flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto overflow-y-hidden hide-scrollbar">
+          {PATHWAYS.map((p, idx) => (
+            <button
+              key={p.id}
+              role="tab"
+              aria-selected={activePath === idx}
+              onClick={() => { playPremiumHapticSound('click'); setActivePath(idx); }}
+              className={`px-4 min-h-[44px] text-sm whitespace-nowrap border-b-2 -mb-px transition-colors ${activePath === idx ? 'border-indigo-600 text-slate-900 font-medium dark:border-indigo-400 dark:text-white' : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}
+            >
+              {p.title}
+            </button>
+          ))}
         </div>
-
-        <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-4">
-          {/* Connecting line, desktop only */}
-          <div className="hidden lg:block absolute top-8 left-[12.5%] right-[12.5%] h-px bg-gradient-to-r from-indigo-200 via-indigo-300 to-indigo-200 dark:from-indigo-900 dark:via-indigo-700 dark:to-indigo-900" />
-
-          {JOURNEY_STEPS.map((step, i) => {
-            const Icon = step.icon;
-            return (
-              <motion.div
-                key={step.title}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-60px' }}
-                transition={{ delay: i * 0.1, duration: 0.4 }}
-                className="relative flex flex-col items-center text-center"
-              >
-                <div className="relative z-10 w-16 h-16 rounded-full bg-white dark:bg-slate-900 border-2 border-indigo-500 flex items-center justify-center shadow-raised mb-4">
-                  <Icon className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-                  <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-indigo-600 text-white text-[11px] font-black flex items-center justify-center border-2 border-white dark:border-slate-950">
-                    {i + 1}
-                  </span>
-                </div>
-                <h3 className="font-bold text-slate-900 dark:text-white mb-1.5">{step.title}</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-[220px]">{step.desc}</p>
-              </motion.div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Interactive Tabs Section */}
-      <div className="py-24 px-4 sm:px-8 md:px-12 lg:px-16 w-full max-w-7xl mx-auto">
-        <div className="text-center space-y-3 mb-16">
-          <span className="inline-block px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest text-indigo-700 dark:text-indigo-400 bg-indigo-100/40 dark:bg-indigo-950/30 border border-indigo-500/15">
-            Academy Pathways
-          </span>
-          <h2 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white">
-            How Do You Want to Learn?
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-8">
-          {tabs.map((tab, idx) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === idx;
-            const colorClass = tab.color === 'rose' ? 'indigo' /* Wait, using indigo for active backgrounds to keep it simple, or custom */ : 'indigo'; 
-            
-            return (
-              <button
-                key={tab.id}
-                onClick={() => { playPremiumHapticSound('click'); setActiveTab(idx); }}
-                className={`p-5 rounded-card flex flex-col gap-3 text-left transition-all cursor-pointer border ${
-                  isActive
-                    ? 'bg-indigo-600 text-white shadow-raised shadow-indigo-500/20 border-indigo-500 scale-[1.02]'
-                    : 'bg-white dark:bg-slate-900/50 text-slate-900 dark:text-white border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:scale-[1.01]'
-                }`}
-              >
-                <div className={`w-8 h-8 rounded-control flex items-center justify-center ${
-                  isActive ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
-                }`}>
-                  <Icon className="w-4 h-4" />
-                </div>
-                <h3 className="font-bold text-sm">{tab.title}</h3>
-              </button>
-            );
-          })}
-        </div>
-
         <AnimatePresence mode="wait">
           <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
+            key={path.id}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-            className="p-8 md:p-12 rounded-feature bg-white/70 dark:bg-surface-900/40 border border-slate-200/50 dark:border-slate-800/50 backdrop-blur-xl shadow-raised flex flex-col md:flex-row gap-10 items-center justify-between w-full"
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-8 grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-8 md:gap-16"
           >
-            <div className="w-full md:w-7/12 space-y-5">
-              <h2 className="text-2xl md:text-4xl font-extrabold text-slate-900 dark:text-white leading-tight tracking-tight">{currentData.title}</h2>
-              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                {currentData.desc}
-              </p>
-              <div className="space-y-3 pt-2">
-                {currentData.bullets.map((b, i) => (
-                  <div key={i} className="flex gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 items-start">
-                    <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" style={{ color: activeColorHex }} />
-                    <span>{b}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="pt-6">
-                <HapticButton
-                  onClick={() => window.location.href = '/courses'}
-                  className="px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs uppercase tracking-widest rounded-control hover:opacity-90"
-                >
-                  View Catalog
-                </HapticButton>
-              </div>
-            </div>
-
-            <div className="w-full md:w-5/12 grid grid-cols-2 gap-4">
-               {currentData.metrics.map((m, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.1 * i }}
-                    className="p-5 rounded-card bg-white dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col gap-2 items-center justify-center text-center"
-                  >
-                    <span className="text-2xl lg:text-3xl font-black" style={{ color: m.color }}>{m.value}</span>
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{m.label}</span>
-                  </motion.div>
-               ))}
-            </div>
+            <p className="text-lg leading-relaxed text-slate-700 dark:text-slate-300 max-w-[36rem]">{path.desc}</p>
+            <ul className="space-y-3">
+              {path.bullets.map(b => (
+                <li key={b} className="flex gap-3 text-sm text-slate-700 dark:text-slate-300">
+                  <Check className="w-4 h-4 mt-0.5 shrink-0 text-slate-500" strokeWidth={1.5} aria-hidden="true" /> {b}
+                </li>
+              ))}
+            </ul>
           </motion.div>
         </AnimatePresence>
-      </div>
+        <HapticButton onClick={() => go('/courses')} className="mt-10 min-h-[44px] px-5 rounded-control border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-medium text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+          View the catalog
+        </HapticButton>
+      </section>
 
-      <BottomCTA onOpenProposalModal={onOpenProposalModal} />
+      <BottomCTA onOpenProposalModal={_props.onOpenProposalModal} />
     </div>
   );
 }

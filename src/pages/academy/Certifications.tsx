@@ -1,9 +1,8 @@
-import { useState, useEffect, useCallback, MouseEvent } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ACADEMY_CERTIFICATIONS } from '../../academy-data';
-import { Award, ShieldCheck, Search, Loader2, CheckCircle2, XCircle, ChevronRight, Milestone } from 'lucide-react';
-import { motion, useMotionValue, useTransform, useSpring } from 'motion/react';
-import { HapticButton } from '../../components/HapticButton';
+import { Search, Loader2, Check, XCircle } from 'lucide-react';
+import { CertificateSheet } from '../../components/CertificateSheet';
 
 interface VerifyResult {
   valid: boolean;
@@ -13,83 +12,48 @@ interface VerifyResult {
   issuedAt?: string;
 }
 
-// 3D Tilt Card Component
-function TiltCard({ cert }: { cert: any }) {
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
+const STEPS = [
+  { title: 'Learn', desc: 'Complete the required course pathways and bootcamps.' },
+  { title: 'Practice', desc: 'Build real workflows in our sandbox environments.' },
+  { title: 'Get certified', desc: 'Pass the proctored exam and earn your digital badge.' },
+];
 
-  const mouseXSpring = useSpring(x, { stiffness: 150, damping: 25 });
-  const mouseYSpring = useSpring(y, { stiffness: 150, damping: 25 });
-
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["17.5deg", "-17.5deg"]);
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-17.5deg", "17.5deg"]);
-
-  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    const xPct = mouseX / width - 0.5;
-    const yPct = mouseY / height - 0.5;
-    x.set(xPct);
-    y.set(yPct);
-  };
-
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
-
+function CertificationCard({ cert }: { cert: any }) {
   return (
-    <motion.div
-      style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      className="group relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden cursor-pointer"
-    >
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" style={{ transform: "translateZ(-50px)" }} />
-      <div className="flex flex-col h-full" style={{ transform: "translateZ(50px)" }}>
-        <div className="h-48 relative overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0">
-          <img src={cert.image} alt={cert.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent" />
-          <div className="absolute top-4 left-4 z-10">
-            <span className="px-3 py-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md text-indigo-600 dark:text-indigo-400 text-[10px] uppercase tracking-widest font-black rounded-lg shadow-sm">
-              Official Credential
-            </span>
-          </div>
+    <article className="flex flex-col overflow-hidden rounded-card border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+      <div className="relative h-48 shrink-0 bg-slate-100 dark:bg-slate-800">
+        <img src={cert.image} alt="" className="h-full w-full object-cover" />
+      </div>
+      <div className="flex flex-1 flex-col p-6 md:p-8">
+        <h3 className="text-xl font-medium leading-snug text-slate-900 dark:text-white">{cert.title}</h3>
+        <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{cert.description}</p>
+
+        <div className="mt-6">
+          <p className="text-sm text-slate-500">Prerequisites</p>
+          <ul className="mt-2 space-y-2 text-sm text-slate-700 dark:text-slate-300">
+            {cert.prerequisites.map((prereq: string) => (
+              <li key={prereq} className="flex items-start gap-2">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" strokeWidth={1.5} aria-hidden="true" /> <span>{prereq}</span>
+              </li>
+            ))}
+          </ul>
         </div>
-        <div className="p-8 flex flex-col flex-1 bg-white dark:bg-slate-900">
-          <h3 className="text-xl font-black text-slate-900 dark:text-white mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-tight">{cert.title}</h3>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 leading-relaxed flex-1">{cert.description}</p>
-          
-          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 mb-6 border border-slate-100 dark:border-slate-800">
-            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Prerequisites</div>
-            <ul className="text-xs font-semibold text-slate-700 dark:text-slate-300 space-y-2">
-              {cert.prerequisites.map((prereq: string) => (
-                <li key={prereq} className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> <span className="leading-tight">{prereq}</span>
-                </li>
-              ))}
-            </ul>
+
+        <div className="mt-8 flex items-end justify-between gap-4 border-t border-slate-200 pt-5 dark:border-slate-800">
+          <div>
+            <p className="text-sm text-slate-500">Exam fee</p>
+            <p className="tabular mt-1 text-2xl font-medium text-slate-900 dark:text-white">${cert.price}</p>
           </div>
-          
-          <div className="flex items-center justify-between mt-auto">
-            <div className="flex flex-col">
-              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Exam Fee</span>
-              <span className="text-2xl font-black text-slate-900 dark:text-white">${cert.price}</span>
-            </div>
-            <button
-              disabled
-              title="Exam registration is being finalized - check back soon"
-              className="px-6 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-bold text-sm cursor-not-allowed border border-slate-200 dark:border-slate-700"
-            >
-              Coming Soon
-            </button>
-          </div>
+          <button
+            disabled
+            title="Exam registration is being finalized. Check back soon."
+            className="min-h-[44px] cursor-not-allowed rounded-control border border-slate-200 bg-slate-100 px-5 text-sm font-medium text-slate-500 dark:border-slate-700 dark:bg-slate-800"
+          >
+            Coming soon
+          </button>
         </div>
       </div>
-    </motion.div>
+    </article>
   );
 }
 
@@ -130,124 +94,90 @@ export function CertificationsComponent() {
   };
 
   return (
-    <div className="pt-24 pb-24 min-h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 lg:px-12">
-        <div className="text-center mb-16">
-          <span className="inline-block px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-widest text-indigo-700 dark:text-indigo-400 bg-indigo-100/40 dark:bg-indigo-950/30 border border-indigo-500/15 mb-4">
-            SpotCLM Credentials
-          </span>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight mb-6">
-            Stand Out With <span className="text-indigo-600 dark:text-sky-400">Official Certifications</span>
-          </h1>
-          <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-            Validate your expertise and advance your career with industry-recognized credentials from SpotCLM Academy.
+    <div className="min-h-screen pb-24 pt-24">
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <header className="mb-12 max-w-3xl">
+          <h1 className="text-4xl font-medium leading-tight text-slate-900 dark:text-white md:text-5xl">Certifications</h1>
+          <p className="mt-4 text-lg leading-relaxed text-slate-600 dark:text-slate-400">
+            Credentials that show you can deploy and manage CLM. Anyone can check a certificate by its code.
           </p>
+        </header>
+
+        <div className="mb-20 grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
+          {ACADEMY_CERTIFICATIONS.map((cert) => (
+            <CertificationCard key={cert.id} cert={cert} />
+          ))}
         </div>
 
-        {/* 1. Available Certifications (Top Priority) */}
-        <div className="mb-24 perspective-1000">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
-            {ACADEMY_CERTIFICATIONS.map((cert) => (
-              <TiltCard key={cert.id} cert={cert} />
+        <section className="mb-20">
+          <h2 className="text-2xl font-medium text-slate-900 dark:text-white">The path to a certificate</h2>
+          <ol className="mt-8 grid border-t border-slate-200 dark:border-slate-800 md:grid-cols-3">
+            {STEPS.map((step, i) => (
+              <li key={step.title} className="border-slate-200 py-6 pr-6 dark:border-slate-800 md:border-r md:pl-6 md:first:pl-0 md:last:border-r-0">
+                <p className="font-mono text-sm text-slate-500">{String(i + 1).padStart(2, '0')}</p>
+                <h3 className="mt-3 font-medium text-slate-900 dark:text-white">{step.title}</h3>
+                <p className="mt-2 max-w-[32ch] text-sm leading-relaxed text-slate-600 dark:text-slate-400">{step.desc}</p>
+              </li>
             ))}
-          </div>
-        </div>
+          </ol>
+        </section>
 
-        {/* 2. Certification Roadmap */}
-        <div className="mb-24 max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-black mb-12 text-slate-900 dark:text-white">The Path to Mastery</h2>
-          <div className="relative">
-            <div className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-indigo-200 via-indigo-500 to-sky-400 dark:from-indigo-900 dark:via-indigo-600 dark:to-sky-600 -translate-y-1/2 z-0 hidden md:block" />
-            <div className="flex flex-col md:flex-row justify-between gap-8 relative z-10">
-              <div className="flex flex-col items-center flex-1">
-                <div className="w-16 h-16 rounded-2xl bg-white dark:bg-slate-900 border-4 border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-xl mb-4">
-                  <span className="font-black text-xl">1</span>
-                </div>
-                <h3 className="font-bold text-lg mb-2">Learn</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Complete the required course pathways and bootcamps.</p>
-              </div>
-              <div className="flex flex-col items-center flex-1">
-                <div className="w-16 h-16 rounded-2xl bg-white dark:bg-slate-900 border-4 border-indigo-300 dark:border-indigo-700/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-xl mb-4">
-                  <span className="font-black text-xl">2</span>
-                </div>
-                <h3 className="font-bold text-lg mb-2">Practice</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Build real workflows in our sandbox environments.</p>
-              </div>
-              <div className="flex flex-col items-center flex-1">
-                <div className="w-16 h-16 rounded-2xl bg-indigo-600 border-4 border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-white shadow-xl shadow-indigo-500/30 mb-4">
-                  <Award className="w-8 h-8" />
-                </div>
-                <h3 className="font-bold text-lg mb-2 text-indigo-600 dark:text-indigo-400">Get Certified</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Pass the proctored exam and earn your digital badge.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 3. Verification Tool (Moved Below) */}
-        <div className="bg-white dark:bg-slate-900 shadow-2xl border border-slate-200 dark:border-slate-800 rounded-[2rem] p-8 md:p-12 max-w-3xl mx-auto relative overflow-hidden">
-          <div className="absolute -top-24 -right-24 w-48 h-48 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-sky-500/10 dark:bg-sky-500/5 rounded-full blur-3xl pointer-events-none" />
-          
-          <div className="flex flex-col items-center text-center mb-8 relative z-10">
-            <div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center text-slate-600 dark:text-slate-400 shadow-inner mb-6">
-              <ShieldCheck className="w-8 h-8" />
-            </div>
-            <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Verify a Credential</h2>
-            <p className="text-sm text-slate-500 max-w-md">
-              Enter a certificate ID below to confirm its authenticity and view the details of the credential holder.
+        <section aria-labelledby="verify-title" className="grid gap-10 rounded-feature border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900 md:p-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <div>
+            <h2 id="verify-title" className="text-2xl font-medium text-slate-900 dark:text-white">Verify a certificate</h2>
+            <p className="mt-2 max-w-md text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+              Enter the credential code printed on a certificate to confirm it is genuine and see who it was awarded to.
             </p>
-          </div>
-          
-          <form onSubmit={handleVerify} className="relative z-10 max-w-lg mx-auto">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input
-                  type="text"
-                  value={credentialId}
-                  onChange={e => setCredentialId(e.target.value)}
-                  placeholder="CERT-A1B2C3D4E5"
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-12 pr-4 py-3.5 text-base font-mono outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all shadow-sm"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={verifying}
-                className="px-8 py-3.5 bg-slate-900 dark:bg-white hover:opacity-90 disabled:opacity-50 text-white dark:text-slate-900 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
-              >
-                {verifying ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Verify'}
-              </button>
-            </div>
-          </form>
 
-          {result === 'not_found' && (
-            <div className="mt-6 flex items-center justify-center gap-2 text-sm font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-900/40 rounded-xl px-4 py-3 max-w-lg mx-auto">
-              <XCircle className="w-5 h-5 shrink-0" /> No certificate found for that credential ID.
-            </div>
-          )}
-          {result && result !== 'not_found' && (
-            <div className={`mt-6 flex items-start gap-4 text-sm rounded-xl px-6 py-5 border max-w-lg mx-auto shadow-sm ${
-              result.valid
-                ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-900/40'
-                : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-900/40'
-            }`}>
-              {result.valid ? <CheckCircle2 className="w-6 h-6 mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-500" /> : <XCircle className="w-6 h-6 mt-0.5 shrink-0 text-amber-600 dark:text-amber-500" />}
-              <div>
-                <p className={`font-black text-lg mb-1 ${result.valid ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'}`}>
-                  {result.valid ? 'Official Credential Verified' : 'Unverified Credential'}
-                </p>
-                {result.valid && (
-                  <div className="text-slate-600 dark:text-slate-400 mt-2 space-y-1">
-                    <p>Awarded to: <span className="font-bold text-slate-900 dark:text-white">{result.studentName}</span></p>
-                    <p>Course: <span className="font-bold text-slate-900 dark:text-white">{result.courseTitle}</span></p>
-                    {result.issuedAt && <p>Date: <span className="font-medium">{new Date(result.issuedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span></p>}
-                  </div>
-                )}
+            <form onSubmit={handleVerify} className="mt-6 max-w-lg">
+              <label htmlFor="credential" className="text-sm text-slate-500">Credential code</label>
+              <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" strokeWidth={1.5} aria-hidden="true" />
+                  <input
+                    id="credential"
+                    type="text"
+                    value={credentialId}
+                    onChange={e => setCredentialId(e.target.value)}
+                    placeholder="SPC-2026-8F3A21"
+                    className="min-h-[48px] w-full rounded-control border border-slate-200 bg-slate-50 pl-10 pr-4 font-mono text-sm outline-none transition-colors focus:border-indigo-600 dark:border-slate-700 dark:bg-slate-950"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={verifying}
+                  className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-control bg-indigo-600 px-6 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:opacity-50"
+                >
+                  {verifying ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : 'Verify'}
+                </button>
               </div>
+            </form>
+
+            <div aria-live="polite">
+              {result === 'not_found' && (
+                <p className="mt-6 flex max-w-lg items-center gap-2 rounded-control border border-slate-200 px-4 py-3 text-sm text-rose-700 dark:border-slate-700 dark:text-rose-400">
+                  <XCircle className="h-4 w-4 shrink-0" strokeWidth={1.5} aria-hidden="true" /> No certificate found for that code.
+                </p>
+              )}
+              {result && result !== 'not_found' && !result.valid && (
+                <p className="mt-6 max-w-lg rounded-control border border-slate-200 px-4 py-3 text-sm text-slate-700 dark:border-slate-700 dark:text-slate-300">This certificate could not be verified.</p>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+
+          <div className="flex items-center justify-center">
+            {result && result !== 'not_found' && result.valid ? (
+              <div className="w-full max-w-sm">
+                <CertificateSheet title={result.courseTitle || ''} holder={result.studentName} issuedAt={result.issuedAt || new Date().toISOString()} credentialId={result.credentialId || credentialId} />
+                <p className="mt-3 flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-400"><Check className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" /> Verified by SpotCLM Academy</p>
+              </div>
+            ) : (
+              <div className="w-full max-w-sm opacity-60" aria-hidden="true">
+                <CertificateSheet title="Course title" holder="Name of the holder" issuedAt="2026-01-01T00:00:00Z" credentialId="SPC-0000-000000" />
+              </div>
+            )}
+          </div>
+        </section>
       </div>
     </div>
   );

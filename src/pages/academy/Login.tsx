@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { academyAPI } from '../../academy/api';
 import { useAcademy } from '../../academy/context';
 import { HapticButton } from '../../components/HapticButton';
-import { AlertCircle, Loader2, Eye, EyeOff, ShieldCheck, Zap, BookOpen } from 'lucide-react';
+import { AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
 
 export function LoginComponent() {
   const navigate = useNavigate();
@@ -78,69 +78,36 @@ export function LoginComponent() {
       {/* Left Split: Branding (Hidden on mobile) */}
       <div className="hidden lg:flex lg:w-1/2 bg-slate-900 relative items-center justify-center overflow-hidden p-12">
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/50 via-slate-900 to-slate-900" />
-          <div className="absolute top-1/4 -left-1/4 w-[500px] h-[500px] bg-indigo-500/20 rounded-full blur-[100px]" />
-          <div className="absolute bottom-1/4 -right-1/4 w-[500px] h-[500px] bg-sky-500/20 rounded-full blur-[100px]" />
           <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay" />
         </div>
         
         <div className="relative z-10 max-w-lg text-white">
-          <h1 className="text-4xl md:text-5xl font-black mb-6 leading-tight tracking-tight">
-            Master the Future of <span className="text-sky-400">Enterprise CLM</span>
-          </h1>
-          <p className="text-lg text-slate-300 mb-10 leading-relaxed">
-            SpotCLM Academy is the premiere destination for learning contract lifecycle management. Join thousands of professionals accelerating their careers.
-          </p>
-          
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-indigo-400">
-                <BookOpen className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-100">Premium Curriculums</h3>
-                <p className="text-sm text-slate-400">Learn from industry-leading CLM architects</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-sky-500/10 border border-sky-500/20 rounded-xl text-sky-400">
-                <ShieldCheck className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-100">Global Certifications</h3>
-                <p className="text-sm text-slate-400">Earn verifiable credentials trusted by top enterprises</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-400/10 border border-blue-400/20 rounded-xl text-blue-300">
-                <Zap className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-100">Dynamic Workflows</h3>
-                <p className="text-sm text-slate-400">Master condition-based automation and templating</p>
-              </div>
-            </div>
-          </div>
+          <h1 className="text-4xl md:text-5xl font-medium mb-6 leading-tight">Learn contract lifecycle management</h1>
+          <p className="text-lg text-slate-300 mb-10 leading-relaxed">Sign in to pick up where you left off.</p>
+          <ul className="border-t border-white/10">
+            <li className="py-4 border-b border-white/10"><h3 className="font-medium text-slate-100">Video lessons with questions</h3><p className="mt-1 text-sm text-slate-400">Short lessons you can pause, with a question to answer before you move on.</p></li>
+            <li className="py-4 border-b border-white/10"><h3 className="font-medium text-slate-100">Quizzes and graded assignments</h3><p className="mt-1 text-sm text-slate-400">Check what you learned and get feedback on your work.</p></li>
+            <li className="py-4 border-b border-white/10"><h3 className="font-medium text-slate-100">Certificates anyone can verify</h3><p className="mt-1 text-sm text-slate-400">Each certificate carries a code that proves it is genuine.</p></li>
+          </ul>
         </div>
       </div>
 
       {/* Right Split: Login Form */}
       <div className="flex-1 flex items-center justify-center p-6 md:p-12 relative overflow-y-auto">
         {/* Mobile Background Elements */}
-        <div className="lg:hidden absolute top-1/4 -right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none z-0" />
         
         <div className="w-full max-w-md relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="text-center lg:text-left mb-10">
-            <h2 className="text-3xl font-black mb-2 text-slate-900 dark:text-white tracking-tight">
-              {tempToken ? 'Two-Factor Auth' : 'Welcome Back'}
+            <h2 className="text-3xl font-semibold mb-2 text-slate-900 dark:text-white">
+              {tempToken ? 'Two-factor authentication' : 'Sign in'}
             </h2>
             <p className="text-slate-500 dark:text-slate-400">
-              {tempToken ? 'Enter the code from your authenticator app.' : 'Sign in to your SpotCLM Academy account.'}
+              {tempToken ? 'Enter the code from your authenticator app.' : 'Use your SpotCLM Academy account.'}
             </p>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-900/50 rounded-xl flex items-start gap-3 text-rose-600 dark:text-rose-400 text-sm shadow-sm">
+            <div className="mb-6 p-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-900/50 rounded-control flex items-start gap-3 text-rose-600 dark:text-rose-400 text-sm shadow-sm">
               <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
               <p className="font-medium">{error}</p>
             </div>
@@ -149,7 +116,7 @@ export function LoginComponent() {
           {tempToken ? (
             <form className="space-y-6" onSubmit={handleVerify2FA}>
               <div className="space-y-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Verification Code</label>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400">Verification Code</label>
                 <input
                   type="text"
                   inputMode="numeric"
@@ -158,14 +125,14 @@ export function LoginComponent() {
                   disabled={loading}
                   value={twoFACode}
                   onChange={e => setTwoFACode(e.target.value)}
-                  className="w-full px-4 py-4 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 dark:focus:ring-indigo-400/10 outline-none transition-all text-center tracking-[0.5em] text-2xl font-black shadow-sm"
+                  className="w-full px-4 py-4 rounded-control bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 dark:focus:ring-indigo-400/10 outline-none transition-colors text-center tracking-[0.5em] text-2xl font-semibold shadow-sm"
                   placeholder="000000"
                   maxLength={6}
                 />
               </div>
               <HapticButton
                 disabled={loading}
-                className="w-full py-4 mt-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 disabled:opacity-50 text-white font-bold tracking-tight shadow-raised hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2"
+                className="w-full py-4 mt-2 rounded-control bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium shadow-raised transition-colors duration-300 flex items-center justify-center gap-2"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Verify & Sign In'}
               </HapticButton>
@@ -181,21 +148,21 @@ export function LoginComponent() {
             <>
               <form className="space-y-6" onSubmit={handleSubmit}>
                 <div className="space-y-2">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Work Email</label>
+                  <label className="block text-xs font-medium text-slate-500 dark:text-slate-400">Work Email</label>
                   <input
                     type="email"
                     required
                     disabled={loading}
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    className="w-full px-4 py-4 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-medium shadow-sm"
+                    className="w-full px-4 py-4 rounded-control bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-colors font-medium shadow-sm"
                     placeholder="jane@company.com"
                   />
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Password</label>
-                    <a href="#" className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 hover:underline transition-colors">Forgot password?</a>
+                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400">Password</label>
+                    <a href="#" className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 hover:underline transition-colors">Forgot password?</a>
                   </div>
                   <div className="relative">
                     <input
@@ -204,7 +171,7 @@ export function LoginComponent() {
                       disabled={loading}
                       value={password}
                       onChange={e => setPassword(e.target.value)}
-                      className="w-full px-4 py-4 pr-12 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-medium shadow-sm"
+                      className="w-full px-4 py-4 pr-12 rounded-control bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-colors font-medium shadow-sm"
                       placeholder="••••••••"
                     />
                     <button
@@ -218,7 +185,7 @@ export function LoginComponent() {
                 </div>
                 <HapticButton
                   disabled={loading}
-                  className="w-full py-4 mt-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 disabled:opacity-50 text-white font-bold text-lg tracking-tight shadow-raised hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2"
+                  className="w-full py-4 mt-2 rounded-control bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium text-lg shadow-raised transition-colors duration-300 flex items-center justify-center gap-2"
                 >
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In'}
                 </HapticButton>
@@ -226,7 +193,7 @@ export function LoginComponent() {
 
               <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800 text-center">
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                  Don't have an account? <button onClick={() => navigate('/signup')} className="text-indigo-600 dark:text-indigo-400 font-black tracking-tight hover:underline transition-colors ml-1">Create one</button>
+                  Don't have an account? <button onClick={() => navigate('/signup')} className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline transition-colors ml-1">Create one</button>
                 </p>
               </div>
             </>

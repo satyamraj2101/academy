@@ -1,29 +1,19 @@
-import { BookOpen } from 'lucide-react';
-
-// Fallback palettes stay inside the brand's blue family plus cool neighbours (cyan, teal, slate),
-// so a course without artwork looks designed and on-theme instead of showing a grey box.
-const FALLBACK_GRADIENTS = [
-  'from-blue-600 to-blue-900',
-  'from-sky-500 to-blue-800',
-  'from-teal-600 to-slate-800',
-  'from-cyan-600 to-blue-900',
-  'from-slate-600 to-slate-900',
-];
-
-// Same category (or title) always gets the same colour, so the catalog stays stable between renders.
-function pickGradient(seed: string): string {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
-  return FALLBACK_GRADIENTS[hash % FALLBACK_GRADIENTS.length];
+// A course without artwork shows a contract page: ruled text lines, a heading and a signature line, in the quiet paper tones of the
+// student view with one accent stroke on the signature. The line lengths come from the course's category (or title), so the same
+// course always draws the same page and a catalog of artless courses still reads as separate documents.
+function lengths(seed: string, n: number): number[] {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) h = Math.imul(h ^ seed.charCodeAt(i), 16777619) >>> 0;
+  return Array.from({ length: n }, () => { h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0; return 46 + (h % 38); });
 }
 
 interface CourseThumbnailProps {
   imageUrl?: string | null;
   title: string;
   category?: string | null;
-  /** Classes for the <img> only (e.g. hover zoom). */
+  /** Classes for the <img> only. */
   imageClassName?: string;
-  /** Size classes for the fallback icon. */
+  /** Kept for existing callers; the drawn page scales with its parent instead. */
   iconClassName?: string;
 }
 
@@ -32,13 +22,7 @@ interface CourseThumbnailProps {
  * so this works for a 64px list thumbnail and a full-width card header alike.
  * The image is decorative: the course title is always rendered next to it.
  */
-export function CourseThumbnail({
-  imageUrl,
-  title,
-  category,
-  imageClassName = '',
-  iconClassName = 'w-10 h-10',
-}: CourseThumbnailProps) {
+export function CourseThumbnail({ imageUrl, title, category, imageClassName = '' }: CourseThumbnailProps) {
   if (imageUrl) {
     return (
       <img
@@ -51,12 +35,18 @@ export function CourseThumbnail({
     );
   }
 
+  const lines = lengths(category || title, 6);
   return (
-    <div
-      aria-hidden="true"
-      className={`absolute inset-0 flex items-center justify-center bg-gradient-to-br ${pickGradient(category || title)}`}
-    >
-      <BookOpen className={`${iconClassName} text-white/80`} strokeWidth={1.5} />
+    <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800">
+      <svg viewBox="0 0 120 120" preserveAspectRatio="xMidYMid meet" className="h-[78%] w-auto max-w-[78%]">
+        <rect x="22" y="8" width="76" height="104" rx="4" className="fill-white stroke-slate-300 dark:fill-slate-700 dark:stroke-slate-500" strokeWidth="1" />
+        <rect x="32" y="20" width="34" height="5" rx="1.5" className="fill-slate-500 dark:fill-slate-300" />
+        {lines.map((w, i) => (
+          <rect key={i} x="32" y={34 + i * 10} width={(w / 100) * 56} height="3" rx="1.5" className="fill-slate-300 dark:fill-slate-500" />
+        ))}
+        <path d="M32 100 C 40 90, 46 104, 54 96 S 66 92, 72 98" fill="none" strokeWidth="1.5" strokeLinecap="round" className="stroke-indigo-600 dark:stroke-indigo-400" />
+        <line x1="32" y1="104" x2="78" y2="104" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="0.75" />
+      </svg>
     </div>
   );
 }

@@ -73,31 +73,31 @@ export function DiscussionPanel({ lessonId }: { lessonId: string }) {
   const renderPost = (d: Discussion, isReply: boolean) => (
     <div key={d.id} className={`rounded-lg p-3 border ${d.is_best_answer ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-300 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700'}`}>
       <div className="flex items-center gap-2 mb-1.5">
-        <div className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-[10px] shrink-0">
+        <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-medium text-[11px] shrink-0">
           {d.user_name?.charAt(0) || '?'}
         </div>
-        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{d.user_name}</span>
+        <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{d.user_name}</span>
         {(d.user_role === 'admin' || d.user_role === 'superadmin') && (
-          <span className="flex items-center gap-0.5 text-[10px] font-black text-indigo-500"><ShieldCheck className="w-3 h-3" /> Instructor</span>
+          <span className="flex items-center gap-0.5 text-[11px] font-semibold text-slate-500"><ShieldCheck className="w-3 h-3" /> Instructor</span>
         )}
         {!!d.is_best_answer && (
-          <span className="flex items-center gap-0.5 text-[10px] font-black text-emerald-600"><Award className="w-3 h-3" /> Best Answer</span>
+          <span className="flex items-center gap-0.5 text-[11px] font-semibold text-emerald-600"><Award className="w-3 h-3" /> Best Answer</span>
         )}
-        <span className="text-[10px] text-slate-400 ml-auto">{new Date(d.created_at).toLocaleDateString()}</span>
+        <span className="text-[11px] text-slate-400 ml-auto">{new Date(d.created_at).toLocaleDateString()}</span>
       </div>
       <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-wrap">{d.message}</p>
       <div className="flex items-center gap-3 mt-2">
         <button
           onClick={() => upvoteMutation.mutate(d.id)}
           disabled={upvoteMutation.isPending}
-          className={`flex items-center gap-1 text-xs font-bold transition-colors ${d.upvoted_by_me ? 'text-indigo-600' : 'text-slate-400 hover:text-indigo-600'}`}
+          className={`flex items-center gap-1 text-xs font-medium transition-colors ${d.upvoted_by_me ? 'text-indigo-600' : 'text-slate-400 hover:text-indigo-600'}`}
         >
           <ArrowBigUp className="w-3.5 h-3.5" /> {d.upvote_count || 0}
         </button>
         {!isReply && (
           <button
             onClick={() => { setReplyingTo(replyingTo === d.id ? null : d.id); setReplyText(''); }}
-            className="flex items-center gap-1 text-xs font-bold text-slate-400 hover:text-indigo-600 transition-colors"
+            className="flex items-center gap-1 text-xs font-medium text-slate-400 hover:text-indigo-600 transition-colors"
           >
             <Reply className="w-3.5 h-3.5" /> Reply
           </button>
@@ -106,7 +106,7 @@ export function DiscussionPanel({ lessonId }: { lessonId: string }) {
           <button
             onClick={() => bestAnswerMutation.mutate(d.id)}
             disabled={bestAnswerMutation.isPending}
-            className={`flex items-center gap-1 text-xs font-bold transition-colors ${d.is_best_answer ? 'text-emerald-600' : 'text-slate-400 hover:text-emerald-600'}`}
+            className={`flex items-center gap-1 text-xs font-medium transition-colors ${d.is_best_answer ? 'text-emerald-600' : 'text-slate-400 hover:text-emerald-600'}`}
           >
             <Award className="w-3.5 h-3.5" /> {d.is_best_answer ? 'Unmark' : 'Mark Best Answer'}
           </button>
@@ -118,13 +118,13 @@ export function DiscussionPanel({ lessonId }: { lessonId: string }) {
   return (
     <div className="flex flex-col h-full">
       <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2">
-        <MessageCircle className="w-4 h-4 text-indigo-500" />
-        <h4 className="font-bold text-sm text-slate-900 dark:text-white">Lesson Q&amp;A</h4>
+        <MessageCircle className="w-4 h-4 text-slate-500" />
+        <h4 className="font-medium text-sm text-slate-900 dark:text-white">Lesson Q&amp;A</h4>
       </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {isLoading && <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-indigo-500" /></div>}
+        {isLoading && <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-slate-500" /></div>}
         {!isLoading && threads.length === 0 && (
-          <p className="text-sm text-slate-400 italic text-center py-8">No questions yet. Be the first to ask!</p>
+          <p className="text-sm text-slate-400 text-center py-8">No questions yet.</p>
         )}
         {threads.map(thread => (
           <div key={thread.id} className="space-y-2">
@@ -147,7 +147,7 @@ export function DiscussionPanel({ lessonId }: { lessonId: string }) {
                 <HapticButton
                   onClick={() => replyText.trim() && replyMutation.mutate(thread.id)}
                   disabled={!replyText.trim() || replyMutation.isPending}
-                  className="px-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white shrink-0 transition-all"
+                  className="px-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white shrink-0 transition-colors"
                 >
                   {replyMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 </HapticButton>
@@ -168,7 +168,7 @@ export function DiscussionPanel({ lessonId }: { lessonId: string }) {
           <HapticButton
             onClick={() => message.trim() && postMutation.mutate()}
             disabled={!message.trim() || postMutation.isPending}
-            className="px-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white shrink-0 transition-all"
+            className="px-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white shrink-0 transition-colors"
           >
             {postMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </HapticButton>

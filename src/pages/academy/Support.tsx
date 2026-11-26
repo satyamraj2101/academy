@@ -30,7 +30,7 @@ export function SupportComponent({ onOpenProposalModal }: { onOpenProposalModal:
 
       <div className="max-w-4xl mx-auto px-6">
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight">How can we help?</h1>
+          <h1 className="text-4xl md:text-5xl font-semibold mb-4">How can we help?</h1>
           <div className="relative max-w-xl mx-auto mt-8">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input
@@ -38,48 +38,48 @@ export function SupportComponent({ onOpenProposalModal }: { onOpenProposalModal:
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search for answers..."
-              className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm text-lg outline-none focus:border-indigo-500"
+              className="w-full pl-12 pr-4 py-4 rounded-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm text-lg outline-none focus:border-indigo-500"
             />
           </div>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 mb-16">
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 text-center flex flex-col items-center">
-            <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-4">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-card border border-slate-200 dark:border-slate-800 text-center flex flex-col items-center">
+            <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-control flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-4">
               <FileText className="w-6 h-6" />
             </div>
-            <h3 className="font-bold mb-2">Knowledge Base</h3>
+            <h3 className="font-medium mb-2">Knowledge Base</h3>
             <p className="text-sm text-slate-500 mb-4 flex-1">Read our comprehensive guides and documentation.</p>
-            <HapticButton onClick={scrollToFaqs} className="text-indigo-600 text-sm font-bold">Browse FAQs &rarr;</HapticButton>
+            <HapticButton onClick={scrollToFaqs} className="text-indigo-600 text-sm font-medium">Browse FAQs &rarr;</HapticButton>
           </div>
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 text-center flex flex-col items-center">
-            <div className="w-12 h-12 bg-sky-50 dark:bg-sky-900/30 rounded-xl flex items-center justify-center text-sky-600 dark:text-sky-400 mb-4">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-card border border-slate-200 dark:border-slate-800 text-center flex flex-col items-center">
+            <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-control flex items-center justify-center text-sky-600 dark:text-sky-400 mb-4">
               <MessageCircle className="w-6 h-6" />
             </div>
-            <h3 className="font-bold mb-2">Community Forum</h3>
+            <h3 className="font-medium mb-2">Community Forum</h3>
             <p className="text-sm text-slate-500 mb-4 flex-1">Ask questions and learn from other CLM professionals.</p>
-            <HapticButton disabled title="Coming soon" className="text-slate-400 text-sm font-bold cursor-not-allowed">Coming Soon</HapticButton>
+            <HapticButton disabled title="Coming soon" className="text-slate-400 text-sm font-medium cursor-not-allowed">Coming Soon</HapticButton>
           </div>
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 text-center flex flex-col items-center">
-            <div className="w-12 h-12 bg-rose-50 dark:bg-rose-900/30 rounded-xl flex items-center justify-center text-rose-600 dark:text-rose-400 mb-4">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-card border border-slate-200 dark:border-slate-800 text-center flex flex-col items-center">
+            <div className="w-12 h-12 bg-rose-50 dark:bg-rose-900/30 rounded-control flex items-center justify-center text-rose-600 dark:text-rose-400 mb-4">
               <Mail className="w-6 h-6" />
             </div>
-            <h3 className="font-bold mb-2">Contact Support</h3>
+            <h3 className="font-medium mb-2">Contact Support</h3>
             <p className="text-sm text-slate-500 mb-4 flex-1">Can't find what you need? Send us a ticket.</p>
-            <a href={`mailto:${SUPPORT_EMAIL}`} className="text-rose-600 text-sm font-bold hover:underline">Email Us &rarr;</a>
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="text-rose-600 text-sm font-medium hover:underline">Email Us &rarr;</a>
           </div>
         </div>
 
-        <div ref={faqSectionRef} className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-8 md:p-12 scroll-mt-24">
-          <h2 className="text-2xl font-black mb-8">Frequently Asked Questions</h2>
+        <div ref={faqSectionRef} className="bg-white dark:bg-slate-900 rounded-card border border-slate-200 dark:border-slate-800 p-8 md:p-12 scroll-mt-24">
+          <h2 className="text-2xl font-semibold mb-8">Frequently Asked Questions</h2>
           <div className="space-y-4">
             {filteredFaqs.map((faq) => {
               const i = faqs.indexOf(faq);
               return (
-                <div key={i} className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+                <div key={i} className="border border-slate-200 dark:border-slate-800 rounded-control overflow-hidden">
                   <button
                     onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                    className="w-full px-6 py-4 flex items-center justify-between text-left font-bold bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    className="w-full px-6 py-4 flex items-center justify-between text-left font-medium bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                   >
                     {faq.q}
                     <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform shrink-0 ml-3 ${openFaq === i ? 'rotate-180' : ''}`} />

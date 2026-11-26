@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { academyAPI } from '../../academy/api';
 import { useAcademy } from '../../academy/context';
 import { HapticButton } from '../../components/HapticButton';
-import { AlertCircle, Loader2, CheckCircle2, Eye, EyeOff, Gift, ShieldCheck, Zap, BookOpen } from 'lucide-react';
+import { AlertCircle, Loader2, CheckCircle2, Eye, EyeOff, Gift } from 'lucide-react';
 
 export function SignupComponent() {
   const navigate = useNavigate();
@@ -49,7 +49,7 @@ export function SignupComponent() {
     }
 
     if (!checkPasswordStrength(password)) {
-      setError('Password must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 number');
+      setError('Password must be at least 8 characters with 1 , 1 lowercase, and 1 number');
       return;
     }
 
@@ -70,117 +70,84 @@ export function SignupComponent() {
       {/* Right Split: Branding (Hidden on mobile) */}
       <div className="hidden lg:flex lg:w-1/2 bg-slate-900 relative items-center justify-center overflow-hidden p-12">
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-tr from-emerald-900/40 via-slate-900 to-indigo-900/40" />
-          <div className="absolute top-1/4 -right-1/4 w-[500px] h-[500px] bg-emerald-500/20 rounded-full blur-[100px]" />
-          <div className="absolute bottom-1/4 -left-1/4 w-[500px] h-[500px] bg-indigo-500/20 rounded-full blur-[100px]" />
           <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay" />
         </div>
         
         <div className="relative z-10 max-w-lg text-white">
-          <h1 className="text-4xl md:text-5xl font-black mb-6 leading-tight tracking-tight">
-            Accelerate Your <span className="text-sky-400">Career Growth</span>
-          </h1>
-          <p className="text-lg text-slate-300 mb-10 leading-relaxed">
-            Create your free account today and get access to world-class training materials, expert-led courses, and a thriving community of professionals.
-          </p>
-          
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-sky-500/10 border border-sky-500/20 rounded-xl text-sky-400">
-                <ShieldCheck className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-100">Industry Recognized</h3>
-                <p className="text-sm text-slate-400">Stand out with certifications that matter</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-indigo-400">
-                <BookOpen className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-100">Practical Knowledge</h3>
-                <p className="text-sm text-slate-400">Real-world scenarios and hands-on labs</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-sky-500/10 border border-sky-500/20 rounded-xl text-sky-400">
-                <Zap className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-100">Lifetime Access</h3>
-                <p className="text-sm text-slate-400">Learn at your own pace, anytime, anywhere</p>
-              </div>
-            </div>
-          </div>
+          <h1 className="text-4xl md:text-5xl font-medium mb-6 leading-tight">Learn contract lifecycle management</h1>
+          <p className="text-lg text-slate-300 mb-10 leading-relaxed">Create a free account to start a course, track your progress and earn certificates.</p>
+          <ul className="border-t border-white/10">
+            <li className="py-4 border-b border-white/10"><h3 className="font-medium text-slate-100">Video lessons with questions</h3><p className="mt-1 text-sm text-slate-400">Short lessons you can pause, with a question to answer before you move on.</p></li>
+            <li className="py-4 border-b border-white/10"><h3 className="font-medium text-slate-100">Quizzes and graded assignments</h3><p className="mt-1 text-sm text-slate-400">Check what you learned and get feedback on your work.</p></li>
+            <li className="py-4 border-b border-white/10"><h3 className="font-medium text-slate-100">Certificates anyone can verify</h3><p className="mt-1 text-sm text-slate-400">Each certificate carries a code that proves it is genuine.</p></li>
+          </ul>
         </div>
       </div>
 
       {/* Left Split: Signup Form */}
       <div className="flex-1 flex items-center justify-center p-6 md:p-12 relative overflow-y-auto">
         {/* Mobile Background Elements */}
-        <div className="lg:hidden absolute top-1/4 -right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none z-0" />
         
         <div className="w-full max-w-xl relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700 py-12">
           <div className="mb-10">
-            <h2 className="text-3xl font-black mb-2 text-slate-900 dark:text-white tracking-tight">Create Account</h2>
-            <p className="text-slate-500 dark:text-slate-400">Join SpotCLM Academy to manage your courses and certifications.</p>
+            <h2 className="text-3xl font-semibold mb-2 text-slate-900 dark:text-white">Create your account</h2>
+            <p className="text-slate-500 dark:text-slate-400">Free to join. You can enrol in courses once you are signed in.</p>
           </div>
           
           {error && (
-            <div className="mb-6 p-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-900/50 rounded-xl flex items-start gap-3 text-rose-600 dark:text-rose-400 text-sm shadow-sm">
+            <div className="mb-6 p-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-900/50 rounded-control flex items-start gap-3 text-rose-600 dark:text-rose-400 text-sm shadow-sm">
               <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
               <p className="font-medium">{error}</p>
             </div>
           )}
 
           {searchParams.get('ref') && (
-            <div className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-900/50 rounded-xl flex items-center gap-3 text-emerald-700 dark:text-emerald-400 text-sm shadow-sm">
+            <div className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-900/50 rounded-control flex items-center gap-3 text-emerald-700 dark:text-emerald-400 text-sm shadow-sm">
               <Gift className="w-5 h-5 shrink-0" />
-              <p className="font-medium">You were invited with referral code <span className="font-mono font-bold px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-800 rounded">{searchParams.get('ref')}</span></p>
+              <p className="font-medium">You were invited with referral code <span className="font-mono font-medium px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-800 rounded">{searchParams.get('ref')}</span></p>
             </div>
           )}
 
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2 md:col-span-1">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">First Name</label>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400">First Name</label>
                 <input 
                   type="text" 
                   required
                   disabled={loading}
                   value={firstName}
                   onChange={e => setFirstName(e.target.value)}
-                  className="w-full px-4 py-4 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-medium shadow-sm" 
+                  className="w-full px-4 py-4 rounded-control bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-colors font-medium shadow-sm" 
                   placeholder="Jane" 
                 />
               </div>
               <div className="space-y-2 md:col-span-1">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Last Name</label>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400">Last Name</label>
                 <input 
                   type="text" 
                   required
                   disabled={loading}
                   value={lastName}
                   onChange={e => setLastName(e.target.value)}
-                  className="w-full px-4 py-4 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-medium shadow-sm" 
+                  className="w-full px-4 py-4 rounded-control bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-colors font-medium shadow-sm" 
                   placeholder="Doe" 
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Work Email</label>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400">Work Email</label>
                 <input 
                   type="email" 
                   required
                   disabled={loading}
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="w-full px-4 py-4 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-medium shadow-sm" 
+                  className="w-full px-4 py-4 rounded-control bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-colors font-medium shadow-sm" 
                   placeholder="jane@company.com" 
                 />
               </div>
               <div className="space-y-2 md:col-span-1">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Password</label>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400">Password</label>
                 <div className="relative">
                   <input 
                     type={showPassword ? "text" : "password"} 
@@ -188,7 +155,7 @@ export function SignupComponent() {
                     disabled={loading}
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    className="w-full px-4 py-4 pr-12 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-medium shadow-sm" 
+                    className="w-full px-4 py-4 pr-12 rounded-control bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-colors font-medium shadow-sm" 
                     placeholder="••••••••" 
                   />
                   <button 
@@ -201,7 +168,7 @@ export function SignupComponent() {
                 </div>
               </div>
               <div className="space-y-2 md:col-span-1">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Confirm</label>
+                <label className="block text-xs font-medium text-slate-500 dark:text-slate-400">Confirm</label>
                 <div className="relative">
                   <input 
                     type={showConfirmPassword ? "text" : "password"} 
@@ -209,7 +176,7 @@ export function SignupComponent() {
                     disabled={loading}
                     value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)}
-                    className={`w-full px-4 py-4 pr-12 rounded-xl bg-white dark:bg-slate-900/50 border focus:ring-4 outline-none transition-all font-medium shadow-sm ${confirmPassword.length > 0 && password !== confirmPassword ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10' : 'border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/10'}`} 
+                    className={`w-full px-4 py-4 pr-12 rounded-control bg-white dark:bg-slate-900/50 border focus:ring-4 outline-none transition-colors font-medium shadow-sm ${confirmPassword.length > 0 && password !== confirmPassword ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/10' : 'border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-indigo-500/10'}`} 
                     placeholder="••••••••" 
                   />
                   <button 
@@ -224,11 +191,11 @@ export function SignupComponent() {
             </div>
             
             {password.length > 0 && (
-              <div className="pt-2 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-4 space-y-2 mt-4">
-                <p className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Password Requirements</p>
+              <div className="pt-2 rounded-control bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-4 space-y-2 mt-4">
+                <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Password Requirements</p>
                 {[
                   { label: 'At least 8 characters', met: password.length >= 8 },
-                  { label: 'At least one uppercase letter', met: /[A-Z]/.test(password) },
+                  { label: 'At least one  letter', met: /[A-Z]/.test(password) },
                   { label: 'At least one lowercase letter', met: /[a-z]/.test(password) },
                   { label: 'At least one number', met: /[0-9]/.test(password) },
                 ].map(rule => (
@@ -241,28 +208,28 @@ export function SignupComponent() {
             )}
 
             <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800/50 mt-6">
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Referral Code (Optional)</label>
+              <label className="block text-xs font-medium text-slate-500 dark:text-slate-400">Referral Code (Optional)</label>
               <input 
                 type="text" 
                 disabled={loading}
                 value={referralCode}
                 onChange={e => setReferralCode(e.target.value.toUpperCase())}
-                className="w-full px-4 py-4 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-mono font-bold text-slate-600 uppercase shadow-sm" 
+                className="w-full px-4 py-4 rounded-control bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-colors font-mono font-medium text-slate-600 shadow-sm" 
                 placeholder="SPOT-XXXX" 
               />
             </div>
 
             <HapticButton 
               disabled={loading || !password || password !== confirmPassword || !checkPasswordStrength(password)}
-              className="w-full py-4 mt-6 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 disabled:opacity-50 text-white font-bold tracking-tight shadow-raised flex items-center justify-center gap-2 transition-all duration-300 hover:-translate-y-0.5 text-lg"
+              className="w-full py-4 mt-6 rounded-control bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium shadow-raised flex items-center justify-center gap-2 transition-colors duration-300 text-lg"
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create Account'}
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create account'}
             </HapticButton>
           </form>
           
           <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800 text-center">
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-              Already have an account? <button onClick={() => navigate('/login')} className="text-indigo-600 dark:text-indigo-400 font-black tracking-tight hover:underline transition-colors ml-1">Log in</button>
+              Already have an account? <button onClick={() => navigate('/login')} className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline transition-colors ml-1">Log in</button>
             </p>
           </div>
         </div>

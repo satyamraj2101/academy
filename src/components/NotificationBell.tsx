@@ -66,12 +66,12 @@ export function NotificationBell() {
     <div className="relative" ref={containerRef}>
       <button
         onClick={() => setOpen(o => !o)}
-        className="relative p-1.5 border border-slate-200 dark:border-slate-800 rounded-control hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+        className="relative p-1.5 border border-slate-200 dark:border-slate-800 rounded-control hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
         aria-label="Notifications"
       >
         <Bell className="w-4 h-4" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-indigo-600 rounded-full text-[9px] font-bold text-white flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 w-4 h-4 bg-indigo-600 rounded-full text-[9px] font-medium text-white flex items-center justify-center">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -80,11 +80,11 @@ export function NotificationBell() {
       {open && (
         <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-card shadow-floating z-50">
           <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800 sticky top-0 bg-white dark:bg-slate-900">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Notifications</h3>
+            <h3 className="text-sm font-medium text-slate-900 dark:text-white">Notifications</h3>
             {unreadCount > 0 && (
               <button
                 onClick={() => markReadMutation.mutate({ markAll: true })}
-                className="flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+                className="flex items-center gap-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
               >
                 <CheckCheck className="w-3.5 h-3.5" /> Mark all read
               </button>
@@ -99,13 +99,13 @@ export function NotificationBell() {
                 <button
                   key={n.id}
                   onClick={() => handleNotificationClick(n)}
-                  className={`w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors flex gap-2.5 ${!n.is_read ? 'bg-indigo-50/50 dark:bg-indigo-900/10' : ''}`}
+                  className={`w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors flex gap-2.5 ${!n.is_read ? 'bg-slate-100 dark:bg-slate-800' : ''}`}
                 >
                   {!n.is_read && <span className="w-2 h-2 mt-1.5 rounded-full bg-indigo-500 shrink-0" />}
                   <div className={n.is_read ? 'pl-4' : ''}>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white leading-snug">{n.title}</p>
+                    <p className="text-sm font-medium text-slate-900 dark:text-white leading-snug">{n.title}</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">{n.message}</p>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-600 mt-1 uppercase tracking-wide font-semibold">{timeAgo(n.created_at)}</p>
+                    <p className="text-[11px] text-slate-400 dark:text-slate-600 mt-1 font-semibold">{timeAgo(n.created_at)}</p>
                   </div>
                 </button>
               ))}

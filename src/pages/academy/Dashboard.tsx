@@ -4,16 +4,28 @@ import { Helmet } from 'react-helmet-async';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAcademy } from '../../academy/context';
 import { academyAPI } from '../../academy/api';
-import { BookOpen, Award, Clock, Coins, LogOut, Loader2, Users, Share2, Copy, CheckCircle2, Settings, Flame, Trophy, PlayCircle, Target, GraduationCap } from 'lucide-react';
+import { Award, ArrowRight, Clock, Copy, Flame, GraduationCap, Loader2, LogOut, PlayCircle, Settings, Share2, Target, Trophy } from 'lucide-react';
 import { toast } from '../../lib/toast';
 import { HapticButton } from '../../components/HapticButton';
 import { CourseThumbnail } from '../../components/CourseThumbnail';
+import { LifecycleLine, LIFECYCLE_STOPS, stopFor } from '../../components/LifecycleLine';
+import { CertificateSheet } from '../../components/CertificateSheet';
 import { motion, AnimatePresence } from 'motion/react';
+
+type Tab = 'courses' | 'certificates' | 'referrals' | 'partner';
+const TAB_LABEL: Record<Tab, string> = { courses: 'My courses', certificates: 'Certificates', referrals: 'Referrals', partner: 'Partner portal' };
+
+// Credit is stored in paise. One format everywhere on this page: rupees with two decimals.
+const inr = (paise: number) => `₹${((paise || 0) / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+const card = 'rounded-card border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900';
+const primaryBtn = 'inline-flex items-center justify-center gap-2 min-h-[44px] px-5 rounded-control bg-indigo-600 text-sm font-medium text-white transition-colors hover:bg-indigo-700';
+const secondaryBtn = 'inline-flex items-center justify-center gap-2 min-h-[40px] px-4 rounded-control border border-slate-200 bg-slate-50 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700';
 
 export function DashboardComponent() {
   const navigate = useNavigate();
   const { user, loading, logout } = useAcademy();
-  const [activeTab, setActiveTab] = useState<'courses' | 'certificates' | 'referrals' | 'partner'>('courses');
+  const [activeTab, setActiveTab] = useState<Tab>('courses');
   const queryClient = useQueryClient();
 
   // Auth is enforced by <ProtectedRoute> at the route level (App.tsx).
@@ -42,20 +54,20 @@ export function DashboardComponent() {
   const applyPartnerMutation = useMutation({
     mutationFn: () => academyAPI.referrals.applyPartner(),
     onSuccess: () => {
-      toast.success('Application submitted successfully!');
+      toast.success('Application submitted');
       queryClient.invalidateQueries({ queryKey: ['academy', 'referrals', 'tree'] });
     },
-    onError: (err: any) => toast.error(err.message || 'Failed to apply'),
+    onError: (err: any) => toast.error(err.message || 'Could not apply'),
   });
 
   if (loading || !user) {
-    return <div className="min-h-screen pt-32 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-indigo-500" /></div>;
+    return <div className="min-h-screen pt-32 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-slate-400" /></div>;
   }
 
   const copyReferralLink = () => {
     const link = `${window.location.origin}/signup?ref=${user.referralCode}`;
     navigator.clipboard.writeText(link);
-    toast.success('Referral link copied to clipboard!');
+    toast.success('Referral link copied');
   };
 
   // Opens the course player at the right lesson; falls back to the course page if the
@@ -80,279 +92,218 @@ export function DashboardComponent() {
   const activeCount = enrollments.length - completedCount;
 
   // "Up next" prefers the course furthest along that is not finished, then a course not yet
-  // started. When everything is complete there is nothing to resume, so the hero is hidden.
+  // started. When everything is complete there is nothing to resume, so the card is hidden.
   const upNext =
     [...enrollments]
       .filter((e: any) => (e.progress_percent || 0) > 0 && (e.progress_percent || 0) < 100)
       .sort((a: any, b: any) => (b.progress_percent || 0) - (a.progress_percent || 0))[0] ||
     enrollments.find((e: any) => !(e.progress_percent > 0));
 
+  const tabs: Tab[] = ['courses', 'certificates', 'referrals', ...(isApprovedPartner ? (['partner'] as Tab[]) : [])];
+  const month = new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+
   return (
-    <div className="pt-24 pb-16 min-h-screen bg-surface-50 dark:bg-surface-950">
+    <div className="pt-24 pb-16 min-h-screen">
       <Helmet>
         <title>Dashboard | SpotCLM Academy</title>
       </Helmet>
 
-      <div className="w-full max-w-[1600px] mx-auto px-6 lg:px-12">
-        
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
+      <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-2">
-              Welcome back, {user.fullName.split(' ')[0]}
-            </h1>
-            <p className="text-slate-600 dark:text-slate-400">Manage your learning journey and certifications.</p>
+            <h1 className="text-3xl font-medium text-slate-900 dark:text-white">Dashboard</h1>
+            <p className="mt-1 text-sm text-slate-500">{month}</p>
           </div>
-          <div className="flex items-center gap-3">
-            <HapticButton 
-              onClick={() => navigate('/courses')}
-              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-control font-bold text-sm transition-all shadow-sm"
-            >
-              Browse Catalog
-            </HapticButton>
-          </div>
+          <HapticButton onClick={() => navigate('/courses')} className={secondaryBtn}>Browse courses</HapticButton>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8 sm:mb-12">
-          <StatCard icon={<BookOpen className="w-5 h-5" />} label="Active Courses" value={activeCount.toString()} color="indigo" />
-          <StatCard icon={<Award className="w-5 h-5" />} label="Certifications" value={certificates.length.toString()} color="emerald" />
-          <StatCard icon={<CheckCircle2 className="w-5 h-5" />} label="Courses Completed" value={completedCount.toString()} color="sky" />
-          {/* creditBalance is stored in paise; show rupees. */}
-          <StatCard icon={<Coins className="w-5 h-5" />} label="Credits Available" value={`₹${((user.creditBalance || 0) / 100).toLocaleString('en-IN')}`} color="amber" />
-        </div>
-
-        {/* Up Next Hero Section */}
-        {upNext && (
-          <div className="mb-12 bg-gradient-to-r from-indigo-600 to-sky-500 rounded-3xl p-8 md:p-10 text-white flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl shadow-indigo-500/20 relative overflow-hidden group">
-            <div className="absolute -right-20 -top-20 w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-700" />
-            <div className="relative z-10">
-              <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-lg text-xs font-black uppercase tracking-widest mb-4 border border-white/20">Up Next</span>
-              <h2 className="text-3xl md:text-4xl font-black mb-3 tracking-tight">{upNext.title}</h2>
-              <p className="text-white/90 max-w-xl text-lg font-medium">
-                {upNext.progress_percent > 0
-                  ? `You are ${upNext.progress_percent}% through this course. Keep up the great work and earn your certificate!`
-                  : "You're enrolled and ready to begin. Start with the first lesson."}
-              </p>
+        {/* Four numbers, equal height */}
+        <dl className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
+          {[
+            { label: 'Active courses', value: String(activeCount) },
+            { label: 'Certificates', value: String(certificates.length) },
+            { label: 'Completed courses', value: String(completedCount) },
+            { label: 'Credit balance', value: inr(user.creditBalance || 0) },
+          ].map(s => (
+            <div key={s.label} className={`${card} p-5 flex flex-col justify-between min-h-[96px]`}>
+              <dt className="text-sm text-slate-500">{s.label}</dt>
+              <dd className="tabular mt-3 text-[28px] leading-none font-medium text-slate-900 dark:text-white">{s.value}</dd>
             </div>
-            <HapticButton
-              onClick={() => resumeCourse(upNext.course_id)}
-              className="relative z-10 px-8 py-4 bg-white text-indigo-600 hover:bg-slate-50 rounded-2xl font-black text-lg shrink-0 transition-transform hover:scale-105 shadow-xl"
-            >
-              {upNext.progress_percent > 0 ? 'Resume Learning' : 'Start Course'} &rarr;
-            </HapticButton>
-          </div>
+          ))}
+        </dl>
+
+        {/* The moment: where you left off, with the course's own picture and your place on the lifecycle */}
+        {upNext && (
+          <section aria-label="Up next" className={`${card} mb-10 overflow-hidden grid md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]`}>
+            <div className="relative aspect-video md:aspect-auto md:min-h-[240px] bg-slate-100 dark:bg-slate-800">
+              <CourseThumbnail imageUrl={upNext.image_url} title={upNext.title} category={upNext.category} iconClassName="w-10 h-10" />
+            </div>
+            <div className="p-6 md:p-8 flex flex-col justify-between gap-8">
+              <div>
+                <p className="text-sm text-slate-500">Up next</p>
+                <h2 className="mt-1 text-2xl font-medium text-slate-900 dark:text-white leading-snug">{upNext.title}</h2>
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-400 max-w-prose">
+                  {upNext.progress_percent > 0
+                    ? `${upNext.progress_percent}% complete. You are at the ${LIFECYCLE_STOPS[stopFor(upNext.progress_percent)].toLowerCase()} stage.`
+                    : 'You are enrolled and have not started yet. Begin with the first lesson.'}
+                </p>
+              </div>
+              <div>
+                <LifecycleLine percent={upNext.progress_percent || 0} labels label={`Progress in ${upNext.title}`} />
+                <HapticButton onClick={() => resumeCourse(upNext.course_id)} className={`${primaryBtn} mt-6`}>
+                  {upNext.progress_percent > 0 ? 'Resume course' : 'Start course'} <ArrowRight className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
+                </HapticButton>
+              </div>
+            </div>
+          </section>
         )}
 
-        {/* Tabs */}
-        <div className="flex border-b border-slate-200 dark:border-slate-800 mb-8 overflow-x-auto hide-scrollbar">
-          {(['courses', 'certificates', 'referrals', ...(isApprovedPartner ? ['partner'] : [])] as const).map(tab => (
+        <div role="tablist" aria-label="Dashboard sections" className="flex border-b border-slate-200 dark:border-slate-800 mb-6 overflow-x-auto overflow-y-hidden hide-scrollbar">
+          {tabs.map(tab => (
             <button
               key={tab}
+              role="tab"
+              aria-selected={activeTab === tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-6 py-4 text-sm font-bold uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === tab 
-                  ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' 
-                  : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
-              }`}
+              className={`px-4 min-h-[44px] text-sm whitespace-nowrap border-b-2 -mb-px transition-colors ${
+ activeTab === tab
+ ? 'border-indigo-600 text-slate-900 font-medium dark:border-indigo-400 dark:text-white'
+ : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
+ }`}
             >
-              {tab === 'courses' ? 'My Courses' : tab === 'partner' ? 'Partner Portal' : tab}
+              {TAB_LABEL[tab]}
             </button>
           ))}
         </div>
 
-        {/* Main Content Area */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-8">
+          <div>
             <AnimatePresence mode="wait">
-              <motion.div 
+              <motion.div
                 key={activeTab}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
               >
                 {activeTab === 'courses' && (
-                  <section className="bg-white/80 dark:bg-surface-900/40 border border-slate-200/50 dark:border-slate-800/50 rounded-card p-6 md:p-8 backdrop-blur-md shadow-raised">
-                    <div className="flex items-center justify-between mb-6">
-                      <h2 className="text-xl font-black text-slate-900 dark:text-white">In Progress</h2>
-                      <button onClick={() => navigate('/courses')} className="text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:underline min-h-[44px] px-2 -mx-2">View All</button>
-                    </div>
-                    
-                    {loadingEnrollments ? (
-                      <div className="py-12 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-indigo-500" /></div>
-                    ) : enrollments.length > 0 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {enrollments.map((enr: any) => (
-                          <div key={enr.enrollment_id} className="border border-slate-200 dark:border-slate-800 rounded-control p-4 flex flex-col gap-4">
-                            <div className="flex gap-4">
-                              <div className="relative w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-lg flex-shrink-0 overflow-hidden">
-                                <CourseThumbnail imageUrl={enr.image_url} title={enr.title} category={enr.category} iconClassName="w-6 h-6" />
-                              </div>
-                              <div>
-                                <h3 className="font-bold text-slate-900 dark:text-white line-clamp-2 leading-tight mb-1">{enr.title}</h3>
-                                <div className="text-xs font-semibold text-slate-500 flex gap-2">
-                                  <span>{enr.level}</span>
-                                  <span>&bull;</span>
-                                  <span>{enr.duration}</span>
-                                </div>
-                              </div>
+                  loadingEnrollments ? (
+                    <div className="py-16 flex justify-center"><Loader2 className="w-5 h-5 animate-spin text-slate-400" /></div>
+                  ) : enrollments.length > 0 ? (
+                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {enrollments.map((enr: any) => (
+                        <li key={enr.enrollment_id} className={`${card} p-4 flex flex-col gap-4`}>
+                          <div className="flex gap-4">
+                            <div className="relative w-16 h-16 rounded-control bg-slate-100 dark:bg-slate-800 shrink-0 overflow-hidden">
+                              <CourseThumbnail imageUrl={enr.image_url} title={enr.title} category={enr.category} iconClassName="w-6 h-6" />
                             </div>
-                            
-                            <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                              <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Progress</span>
-                              <div className="flex items-center gap-3">
-                                <span className="text-indigo-600 dark:text-indigo-400 font-bold">{enr.progress_percent}%</span>
-                                <ProgressRing percent={enr.progress_percent} size={36} />
-                              </div>
+                            <div className="min-w-0">
+                              <h3 className="font-medium text-slate-900 dark:text-white line-clamp-2 leading-snug">{enr.title}</h3>
+                              <p className="mt-1 text-xs text-slate-500 font-mono">{[enr.level, enr.duration].filter(Boolean).join(' · ')}</p>
                             </div>
-                            
-                            <HapticButton 
-                              onClick={() => resumeCourse(enr.course_id)}
-                              className="w-full py-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 font-bold text-sm rounded hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors"
-                            >
-                              {enr.progress_percent === 100 ? 'Review Course' : 'Resume Course'}
-                            </HapticButton>
                           </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-12 bg-slate-50 dark:bg-slate-950/50 rounded-control border border-slate-200 dark:border-slate-800 border-dashed">
-                        <BookOpen className="w-10 h-10 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
-                        <p className="text-slate-500 font-semibold mb-4">No active courses at the moment.</p>
-                        <button onClick={() => navigate('/courses')} className="text-indigo-600 font-bold hover:underline">Explore the catalog</button>
-                      </div>
-                    )}
-                  </section>
+                          <div>
+                            <div className="flex items-baseline justify-between mb-2 text-xs text-slate-500">
+                              <span>Progress</span>
+                              <span className="tabular text-slate-900 dark:text-white">{enr.progress_percent || 0}%</span>
+                            </div>
+                            <LifecycleLine percent={enr.progress_percent || 0} label={`Progress in ${enr.title}`} />
+                          </div>
+                          <HapticButton onClick={() => resumeCourse(enr.course_id)} className={`${secondaryBtn} w-full`}>
+                            {enr.progress_percent === 100 ? 'Review course' : enr.progress_percent > 0 ? 'Resume course' : 'Start course'}
+                          </HapticButton>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className={`${card} text-center py-14 px-6`}>
+                      <p className="text-slate-900 dark:text-white font-medium">No courses yet</p>
+                      <p className="mt-1 text-sm text-slate-500">Courses you enrol in appear here with your progress.</p>
+                      <button onClick={() => navigate('/courses')} className={`${secondaryBtn} mt-5`}>Browse courses</button>
+                    </div>
+                  )
                 )}
 
                 {activeTab === 'certificates' && (
-                  <section className="bg-white/80 dark:bg-surface-900/40 border border-slate-200/50 dark:border-slate-800/50 rounded-card p-6 md:p-8 backdrop-blur-md shadow-raised">
-                    {loadingCertificates ? (
-                      <div className="py-12 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-indigo-500" /></div>
-                    ) : certificates.length > 0 ? (
-                      <div className="grid sm:grid-cols-2 gap-4">
-                        {certificates.map((cert: any) => (
-                          <div key={cert.credential_id} className="bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-control p-5">
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="w-10 h-10 rounded-full bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-500 shrink-0">
-                                <Award className="w-5 h-5" />
-                              </div>
-                              <div className="min-w-0">
-                                <p className="font-bold text-sm text-slate-900 dark:text-white truncate">{cert.course_title}</p>
-                                <p className="text-xs text-slate-500">{new Date(cert.issued_at).toLocaleDateString()}</p>
-                              </div>
-                            </div>
-                            <p className="text-[11px] font-mono text-slate-400 mb-4">{cert.credential_id}</p>
-                            <div className="flex gap-2">
-                              <a
-                                href={`/api/certificates/download/${cert.credential_id}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex-1 text-center py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg transition-colors"
-                              >
-                                Download
-                              </a>
-                              <button
-                                onClick={() => navigate(`/certifications?verify=${cert.credential_id}`)}
-                                className="flex-1 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-lg transition-colors"
-                              >
-                                Verify
-                              </button>
-                            </div>
+                  loadingCertificates ? (
+                    <div className="py-16 flex justify-center"><Loader2 className="w-5 h-5 animate-spin text-slate-400" /></div>
+                  ) : certificates.length > 0 ? (
+                    <ul className="grid sm:grid-cols-2 gap-6">
+                      {certificates.map((cert: any) => (
+                        <li key={cert.credential_id}>
+                          <CertificateSheet title={cert.course_title} holder={user.fullName} issuedAt={cert.issued_at} credentialId={cert.credential_id} />
+                          <div className="mt-3 flex gap-2">
+                            <a
+                              href={`/api/certificates/download/${cert.credential_id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`${primaryBtn} flex-1 min-h-[40px]`}
+                            >
+                              Download
+                            </a>
+                            <button onClick={() => navigate(`/certifications?verify=${cert.credential_id}`)} className={`${secondaryBtn} flex-1`}>Verify</button>
                           </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-12 bg-slate-50 dark:bg-slate-950/50 rounded-control border border-slate-200 dark:border-slate-800 border-dashed">
-                        <Award className="w-10 h-10 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
-                        <p className="text-slate-500 font-semibold mb-4">You haven't earned any certificates yet.</p>
-                        <button onClick={() => navigate('/certifications')} className="text-indigo-600 font-bold hover:underline">View Certifications</button>
-                      </div>
-                    )}
-                  </section>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className={`${card} text-center py-14 px-6`}>
+                      <p className="text-slate-900 dark:text-white font-medium">No certificates yet</p>
+                      <p className="mt-1 text-sm text-slate-500">Finish a course and its certificate appears here, with a code anyone can verify.</p>
+                      <button onClick={() => navigate('/certifications')} className={`${secondaryBtn} mt-5`}>About certificates</button>
+                    </div>
+                  )
                 )}
 
                 {activeTab === 'referrals' && (
-                  <section className="bg-white/80 dark:bg-surface-900/40 border border-slate-200/50 dark:border-slate-800/50 rounded-card p-6 md:p-8 backdrop-blur-md shadow-raised">
-                    <div className="flex items-center justify-between mb-6">
-                      <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-                        <Users className="w-5 h-5 text-indigo-500" /> Referral Network
-                      </h2>
-                    </div>
-
+                  <section className={`${card} p-6 md:p-8`}>
+                    <h2 className="text-lg font-medium text-slate-900 dark:text-white mb-6">Referral network</h2>
                     {loadingReferrals ? (
-                      <div className="py-12 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-indigo-500" /></div>
+                      <div className="py-12 flex justify-center"><Loader2 className="w-5 h-5 animate-spin text-slate-400" /></div>
                     ) : (
                       <div className="space-y-8">
-                        {/* Summary Bar */}
-                        <div className="grid grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-950/50 p-4 rounded-control border border-slate-200 dark:border-slate-800">
-                          <div>
-                            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Direct Referrals</div>
-                            <div className="text-xl font-black text-slate-900 dark:text-white">{referralData?.l1?.length || 0}</div>
+                        <dl className="grid grid-cols-2 gap-4">
+                          <div className="rounded-control border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 p-4">
+                            <dt className="text-sm text-slate-500">Direct referrals</dt>
+                            <dd className="tabular mt-2 text-2xl font-medium text-slate-900 dark:text-white">{referralData?.l1?.length || 0}</dd>
                           </div>
-                          <div>
-                            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Total Earned</div>
-                            <div className="text-xl font-black text-slate-900 dark:text-white">{referralData?.totalCreditsEarned || 0} Coins</div>
+                          <div className="rounded-control border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 p-4">
+                            <dt className="text-sm text-slate-500">Total earned</dt>
+                            <dd className="tabular mt-2 text-2xl font-medium text-slate-900 dark:text-white">{referralData?.totalCreditsEarned || 0} coins</dd>
                           </div>
-                        </div>
+                        </dl>
 
-                        {/* Wallet: spend credits as a payout request or at checkout */}
                         <ReferralWallet creditBalance={user.creditBalance} />
 
-                        {/* Partner Upgrade Block */}
                         {!isApprovedPartner && (
-                          <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-control p-6">
-                            <h3 className="font-bold text-indigo-900 dark:text-indigo-300 mb-2">Upgrade to Partner Affiliate</h3>
-                            <p className="text-sm text-indigo-700 dark:text-indigo-400 mb-4">
-                              Refer at least 2 people to unlock Level 2 commissions and the Partner Portal.
-                              You currently have {referralData?.l1?.length || 0} referrals.
+                          <div className="rounded-control border border-slate-200 dark:border-slate-800 p-5">
+                            <h3 className="font-medium text-slate-900 dark:text-white">Become a partner</h3>
+                            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                              Refer at least 2 people to unlock level 2 commissions and the partner portal. You have {referralData?.l1?.length || 0} so far.
                             </p>
-                            
                             {referralData?.partnerStatus === 'pending' ? (
-                              <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-400 font-bold text-sm rounded">
-                                <Clock className="w-4 h-4" /> Application Pending
-                              </div>
+                              <p className="mt-4 inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400"><Clock className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" /> Application pending</p>
                             ) : (
-                              <button 
+                              <button
                                 onClick={() => applyPartnerMutation.mutate()}
                                 disabled={!hasEnoughReferrals || applyPartnerMutation.isPending}
-                                className={`px-4 py-2 font-bold text-sm rounded shadow-sm transition-all flex items-center gap-2
-                                  ${hasEnoughReferrals
-                                    ? 'bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer'
-                                    : 'bg-indigo-200 dark:bg-indigo-900/30 text-indigo-400 dark:text-indigo-700 cursor-not-allowed'}`}
+                                className={`${primaryBtn} mt-4 disabled:opacity-40 disabled:cursor-not-allowed`}
                               >
-                                {applyPartnerMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply for Partner Status'}
+                                {applyPartnerMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply for partner status'}
                               </button>
                             )}
                           </div>
                         )}
 
-                        {/* L1 List */}
                         <div>
-                          <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 border-b border-slate-200 dark:border-slate-800 pb-2">Direct Referrals (Level 1)</h3>
+                          <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-3 border-b border-slate-200 dark:border-slate-800 pb-2">Direct referrals, level 1</h3>
                           {referralData?.l1?.length > 0 ? (
-                            <div className="space-y-3">
-                              {referralData.l1.map((ref: any) => (
-                                <div key={ref.id} className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded shadow-sm">
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 font-bold text-xs">
-                                      {ref.full_name.charAt(0)}
-                                    </div>
-                                    <div>
-                                      <div className="text-sm font-bold text-slate-900 dark:text-white">{ref.full_name}</div>
-                                      <div className="text-xs text-slate-500">
-                                        Joined {new Date(ref.created_at).toLocaleDateString()}
-                                        {' • '} {ref.courses_bought || 0} Courses Bought
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
+                            <ul className="divide-y divide-slate-200 dark:divide-slate-800">
+                              {referralData.l1.map((ref: any) => <ReferralRow key={ref.id} person={ref} />)}
+                            </ul>
                           ) : (
-                            <div className="text-sm text-slate-500 italic py-4">No direct referrals yet. Share your link to get started!</div>
+                            <p className="text-sm text-slate-500 py-3">No referrals yet. Share your link to start.</p>
                           )}
                         </div>
                       </div>
@@ -361,136 +312,96 @@ export function DashboardComponent() {
                 )}
 
                 {activeTab === 'partner' && (
-                  <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-card p-6 md:p-8">
-                     <div className="flex items-center justify-between mb-6">
-                      <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-                        <Award className="w-5 h-5 text-amber-500" /> Partner Portal
-                      </h2>
-                    </div>
-                    
-                    <div className="mb-8 p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-control flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-                      <div>
-                        <h4 className="font-bold text-amber-900 dark:text-amber-500 text-sm">Level 2 Commissions Unlocked</h4>
-                        <p className="text-sm text-amber-700 dark:text-amber-600/80 mt-1">You are now earning coins from your extended network's purchases!</p>
-                      </div>
-                    </div>
-
-                    <div>
-                      <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 border-b border-slate-200 dark:border-slate-800 pb-2">Extended Network (Level 2)</h3>
-                      {referralData?.l2?.length > 0 ? (
-                        <div className="space-y-3">
-                          {referralData.l2.map((ref: any) => (
-                            <div key={ref.id} className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded shadow-sm opacity-80">
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 font-bold text-xs">
-                                  {ref.full_name.charAt(0)}
-                                </div>
-                                <div>
-                                  <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{ref.full_name}</div>
-                                  <div className="text-xs text-slate-500">
-                                    Joined {new Date(ref.created_at).toLocaleDateString()}
-                                    {' • '} {ref.courses_bought || 0} Courses Bought
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-sm text-slate-500 italic py-4">No extended referrals yet.</div>
-                      )}
-                    </div>
+                  <section className={`${card} p-6 md:p-8`}>
+                    <h2 className="text-lg font-medium text-slate-900 dark:text-white">Partner portal</h2>
+                    <p className="mt-1 mb-6 text-sm text-slate-600 dark:text-slate-400">Level 2 commissions are unlocked: you earn coins from purchases made by your extended network.</p>
+                    <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-3 border-b border-slate-200 dark:border-slate-800 pb-2">Extended network, level 2</h3>
+                    {referralData?.l2?.length > 0 ? (
+                      <ul className="divide-y divide-slate-200 dark:divide-slate-800">
+                        {referralData.l2.map((ref: any) => <ReferralRow key={ref.id} person={ref} />)}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-slate-500 py-3">No extended referrals yet.</p>
+                    )}
                   </section>
                 )}
-
               </motion.div>
             </AnimatePresence>
-
           </div>
-          
-          <div className="space-y-8">
-            {/* Gamification */}
+
+          <aside className="space-y-6">
             <GamificationCard />
 
-            {/* Learning Snapshot */}
             {enrollments.length > 0 && (
-              <section className="bg-white/80 dark:bg-surface-900/40 border border-slate-200/50 dark:border-slate-800/50 backdrop-blur-md shadow-raised rounded-card p-6">
-                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider mb-5">Learning Snapshot</h3>
-                <div className="flex items-center gap-5 mb-6">
-                  <ProgressRing percent={overallProgress} />
-                  <div>
-                    <div className="text-2xl font-black text-slate-900 dark:text-white">{overallProgress}%</div>
-                    <p className="text-xs text-slate-500 font-semibold">Average completion across {enrollments.length} course{enrollments.length === 1 ? '' : 's'}</p>
-                  </div>
-                </div>
-                <div className="space-y-3">
+              <section className={`${card} p-6`}>
+                <h3 className="text-sm font-medium text-slate-900 dark:text-white">Overall completion</h3>
+                <p className="tabular mt-3 text-[28px] leading-none font-medium text-slate-900 dark:text-white">{overallProgress}%</p>
+                <p className="mt-2 text-xs text-slate-500">Average across {enrollments.length} course{enrollments.length === 1 ? '' : 's'}</p>
+                <LifecycleLine percent={overallProgress} className="mt-4" label="Average progress across your courses" />
+                <ul className="mt-5 space-y-2">
                   {enrollments.slice(0, 4).map((enr: any) => (
-                    <div key={enr.enrollment_id}>
-                      <div className="flex justify-between text-xs font-semibold mb-1">
-                        <span className="text-slate-600 dark:text-slate-400 truncate pr-2">{enr.title}</span>
-                        <span className="text-slate-400 dark:text-slate-500 shrink-0">{enr.progress_percent}%</span>
-                      </div>
-                      <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all duration-700 ${enr.progress_percent === 100 ? 'bg-emerald-500' : enr.progress_percent >= 50 ? 'bg-indigo-500' : 'bg-amber-500'}`}
-                          style={{ width: `${enr.progress_percent}%` }}
-                        />
-                      </div>
-                    </div>
+                    <li key={enr.enrollment_id} className="flex items-baseline justify-between gap-3 text-xs">
+                      <span className="truncate text-slate-600 dark:text-slate-400">{enr.title}</span>
+                      <span className="tabular shrink-0 text-slate-900 dark:text-white">{enr.progress_percent || 0}%</span>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </section>
             )}
 
-            {/* Profile Summary */}
-            <section className="bg-white/80 dark:bg-surface-900/40 border border-slate-200/50 dark:border-slate-800/50 backdrop-blur-md shadow-raised rounded-card p-6">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-2xl">
+            <section className={`${card} p-6`}>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 shrink-0 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-lg font-medium text-slate-700 dark:text-slate-200" aria-hidden="true">
                   {user.fullName.charAt(0)}
                 </div>
-                <div>
-                  <h3 className="font-bold text-slate-900 dark:text-white">{user.fullName}</h3>
-                  <p className="text-sm text-slate-500">{user.email}</p>
+                <div className="min-w-0">
+                  <h3 className="font-medium text-slate-900 dark:text-white truncate">{user.fullName}</h3>
+                  <p className="text-sm text-slate-500 truncate">{user.email}</p>
                 </div>
               </div>
-              
-              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 mb-6">
-                <p className="text-xs font-semibold text-slate-500 mb-1">Your Referral Link</p>
-                <div className="bg-slate-50 dark:bg-slate-950/50 px-3 py-2.5 rounded flex justify-between items-center border border-slate-200 dark:border-slate-800">
-                  <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400 tracking-wider truncate mr-2 text-xs">
-                    {window.location.origin}/signup?ref={user.referralCode}
-                  </span>
-                  <HapticButton aria-label="Copy referral link" className="p-2.5 text-slate-400 hover:text-indigo-600 bg-white dark:bg-slate-900 shadow-sm rounded border border-slate-200 dark:border-slate-800 shrink-0" onClick={copyReferralLink}>
-                    <Copy className="w-4 h-4" />
+
+              <div className="mt-6 pt-5 border-t border-slate-200 dark:border-slate-800">
+                <p className="text-sm text-slate-500 mb-2">Your referral link</p>
+                <div className="flex items-center gap-2 rounded-control border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/40 pl-3 pr-1 py-1">
+                  <span className="font-mono text-xs text-slate-700 dark:text-slate-300 truncate">{window.location.origin}/signup?ref={user.referralCode}</span>
+                  <HapticButton aria-label="Copy referral link" className="p-2.5 shrink-0 rounded-control text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" onClick={copyReferralLink}>
+                    <Copy className="w-4 h-4" strokeWidth={1.5} />
                   </HapticButton>
                 </div>
+                <p className="mt-3 text-xs leading-relaxed text-slate-500">You earn 15% in coins on every course your referrals buy. Coins can be used to unlock advanced features.</p>
               </div>
-              
-              <HapticButton className="w-full py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-sm rounded-control flex items-center justify-center gap-2" onClick={copyReferralLink}>
-                <Share2 className="w-4 h-4" /> Copy Full Link
-              </HapticButton>
-              <HapticButton
-                className="w-full mt-3 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-sm rounded-xl flex items-center justify-center gap-2 transition-all"
-                onClick={() => navigate('/settings')}
-              >
-                <Settings className="w-4 h-4" /> Account Settings
-              </HapticButton>
-              <HapticButton
-                className="w-full mt-3 py-2.5 bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-sm rounded-xl flex items-center justify-center gap-2 transition-all"
-                onClick={logout}
-              >
-                <LogOut className="w-4 h-4" /> Sign Out
-              </HapticButton>
-              <p className="text-xs text-slate-500 text-center mt-4 leading-relaxed">
-                Earn <b>15% in Coins</b> for every course your referred friends purchase! Coins can be used to unlock advanced features.
-              </p>
+
+              <div className="mt-5 space-y-2">
+                <HapticButton className={`${primaryBtn} w-full min-h-[40px]`} onClick={copyReferralLink}>
+                  <Share2 className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" /> Copy link
+                </HapticButton>
+                <HapticButton className={`${secondaryBtn} w-full`} onClick={() => navigate('/settings')}>
+                  <Settings className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" /> Account settings
+                </HapticButton>
+                <HapticButton className="w-full min-h-[40px] inline-flex items-center justify-center gap-2 rounded-control text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors" onClick={logout}>
+                  <LogOut className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" /> Sign out
+                </HapticButton>
+              </div>
             </section>
-          </div>
+          </aside>
         </div>
 
       </div>
     </div>
+  );
+}
+
+function ReferralRow({ person }: { person: any }) {
+  return (
+    <li className="flex items-center gap-3 py-3">
+      <div className="w-8 h-8 shrink-0 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-medium text-slate-700 dark:text-slate-300" aria-hidden="true">
+        {person.full_name.charAt(0)}
+      </div>
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{person.full_name}</p>
+        <p className="text-xs text-slate-500">Joined {new Date(person.created_at).toLocaleDateString('en-IN')} · {person.courses_bought || 0} course{(person.courses_bought || 0) === 1 ? '' : 's'} bought</p>
+      </div>
+    </li>
   );
 }
 
@@ -508,7 +419,7 @@ function ReferralWallet({ creditBalance }: { creditBalance: number }) {
   const requestMutation = useMutation({
     mutationFn: () => academyAPI.referrals.requestPayout(Math.round(parseFloat(amount || '0') * 100), payoutDetails),
     onSuccess: () => {
-      toast.success('Payout requested — an admin will review it.');
+      toast.success('Payout requested', 'An admin will review it.');
       setShowRequest(false);
       setAmount('');
       setPayoutDetails('');
@@ -518,51 +429,50 @@ function ReferralWallet({ creditBalance }: { creditBalance: number }) {
   });
 
   const redemptions = history?.redemptions || [];
+  const field = 'w-full min-h-[40px] rounded-control border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400';
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-950/50 p-4 rounded-control border border-slate-200 dark:border-slate-800">
-      <div className="flex items-center justify-between mb-3">
+    <div className="rounded-control border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 p-4">
+      <div className="flex items-center justify-between gap-4">
         <div>
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Wallet Balance</div>
-          <div className="text-xl font-black text-slate-900 dark:text-white">₹{(creditBalance / 100).toFixed(2)}</div>
+          <p className="text-sm text-slate-500">Wallet balance</p>
+          <p className="tabular mt-1 text-2xl font-medium text-slate-900 dark:text-white">{inr(creditBalance)}</p>
         </div>
-        <button onClick={() => setShowRequest(s => !s)} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-xs">
-          Request Payout
-        </button>
+        <button onClick={() => setShowRequest(s => !s)} className={secondaryBtn} aria-expanded={showRequest}>Request payout</button>
       </div>
-      <p className="text-xs text-slate-500">Credits also apply automatically as a discount at checkout on INR purchases.</p>
+      <p className="mt-3 text-xs text-slate-500">Credit also applies automatically as a discount at checkout on INR purchases.</p>
 
       {showRequest && (
         <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 space-y-2">
-          <input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="Amount (INR)" className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm" />
-          <input value={payoutDetails} onChange={e => setPayoutDetails(e.target.value)} placeholder="UPI ID or bank details" className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm" />
-          <button onClick={() => requestMutation.mutate()} disabled={requestMutation.isPending} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg font-bold text-xs">
-            {requestMutation.isPending ? 'Submitting...' : 'Submit Request'}
+          <input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="Amount in INR" aria-label="Amount in INR" className={field} />
+          <input value={payoutDetails} onChange={e => setPayoutDetails(e.target.value)} placeholder="UPI ID or bank details" aria-label="UPI ID or bank details" className={field} />
+          <button onClick={() => requestMutation.mutate()} disabled={requestMutation.isPending} className={`${primaryBtn} min-h-[40px] disabled:opacity-50`}>
+            {requestMutation.isPending ? 'Submitting' : 'Submit request'}
           </button>
         </div>
       )}
 
       {redemptions.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 space-y-1.5">
+        <ul className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 space-y-2">
           {redemptions.slice(0, 5).map((r: any) => (
-            <div key={r.id} className="flex items-center justify-between text-xs">
-              <span className="text-slate-500">{new Date(r.created_at).toLocaleDateString()}</span>
-              <span className="font-bold text-slate-700 dark:text-slate-300">₹{(r.amount / 100).toFixed(2)}</span>
-              <span className={`font-bold uppercase ${r.status === 'paid' ? 'text-emerald-600' : r.status === 'rejected' ? 'text-rose-500' : 'text-amber-500'}`}>{r.status}</span>
-            </div>
+            <li key={r.id} className="grid grid-cols-3 text-xs">
+              <span className="text-slate-500">{new Date(r.created_at).toLocaleDateString('en-IN')}</span>
+              <span className="tabular text-slate-900 dark:text-white">{inr(r.amount)}</span>
+              <span className={`text-right ${r.status === 'paid' ? 'text-emerald-700 dark:text-emerald-400' : r.status === 'rejected' ? 'text-rose-700 dark:text-rose-400' : 'text-slate-600 dark:text-slate-400'}`}>{r.status}</span>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );
 }
 
 const BADGE_ICONS: Record<string, React.ReactNode> = {
-  first_lesson_complete: <PlayCircle className="w-4 h-4" />,
-  seven_day_streak: <Flame className="w-4 h-4" />,
-  course_completion: <GraduationCap className="w-4 h-4" />,
-  perfect_quiz_score: <Target className="w-4 h-4" />,
-  first_certificate: <Award className="w-4 h-4" />,
+  first_lesson_complete: <PlayCircle className="w-4 h-4" strokeWidth={1.5} />,
+  seven_day_streak: <Flame className="w-4 h-4" strokeWidth={1.5} />,
+  course_completion: <GraduationCap className="w-4 h-4" strokeWidth={1.5} />,
+  perfect_quiz_score: <Target className="w-4 h-4" strokeWidth={1.5} />,
+  first_certificate: <Award className="w-4 h-4" strokeWidth={1.5} />,
 };
 
 function GamificationCard() {
@@ -574,8 +484,8 @@ function GamificationCard() {
 
   if (isLoading) {
     return (
-      <section className="bg-white/80 dark:bg-surface-900/40 border border-slate-200/50 dark:border-slate-800/50 backdrop-blur-md shadow-raised rounded-card p-6 flex justify-center">
-        <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
+      <section className={`${card} p-6 flex justify-center`}>
+        <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
       </section>
     );
   }
@@ -583,95 +493,37 @@ function GamificationCard() {
   const points = data?.points || 0;
   const streak = data?.currentStreak || 0;
   const badges = data?.badges || [];
+  const link = 'inline-flex items-center gap-1 min-h-[40px] text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors';
 
   return (
-    <section className="bg-white/80 dark:bg-surface-900/40 border border-slate-200/50 dark:border-slate-800/50 backdrop-blur-md shadow-raised rounded-card p-6">
-      <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider mb-5">Your Progress</h3>
-      <div className="flex items-center gap-6 mb-5">
-        <div className="flex items-center gap-2">
-          <Trophy className="w-5 h-5 text-amber-500" />
-          <div>
-            <div className="text-xl font-black text-slate-900 dark:text-white">{points}</div>
-            <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Points</p>
-          </div>
+    <section className={`${card} p-6`}>
+      <h3 className="text-sm font-medium text-slate-900 dark:text-white">Your progress</h3>
+      <dl className="mt-4 grid grid-cols-2 gap-4">
+        <div>
+          <dt className="flex items-center gap-2 text-sm text-slate-500"><Trophy className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" /> Points</dt>
+          <dd className="tabular mt-1 text-[28px] leading-none font-medium text-slate-900 dark:text-white">{points}</dd>
         </div>
-        <div className="flex items-center gap-2">
-          <Flame className={`w-5 h-5 ${streak > 0 ? 'text-orange-500' : 'text-slate-300 dark:text-slate-700'}`} />
-          <div>
-            <div className="text-xl font-black text-slate-900 dark:text-white">{streak}</div>
-            <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Day Streak</p>
-          </div>
+        <div>
+          <dt className="flex items-center gap-2 text-sm text-slate-500"><Flame className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" /> Day streak</dt>
+          <dd className="tabular mt-1 text-[28px] leading-none font-medium text-slate-900 dark:text-white">{streak}</dd>
         </div>
-      </div>
+      </dl>
       {badges.length > 0 ? (
-        <div className="flex flex-wrap gap-2 mb-4">
+        <ul className="mt-5 space-y-2">
           {badges.map((b: any) => (
-            <div
-              key={b.slug}
-              title={b.description}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-lg text-xs font-bold border border-indigo-100 dark:border-indigo-900/40"
-            >
-              {BADGE_ICONS[b.slug] || <Award className="w-4 h-4" />} {b.title}
-            </div>
+            <li key={b.slug} title={b.description} className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+              <span className="text-slate-500">{BADGE_ICONS[b.slug] || <Award className="w-4 h-4" strokeWidth={1.5} />}</span> {b.title}
+            </li>
           ))}
-        </div>
+        </ul>
       ) : (
-        <p className="text-xs text-slate-400 italic mb-4">Complete a lesson to earn your first badge.</p>
+        <p className="mt-5 text-sm text-slate-500">Complete a lesson to earn your first badge.</p>
       )}
-      <div className="flex items-center gap-4 flex-wrap">
-        <Link to="/leaderboard" className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center min-h-[44px]">
-          View Leaderboard &rarr;
-        </Link>
-        <Link to="/peer-reviews" className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center min-h-[44px]">
-          Peer Reviews &rarr;
-        </Link>
-        <Link to="/instructor" className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center min-h-[44px]">
-          {user?.role === 'instructor' ? 'Instructor Dashboard' : 'Become an Instructor'} &rarr;
-        </Link>
+      <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-col">
+        <Link to="/leaderboard" className={link}>Leaderboard <ArrowRight className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden="true" /></Link>
+        <Link to="/peer-reviews" className={link}>Peer reviews <ArrowRight className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden="true" /></Link>
+        <Link to="/instructor" className={link}>{user?.role === 'instructor' ? 'Instructor dashboard' : 'Become an instructor'} <ArrowRight className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden="true" /></Link>
       </div>
     </section>
-  );
-}
-
-const STAT_COLORS = {
-  indigo: { bg: 'bg-indigo-50 dark:bg-indigo-500/10', text: 'text-indigo-600 dark:text-indigo-400', accent: 'bg-indigo-500' },
-  emerald: { bg: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', accent: 'bg-emerald-500' },
-  sky: { bg: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-600 dark:text-sky-400', accent: 'bg-sky-500' },
-  amber: { bg: 'bg-amber-50 dark:bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400', accent: 'bg-amber-500' },
-} as const;
-
-function StatCard({ icon, label, value, color = 'indigo' }: { icon: React.ReactNode, label: string, value: string, color?: keyof typeof STAT_COLORS }) {
-  const c = STAT_COLORS[color];
-  return (
-    <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-card p-4 sm:p-6 shadow-sm hover:shadow-raised hover:-translate-y-0.5 transition-all overflow-hidden flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
-      <div className={`absolute top-0 left-0 right-0 h-1 ${c.accent}`} />
-      <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${c.bg} flex items-center justify-center ${c.text}`}>
-        {icon}
-      </div>
-      <div>
-        <div className="text-2xl font-black text-slate-900 dark:text-white">{value}</div>
-        <div className="text-sm font-semibold text-slate-500">{label}</div>
-      </div>
-    </div>
-  );
-}
-
-function ProgressRing({ percent, size = 72 }: { percent: number, size?: number }) {
-  const strokeWidth = 6;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (percent / 100) * circumference;
-  const color = percent === 100 ? '#10b981' : percent >= 50 ? '#4f46e5' : '#f59e0b';
-
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0 -rotate-90">
-      <circle cx={size / 2} cy={size / 2} r={radius} fill="none" strokeWidth={strokeWidth} className="stroke-slate-100 dark:stroke-slate-800" />
-      <circle
-        cx={size / 2} cy={size / 2} r={radius} fill="none"
-        strokeWidth={strokeWidth} stroke={color} strokeLinecap="round"
-        strokeDasharray={circumference} strokeDashoffset={offset}
-        className="transition-all duration-700"
-      />
-    </svg>
   );
 }

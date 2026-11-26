@@ -313,3 +313,48 @@ body {
 .lesson-scroll::-webkit-scrollbar-track { background: transparent; }
 .lesson-scroll::-webkit-scrollbar-thumb { background-color: rgb(37 99 235 / 0.4); border-radius: 10px; border: 2px solid transparent; background-clip: content-box; }
 .lesson-scroll::-webkit-scrollbar-thumb:hover { background-color: rgb(37 99 235 / 0.65); background-clip: content-box; }
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Student view theme ("contracts desk"): a warm paper ramp for light and a warm graphite ramp for dark, one accent (the brand blue),
+   neutral shadows, Geist for the interface. It re-points the colour, radius and shadow variables only inside .academy-ui, so every
+   existing slate-*, surface-* and white class in the student pages picks up the ramp, and the admin app (which sits outside
+   .academy-ui) is unchanged.
+   ─────────────────────────────────────────────────────────────────────────── */
+.academy-ui {
+  --font-sans: "Geist", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-white: #fdfbf7;
+  --color-slate-50: #f7f4ee;
+  --color-slate-100: #efe9df;
+  --color-slate-200: #e5ded2;
+  --color-slate-300: #d3cabb;
+  --color-slate-400: #a39a8d;
+  --color-slate-500: #7b7266;
+  --color-slate-600: #5e554a;
+  --color-slate-700: #433c33;
+  --color-slate-800: #262421;
+  --color-slate-900: #1c1a18;
+  --color-slate-950: #161513;
+  --color-surface-50: #f7f4ee;
+  --color-surface-100: #efe9df;
+  --color-surface-200: #e5ded2;
+  --color-surface-800: #262421;
+  --color-surface-900: #1c1a18;
+  --color-surface-950: #161513;
+
+  --radius-control: 0.625rem;  /* 10px */
+  --radius-card: 0.875rem;     /* 14px */
+  --radius-feature: 1.125rem;  /* 18px */
+
+  --shadow-rest: 0 1px 2px rgb(0 0 0 / 0.05);
+  --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.05), 0 8px 24px rgb(0 0 0 / 0.06);
+  --shadow-floating: 0 8px 24px rgb(0 0 0 / 0.08), 0 24px 48px rgb(0 0 0 / 0.08);
+
+  /* One easing curve and short durations for every transition in the student view. */
+  --default-transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  --default-transition-duration: 150ms;
+
+  font-variant-numeric: normal;
+}
+.academy-ui .tabular, .academy-ui [data-figure] { font-variant-numeric: tabular-nums; font-family: var(--font-mono); }

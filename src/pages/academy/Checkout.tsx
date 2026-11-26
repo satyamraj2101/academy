@@ -56,12 +56,12 @@ function StripeCheckoutForm({ orderId, providerOrderId, onSuccess }: { orderId: 
 
   return (
     <form onSubmit={handleSubmit} className="mt-6">
-      <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800 mb-6">
+      <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-control border border-slate-200 dark:border-slate-800 mb-6">
         <PaymentElement />
       </div>
       <HapticButton 
         disabled={!stripe || processing}
-        className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-control font-bold text-lg tracking-tight shadow-raised flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+        className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-control font-medium text-lg shadow-raised flex items-center justify-center gap-2 transition-colors"
       >
         {processing ? <Loader2 className="w-6 h-6 animate-spin" /> : (
           <>
@@ -164,7 +164,7 @@ export default function CheckoutPage() {
 
       if (orderData.free) {
         setSuccess(true);
-        toast.success('Enrollment successful!');
+        toast.success('You are enrolled');
         setTimeout(goToCourse, 2000);
         return;
       }
@@ -211,7 +211,7 @@ export default function CheckoutPage() {
 
       toast.dismiss(loadingToastId);
       setSuccess(true);
-      toast.success('Payment successful!');
+      toast.success('Payment received');
       setTimeout(goToCourse, 2000);
     } catch (err: any) {
       toast.dismiss(loadingToastId);
@@ -219,8 +219,8 @@ export default function CheckoutPage() {
     }
   };
 
-  if (loading || userLoading) return <div className="min-h-screen pt-32 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-indigo-500" /></div>;
-  if (error || !course) return <div className="min-h-screen pt-32 text-center"><p className="text-red-500 font-bold">{error}</p></div>;
+  if (loading || userLoading) return <div className="min-h-screen pt-32 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-slate-500" /></div>;
+  if (error || !course) return <div className="min-h-screen pt-32 text-center"><p className="text-red-500 font-medium">{error}</p></div>;
 
   const priceFormatted = currency === 'USD'
     ? `$${(course.price_usd / 100).toFixed(2)}`
@@ -233,7 +233,7 @@ export default function CheckoutPage() {
           <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 className="w-10 h-10" />
           </div>
-          <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Enrollment Successful!</h2>
+          <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-2">You are enrolled</h2>
           <p className="text-slate-600 dark:text-slate-400 mb-8">You now have full access to {course.title}. Redirecting you to the course player...</p>
           <Loader2 className="w-6 h-6 animate-spin text-emerald-500 mx-auto" />
         </div>
@@ -248,7 +248,7 @@ export default function CheckoutPage() {
       </Helmet>
 
       <div className="max-w-4xl mx-auto px-6">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors mb-8">
+        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors mb-8">
           <ArrowLeft className="w-4 h-4" /> Back to Course Details
         </button>
         
@@ -256,7 +256,7 @@ export default function CheckoutPage() {
           
           {/* Order Summary */}
           <div>
-            <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-6">Order Summary</h1>
+            <h1 className="text-3xl font-semibold text-slate-900 dark:text-white mb-6">Order Summary</h1>
             
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-card p-6 shadow-sm mb-6">
               <div className="flex gap-4">
@@ -264,7 +264,7 @@ export default function CheckoutPage() {
                   <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=300&auto=format&fit=crop" alt="Course" className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-bold text-slate-900 dark:text-white line-clamp-2 leading-tight mb-2">{course.title}</h3>
+                  <h3 className="font-medium text-slate-900 dark:text-white line-clamp-2 leading-tight mb-2">{course.title}</h3>
                   <p className="text-sm text-slate-500 line-clamp-1">{course.description}</p>
                 </div>
               </div>
@@ -272,15 +272,15 @@ export default function CheckoutPage() {
               <div className="mt-8 border-t border-slate-100 dark:border-slate-800 pt-6">
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-slate-600 dark:text-slate-400">Price</span>
-                  <span className="font-bold text-slate-900 dark:text-white">{priceFormatted}</span>
+                  <span className="font-medium text-slate-900 dark:text-white">{priceFormatted}</span>
                 </div>
                 {creditsToApplyCents > 0 && (
                   <div className="flex justify-between items-center mb-3 text-emerald-600 dark:text-emerald-400">
                     <span>Wallet Credit Applied</span>
-                    <span className="font-bold">−₹{(creditsToApplyCents / 100).toFixed(2)}</span>
+                    <span className="font-medium">−₹{(creditsToApplyCents / 100).toFixed(2)}</span>
                   </div>
                 )}
-                <div className="flex justify-between items-center text-lg font-black mt-6">
+                <div className="flex justify-between items-center text-lg font-semibold mt-6">
                   <span className="text-slate-900 dark:text-white">Total</span>
                   <span className="text-indigo-600 dark:text-indigo-400">
                     {currency === 'INR' ? `₹${((course.price_inr - creditsToApplyCents) / 100).toFixed(0)}` : priceFormatted}
@@ -306,24 +306,24 @@ export default function CheckoutPage() {
 
           {/* Payment Details */}
           <div>
-            <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-6">Payment Details</h2>
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-6">Payment Details</h2>
             
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-card p-6 shadow-sm">
               
               {!checkoutSession ? (
                 <>
                   <div className="mb-6">
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Select Currency</label>
+                    <label className="block text-xs font-medium text-slate-400 mb-3">Select Currency</label>
                     <div className="flex bg-slate-100 dark:bg-slate-800/50 rounded-lg p-1">
                       <button 
                         onClick={() => setCurrency('USD')}
-                        className={`flex-1 py-2 text-sm font-bold rounded-md transition-colors ${currency === 'USD' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                        className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${currency === 'USD' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                       >
                         USD ($)
                       </button>
                       <button 
                         onClick={() => setCurrency('INR')}
-                        className={`flex-1 py-2 text-sm font-bold rounded-md transition-colors ${currency === 'INR' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                        className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${currency === 'INR' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                       >
                         INR (₹)
                       </button>
@@ -331,7 +331,7 @@ export default function CheckoutPage() {
                   </div>
 
                   <div className="mb-8">
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Coupon Code (Optional)</label>
+                    <label className="block text-xs font-medium text-slate-400 mb-2">Coupon Code (Optional)</label>
                     <div className="flex gap-2">
                       <input
                         type="text"
@@ -343,7 +343,7 @@ export default function CheckoutPage() {
                       <button
                         disabled
                         title="Coupon is validated automatically when you complete checkout"
-                        className="px-4 bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 rounded-control font-bold text-sm cursor-not-allowed"
+                        className="px-4 bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 rounded-control font-medium text-sm cursor-not-allowed"
                       >
                         Apply
                       </button>
@@ -354,7 +354,7 @@ export default function CheckoutPage() {
                   <HapticButton 
                     onClick={handleCheckout}
                     disabled={processing}
-                    className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-control font-bold text-lg tracking-tight shadow-raised flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+                    className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-control font-medium text-lg shadow-raised flex items-center justify-center gap-2 transition-colors"
                   >
                     {processing ? <Loader2 className="w-6 h-6 animate-spin" /> : (
                       <>
@@ -370,10 +370,10 @@ export default function CheckoutPage() {
               ) : (
                 <>
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-slate-900 dark:text-white">Enter Card Details</h3>
+                    <h3 className="font-medium text-slate-900 dark:text-white">Enter Card Details</h3>
                     <button 
                       onClick={() => setCheckoutSession(null)}
-                      className="text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                      className="text-xs font-medium text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                     >
                       Cancel
                     </button>
@@ -395,7 +395,7 @@ export default function CheckoutPage() {
                       providerOrderId={checkoutSession.providerOrderId}
                       onSuccess={() => {
                         setSuccess(true);
-                        toast.success('Payment successful!');
+                        toast.success('Payment received');
                         setTimeout(goToCourse, 2000);
                       }}
                     />

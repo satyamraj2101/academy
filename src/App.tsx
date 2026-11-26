@@ -49,7 +49,7 @@ import { CommandPalette } from './components/CommandPalette';
 
 const PageLoader = () => (
   <div className="min-h-[60vh] flex items-center justify-center pt-[120px]">
-    <div className="w-8 h-8 border-4 border-indigo-200 dark:border-slate-700 border-t-indigo-600 dark:border-t-sky-400 rounded-full animate-spin" />
+    <div className="w-8 h-8 border-4 border-slate-200 dark:border-slate-700 border-t-indigo-600 dark:border-t-sky-400 rounded-full animate-spin" />
   </div>
 );
 
@@ -136,61 +136,59 @@ function AppLayout() {
   const isBareLayout = BARE_LAYOUT_ROUTES.some(pattern => matchPath(pattern, location.pathname));
   // The login/signup screens put a dark panel under the fixed header; a see-through header turned that into a muddy grey bar.
   const isAuthSplit = location.pathname === '/login' || location.pathname === '/signup';
+  // The student view has its own theme (see .academy-ui in index.css); the admin app keeps the shared one.
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
 
 
   return (
-    <div className={`min-h-screen transition-colors duration-500 font-sans flex flex-col justify-between ${getThemeClasses()}`}>
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute -top-1/4 -left-1/4 w-[70vw] h-[70vw] rounded-full bg-indigo-500/[0.04] dark:bg-indigo-500/[0.07] filter blur-[100px]" />
-        <div className="absolute -bottom-1/4 -right-1/4 w-[60vw] h-[60vw] rounded-full bg-sky-500/[0.05] dark:bg-sky-500/[0.06] filter blur-[100px]" />
-        <div className="absolute inset-0 bg-noise mix-blend-overlay"></div>
-      </div>
+    <div className={`min-h-screen font-sans flex flex-col justify-between ${isAdminRoute ? '' : 'academy-ui'} ${getThemeClasses()}`}>
+      {isAdminRoute && (
+        <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute -top-1/4 -left-1/4 w-[70vw] h-[70vw] rounded-full bg-indigo-500/[0.04] dark:bg-indigo-500/[0.07] filter blur-[100px]" />
+          <div className="absolute -bottom-1/4 -right-1/4 w-[60vw] h-[60vw] rounded-full bg-sky-500/[0.05] dark:bg-sky-500/[0.06] filter blur-[100px]" />
+          <div className="absolute inset-0 bg-noise mix-blend-overlay"></div>
+        </div>
+      )}
 
       {!isBareLayout && (
         <div className="fixed top-0 z-50 w-full flex flex-col">
-          <header className={`w-full transition-all duration-300 border-b ${
-            isAuthSplit ? 'py-1.5 md:py-3.5 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800'
-            : scrolled ? 'py-1.5 md:py-2 bg-white/85 dark:bg-slate-950/85 backdrop-blur-2xl border-indigo-100/40 dark:border-slate-800' 
-                     : 'py-1.5 md:py-3.5 bg-white/60 dark:bg-slate-950/50 backdrop-blur-xl border-indigo-100/15 dark:border-slate-900/30'
-          }`}>
-            <div className="absolute bottom-[-1px] left-0 h-[1.5px] bg-gradient-to-r from-indigo-500 to-sky-400 transition-all duration-75" style={{ width: `${scrollPercentage}%` }} />
-            
+          <header className={`w-full border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950 transition-[padding] duration-200 ${scrolled && !isAuthSplit ? 'py-1.5 md:py-2' : 'py-1.5 md:py-3'}`}>
             <div className="w-full px-4 sm:px-8 md:px-12 lg:px-16 flex items-center justify-between z-10 relative">
               <HapticButton onClick={() => handlePageNavigation('/')} className="flex items-center gap-2">
                 <SpotLogoLight className="h-8 md:h-10 w-auto block dark:hidden" />
                 <SpotLogoDark className="h-8 md:h-10 w-auto hidden dark:block" />
-                <span className="px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 text-[10px] font-black uppercase tracking-widest ml-2">Academy</span>
+                <span className="ml-2 border-l border-slate-300 pl-3 text-sm text-slate-500 dark:border-slate-700">Academy</span>
               </HapticButton>
 
               <div className="hidden lg:flex items-center gap-6">
                 <nav className="flex items-center gap-2">
                   {user && (
-                    <Link to="/dashboard" className={`px-3 py-1.5 text-xs font-bold uppercase tracking-widest transition-colors ${activePage === 'dashboard' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400'}`}>Dashboard</Link>
+                    <Link to="/dashboard" className={`px-3 py-1.5 text-sm transition-colors ${activePage === 'dashboard' ? 'font-medium text-slate-900 dark:text-white' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}`}>Dashboard</Link>
                   )}
-                  <Link to="/courses" className={`px-3 py-1.5 text-xs font-bold uppercase tracking-widest transition-colors ${activePage === 'courses' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400'}`}>Courses</Link>
-                  <Link to="/certifications" className={`px-3 py-1.5 text-xs font-bold uppercase tracking-widest transition-colors ${activePage === 'certifications' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400'}`}>Certifications</Link>
+                  <Link to="/courses" className={`px-3 py-1.5 text-sm transition-colors ${activePage === 'courses' ? 'font-medium text-slate-900 dark:text-white' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}`}>Courses</Link>
+                  <Link to="/certifications" className={`px-3 py-1.5 text-sm transition-colors ${activePage === 'certifications' ? 'font-medium text-slate-900 dark:text-white' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}`}>Certifications</Link>
                   
                   <div className="w-px h-4 bg-slate-200 dark:bg-slate-800 mx-2" />
                   
                   {user ? (
                     <>
                       <NotificationBell />
-                      <HapticButton onClick={handleLogout} className="px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 transition-colors">
-                        Log Out
+                      <HapticButton onClick={handleLogout} className="px-3 py-1.5 text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors">
+                        Log out
                       </HapticButton>
                     </>
                   ) : (
                     <>
-                      <HapticButton onClick={() => handlePageNavigation('login')} className="px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-slate-700 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 transition-colors">Sign In</HapticButton>
-                      <HapticButton onClick={() => handlePageNavigation('signup')} className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase tracking-widest rounded-control shadow-sm transition-colors">Sign Up</HapticButton>
+                      <HapticButton onClick={() => handlePageNavigation('login')} className="px-3 py-1.5 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors">Sign in</HapticButton>
+                      <HapticButton onClick={() => handlePageNavigation('signup')} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-control transition-colors">Sign up</HapticButton>
                     </>
                   )}
                 </nav>
 
                 <div className="flex items-center gap-2">
-                  <HapticButton onClick={toggleTheme} aria-label={themeMode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'} className="p-1.5 border border-slate-200 dark:border-slate-800 rounded-control hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-200 transition-all cursor-pointer">
-                    {themeMode === 'dark' ? <Moon className="w-4 h-4 text-indigo-400" /> : <Sun className="w-4 h-4 text-amber-500" />}
+                  <HapticButton onClick={toggleTheme} aria-label={themeMode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'} className="p-2 border border-slate-200 dark:border-slate-800 rounded-control hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer">
+                    {themeMode === 'dark' ? <Moon className="w-4 h-4 text-slate-400" strokeWidth={1.5} /> : <Sun className="w-4 h-4 text-slate-500" strokeWidth={1.5} />}
                   </HapticButton>
                 </div>
               </div>
@@ -198,7 +196,7 @@ function AppLayout() {
               {/* Mobile menu trigger is handled by the bottom bar now, but we keep the theme toggle visible on top */}
               <div className="lg:hidden flex items-center gap-2">
                 <HapticButton onClick={toggleTheme} aria-label={themeMode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'} className="p-2.5 text-slate-700 dark:text-slate-200">
-                  {themeMode === 'dark' ? <Moon className="w-5 h-5 text-indigo-400" /> : <Sun className="w-5 h-5 text-amber-500" />}
+                  {themeMode === 'dark' ? <Moon className="w-5 h-5 text-slate-400" strokeWidth={1.5} /> : <Sun className="w-5 h-5 text-slate-500" strokeWidth={1.5} />}
                 </HapticButton>
               </div>
             </div>
@@ -206,11 +204,11 @@ function AppLayout() {
           
           <AnimatePresence>
             <Dialog open={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} className="relative z-[60] lg:hidden">
-              <DialogBackdrop className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+              <DialogBackdrop className="fixed inset-0 bg-black/40" />
               <div className="fixed inset-0 flex justify-end">
-                <DialogPanel className="relative flex w-full max-w-xs flex-col overflow-y-auto bg-white dark:bg-slate-950 shadow-2xl h-full">
+                <DialogPanel className="relative flex w-full max-w-xs flex-col overflow-y-auto bg-slate-50 dark:bg-slate-950 shadow-floating h-full">
                   <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800">
-                    <span className="font-black text-slate-900 dark:text-white">Menu</span>
+                    <span className="font-medium text-slate-900 dark:text-white">Menu</span>
                     <button type="button" onClick={() => setMobileMenuOpen(false)} className="p-2 text-slate-500 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
                       <X className="h-6 w-6" aria-hidden="true" />
                     </button>
@@ -218,29 +216,29 @@ function AppLayout() {
                   <div className="p-4 space-y-4">
                     {user && (
                       <div className="pb-4 mb-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-400 flex items-center justify-center font-black">
+                        <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-indigo-400 flex items-center justify-center font-semibold">
                           {user.fullName ? user.fullName.charAt(0).toUpperCase() : <User className="w-5 h-5" />}
                         </div>
                         <div>
-                          <p className="font-bold text-sm text-slate-900 dark:text-white">{user.fullName}</p>
+                          <p className="font-medium text-sm text-slate-900 dark:text-white">{user.fullName}</p>
                           <p className="text-xs text-slate-500">{user.email}</p>
                         </div>
                       </div>
                     )}
                     {user && (
-                      <HapticButton onClick={() => handlePageNavigation('dashboard')} className="w-full p-3 bg-slate-50 dark:bg-slate-900 text-sm font-bold text-slate-700 dark:text-slate-300 rounded-xl text-left flex items-center gap-3"><LayoutDashboard className="w-5 h-5 text-indigo-500"/> Dashboard</HapticButton>
+                      <HapticButton onClick={() => handlePageNavigation('dashboard')} className="w-full p-3 bg-slate-50 dark:bg-slate-900 text-sm font-medium text-slate-700 dark:text-slate-300 rounded-control text-left flex items-center gap-3"><LayoutDashboard className="w-5 h-5 text-slate-500" strokeWidth={1.5} /> Dashboard</HapticButton>
                     )}
-                    <HapticButton onClick={() => handlePageNavigation('courses')} className="w-full p-3 bg-slate-50 dark:bg-slate-900 text-sm font-bold text-slate-700 dark:text-slate-300 rounded-xl text-left flex items-center gap-3"><BookOpen className="w-5 h-5 text-indigo-500"/> Courses</HapticButton>
-                    <HapticButton onClick={() => handlePageNavigation('certifications')} className="w-full p-3 bg-slate-50 dark:bg-slate-900 text-sm font-bold text-slate-700 dark:text-slate-300 rounded-xl text-left flex items-center gap-3"><Award className="w-5 h-5 text-indigo-500"/> Certifications</HapticButton>
+                    <HapticButton onClick={() => handlePageNavigation('courses')} className="w-full p-3 bg-slate-50 dark:bg-slate-900 text-sm font-medium text-slate-700 dark:text-slate-300 rounded-control text-left flex items-center gap-3"><BookOpen className="w-5 h-5 text-slate-500" strokeWidth={1.5} /> Courses</HapticButton>
+                    <HapticButton onClick={() => handlePageNavigation('certifications')} className="w-full p-3 bg-slate-50 dark:bg-slate-900 text-sm font-medium text-slate-700 dark:text-slate-300 rounded-control text-left flex items-center gap-3"><Award className="w-5 h-5 text-slate-500" strokeWidth={1.5} /> Certifications</HapticButton>
                     
                     {user ? (
                       <>
-                        <HapticButton onClick={handleLogout} className="w-full p-3 bg-rose-50 dark:bg-rose-950/30 text-sm font-bold text-rose-600 dark:text-rose-400 rounded-xl text-left flex items-center gap-3 mt-8">Log Out</HapticButton>
+                        <HapticButton onClick={handleLogout} className="w-full p-3 text-sm font-medium text-slate-600 dark:text-slate-400 rounded-control text-left flex items-center gap-3 mt-8 border border-slate-200 dark:border-slate-800">Log out</HapticButton>
                       </>
                     ) : (
                       <>
-                        <HapticButton onClick={() => handlePageNavigation('login')} className="w-full p-3 bg-slate-50 dark:bg-slate-900 text-sm font-bold text-slate-700 dark:text-slate-300 rounded-xl text-left flex items-center gap-3 mt-4">Sign In</HapticButton>
-                        <HapticButton onClick={() => handlePageNavigation('signup')} className="w-full p-3 bg-indigo-600 text-sm font-bold text-white rounded-xl text-left flex items-center gap-3">Create Account</HapticButton>
+                        <HapticButton onClick={() => handlePageNavigation('login')} className="w-full p-3 bg-slate-50 dark:bg-slate-900 text-sm font-medium text-slate-700 dark:text-slate-300 rounded-control text-left flex items-center gap-3 mt-4">Sign in</HapticButton>
+                        <HapticButton onClick={() => handlePageNavigation('signup')} className="w-full p-3 bg-indigo-600 text-sm font-medium text-white rounded-control text-left flex items-center gap-3">Create account</HapticButton>
                       </>
                     )}
                   </div>
@@ -282,35 +280,35 @@ function AppLayout() {
       </main>
 
       {!isBareLayout && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 pb-safe z-50 flex items-center justify-around px-2 pt-2 pb-2">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-950/90 border-t border-slate-200 dark:border-slate-800 pb-safe z-50 flex items-center justify-around px-2 pt-2 pb-2">
           {user ? (
-            <button onClick={() => handlePageNavigation('dashboard')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activePage === 'dashboard' ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}>
+            <button onClick={() => handlePageNavigation('dashboard')} className={`flex flex-col items-center p-2 rounded-control transition-colors ${activePage === 'dashboard' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}>
               <LayoutDashboard className="w-5 h-5 mb-1" />
-              <span className="text-[10px] font-bold">Dashboard</span>
+              <span className="text-[11px] font-medium">Dashboard</span>
             </button>
           ) : (
-            <button onClick={() => handlePageNavigation('academy')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activePage === 'academy' ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}>
+            <button onClick={() => handlePageNavigation('academy')} className={`flex flex-col items-center p-2 rounded-control transition-colors ${activePage === 'academy' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}>
               <Home className="w-5 h-5 mb-1" />
-              <span className="text-[10px] font-bold">Home</span>
+              <span className="text-[11px] font-medium">Home</span>
             </button>
           )}
-          <button onClick={() => handlePageNavigation('courses')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activePage === 'courses' ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}>
+          <button onClick={() => handlePageNavigation('courses')} className={`flex flex-col items-center p-2 rounded-control transition-colors ${activePage === 'courses' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}>
             <BookOpen className="w-5 h-5 mb-1" />
-            <span className="text-[10px] font-bold">Courses</span>
+            <span className="text-[11px] font-medium">Courses</span>
           </button>
-          <button onClick={() => handlePageNavigation('certifications')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activePage === 'certifications' ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}>
+          <button onClick={() => handlePageNavigation('certifications')} className={`flex flex-col items-center p-2 rounded-control transition-colors ${activePage === 'certifications' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}>
             <Award className="w-5 h-5 mb-1" />
-            <span className="text-[10px] font-bold">Certs</span>
+            <span className="text-[11px] font-medium">Certs</span>
           </button>
           {user ? (
-            <button onClick={() => setMobileMenuOpen(true)} className="flex flex-col items-center p-2 rounded-xl transition-all text-slate-500 hover:text-slate-900 dark:hover:text-white">
+            <button onClick={() => setMobileMenuOpen(true)} className="flex flex-col items-center p-2 rounded-control transition-colors text-slate-500 hover:text-slate-900 dark:hover:text-white">
               <Menu className="w-5 h-5 mb-1" />
-              <span className="text-[10px] font-bold">More</span>
+              <span className="text-[11px] font-medium">More</span>
             </button>
           ) : (
-            <button onClick={() => handlePageNavigation('login')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activePage === 'login' ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}>
+            <button onClick={() => handlePageNavigation('login')} className={`flex flex-col items-center p-2 rounded-control transition-colors ${activePage === 'login' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}>
               <User className="w-5 h-5 mb-1" />
-              <span className="text-[10px] font-bold">Sign In</span>
+              <span className="text-[11px] font-medium">Sign In</span>
             </button>
           )}
         </div>
@@ -320,7 +318,7 @@ function AppLayout() {
       <Dialog open={proposalModalOpen} onClose={() => setProposalModalOpen(false)} className="relative z-[60]">
         <DialogBackdrop className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm" />
         <div className="fixed inset-0 flex items-end sm:items-center justify-center sm:p-4 overflow-y-auto">
-          <DialogPanel className="relative w-full sm:max-w-2xl bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl shadow-floating max-h-[92vh] overflow-y-auto">
+          <DialogPanel className="relative w-full sm:max-w-2xl bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-card shadow-floating max-h-[92vh] overflow-y-auto">
             <button
               onClick={() => setProposalModalOpen(false)}
               className="absolute top-4 right-4 z-10 p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
@@ -340,12 +338,12 @@ function AppLayout() {
       </Dialog>
 
       {!isBareLayout && (
-        <footer className="w-full bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-900 py-10 px-8 mt-10 z-10 text-center">
+        <footer className="w-full bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 py-10 px-8 mt-10 z-10 text-center">
           <SpotLogoDark className="h-8 w-auto mx-auto mb-4 hidden dark:block" />
           <SpotLogoLight className="h-8 w-auto mx-auto mb-4 block dark:hidden" />
-          <p className="text-xs font-semibold text-slate-500 mb-2">© 2026 SpotCLM Academy. All rights reserved.</p>
-          <div className="flex justify-center gap-4 text-xs font-bold uppercase tracking-widest text-slate-400">
-            <Link to="/admin" className="inline-block py-3 px-3 hover:text-indigo-500 transition-colors">Admin Panel</Link>
+          <p className="text-xs text-slate-500 mb-2">© 2026 SpotCLM Academy</p>
+          <div className="flex justify-center gap-4 text-xs text-slate-500">
+            <Link to="/admin" className="inline-block py-3 px-3 hover:text-slate-900 dark:hover:text-white transition-colors">Admin panel</Link>
           </div>
         </footer>
       )}

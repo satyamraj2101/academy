@@ -7,6 +7,8 @@ import { HapticButton } from '../../components/HapticButton';
 import { academyAPI } from '../../academy/api';
 import { useAcademy } from '../../academy/context';
 import { toast } from '../../lib/toast';
+import { LifecycleLine } from '../../components/LifecycleLine';
+import { CertificateSheet } from '../../components/CertificateSheet';
 import { Loader2, ArrowLeft, Clock, Layers, Star, CheckCircle, Lock, PlayCircle, FileText, Users, MessageSquare, Award, Download, CircleDashed } from 'lucide-react';
 
 function StarRow({ value, size = 'w-4 h-4' }: { value: number; size?: string }) {
@@ -40,7 +42,7 @@ function ReviewsSection({ courseId, isEnrolled }: { courseId: string; isEnrolled
   const submitMutation = useMutation({
     mutationFn: () => academyAPI.courses.submitReview(courseId, rating, reviewText),
     onSuccess: () => {
-      toast.success('Thanks for your review!');
+      toast.success('Review submitted');
       queryClient.invalidateQueries({ queryKey: ['courseReviews', courseId] });
     },
     onError: (err: any) => toast.error(err.message),
@@ -51,14 +53,14 @@ function ReviewsSection({ courseId, isEnrolled }: { courseId: string; isEnrolled
 
   return (
     <section>
-      <h2 className="text-2xl font-black mb-4 text-slate-900 dark:text-white flex items-center gap-2">
-        <MessageSquare className="w-6 h-6 text-indigo-500" /> Student Reviews
+      <h2 className="text-2xl font-semibold mb-4 text-slate-900 dark:text-white flex items-center gap-2">
+        <MessageSquare className="w-6 h-6 text-slate-500" /> Student Reviews
       </h2>
 
       {stats && stats.count > 0 && (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-card p-6 mb-6 flex flex-col sm:flex-row gap-8">
           <div className="text-center shrink-0">
-            <div className="text-4xl font-black text-slate-900 dark:text-white">{stats.average.toFixed(1)}</div>
+            <div className="text-4xl font-semibold text-slate-900 dark:text-white">{stats.average.toFixed(1)}</div>
             <StarRow value={stats.average} size="w-5 h-5" />
             <p className="text-xs font-semibold text-slate-500 mt-1">{stats.count} review{stats.count === 1 ? '' : 's'}</p>
           </div>
@@ -67,7 +69,7 @@ function ReviewsSection({ courseId, isEnrolled }: { courseId: string; isEnrolled
               const count = stats.distribution[star] || 0;
               const pct = stats.count > 0 ? Math.round((count / stats.count) * 100) : 0;
               return (
-                <div key={star} className="flex items-center gap-2 text-xs font-bold text-slate-500">
+                <div key={star} className="flex items-center gap-2 text-xs font-medium text-slate-500">
                   <span className="w-3">{star}</span>
                   <Star className="w-3 h-3 text-amber-400 fill-amber-400 shrink-0" />
                   <div className="flex-1 h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
@@ -82,8 +84,8 @@ function ReviewsSection({ courseId, isEnrolled }: { courseId: string; isEnrolled
       )}
 
       {isEnrolled && (
-        <div className="bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-900/40 rounded-card p-5 mb-6">
-          <h3 className="font-bold text-sm text-slate-900 dark:text-white mb-3">{data?.myReview ? 'Update your review' : 'Rate this course'}</h3>
+        <div className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-card p-5 mb-6">
+          <h3 className="font-medium text-sm text-slate-900 dark:text-white mb-3">{data?.myReview ? 'Update your review' : 'Rate this course'}</h3>
           <div className="flex items-center gap-1 mb-3" onMouseLeave={() => setHoverRating(0)}>
             {[1, 2, 3, 4, 5].map(i => (
               <button key={i} onMouseEnter={() => setHoverRating(i)} onClick={() => setRating(i)} className="p-0.5">
@@ -101,7 +103,7 @@ function ReviewsSection({ courseId, isEnrolled }: { courseId: string; isEnrolled
           <HapticButton
             onClick={() => submitMutation.mutate()}
             disabled={!rating || submitMutation.isPending}
-            className="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-sm flex items-center gap-2"
+            className="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium text-sm flex items-center gap-2"
           >
             {submitMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : (data?.myReview ? 'Update Review' : 'Submit Review')}
           </HapticButton>
@@ -112,11 +114,11 @@ function ReviewsSection({ courseId, isEnrolled }: { courseId: string; isEnrolled
         {reviews.map((r: any) => (
           <div key={r.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-card p-5">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-sm shrink-0">
+              <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-medium text-sm shrink-0">
                 {r.user_name?.charAt(0) || '?'}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-bold text-sm text-slate-900 dark:text-white">{r.user_name}</div>
+                <div className="font-medium text-sm text-slate-900 dark:text-white">{r.user_name}</div>
                 <StarRow value={r.rating} size="w-3.5 h-3.5" />
               </div>
               <span className="text-xs text-slate-400">{new Date(r.created_at).toLocaleDateString()}</span>
@@ -131,6 +133,7 @@ function ReviewsSection({ courseId, isEnrolled }: { courseId: string; isEnrolled
 }
 
 function CertificationSection({ course, modules, enrollment, isLoggedIn }: { course: any; modules: any[]; enrollment: any; isLoggedIn: boolean }) {
+  const { user } = useAcademy();
   const { data } = useQuery({
     queryKey: ['certificates'],
     queryFn: () => academyAPI.certificates.list() as Promise<{ certificates: any[] }>,
@@ -146,47 +149,42 @@ function CertificationSection({ course, modules, enrollment, isLoggedIn }: { cou
 
   return (
     <section>
-      <h2 className="text-2xl font-black mb-4 text-slate-900 dark:text-white flex items-center gap-2">
+      <h2 className="text-2xl font-semibold mb-4 text-slate-900 dark:text-white flex items-center gap-2">
         <Award className="w-6 h-6 text-amber-500" /> Certification
       </h2>
 
       {!isLoggedIn || !enrollment ? (
         <div className="bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 rounded-card p-6 flex items-start gap-4">
-          <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-500 shrink-0"><Award className="w-6 h-6" /></div>
+          <div className="p-3 rounded-control bg-amber-50 dark:bg-amber-900/20 text-amber-500 shrink-0"><Award className="w-6 h-6" /></div>
           <div>
-            <h3 className="font-bold text-slate-900 dark:text-white mb-1">{course.certification_name || `Certificate of Completion`}</h3>
+            <h3 className="font-medium text-slate-900 dark:text-white mb-1">{course.certification_name || `Certificate of Completion`}</h3>
             <p className="text-sm text-slate-500 dark:text-slate-400">Enroll and complete every lesson in this course to earn a verifiable, downloadable certificate.</p>
           </div>
         </div>
       ) : certificate ? (
-        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/10 border border-emerald-200 dark:border-emerald-800/50 rounded-card p-6 flex flex-col sm:flex-row sm:items-center gap-5 justify-between">
-          <div className="flex items-start gap-4">
-            <div className="p-3 rounded-xl bg-emerald-500 text-white shadow-md shrink-0"><Award className="w-6 h-6" /></div>
-            <div>
-              <h3 className="font-black text-slate-900 dark:text-white mb-1">{course.certification_name || course.title}</h3>
-              <p className="text-sm text-emerald-700 dark:text-emerald-400 font-semibold">Certificate earned — credential {certificate.credential_id}</p>
-              <p className="text-xs text-slate-500 mt-0.5">Issued {new Date(certificate.issued_at).toLocaleDateString()}</p>
-            </div>
+        <div className="grid gap-6 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center">
+          <CertificateSheet title={course.certification_name || course.title} holder={user?.fullName} issuedAt={certificate.issued_at} credentialId={certificate.credential_id} />
+          <div>
+            <h3 className="font-medium text-slate-900 dark:text-white">{course.certification_name || course.title}</h3>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">Certificate earned. Anyone can check it with the credential code.</p>
+            <a
+              href={`/api/certificates/download/${certificate.credential_id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-flex items-center justify-center gap-2 min-h-[44px] px-5 rounded-control bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm transition-colors"
+            >
+              <Download className="w-4 h-4" strokeWidth={1.5} /> Download certificate
+            </a>
           </div>
-          <a
-            href={`/api/certificates/download/${certificate.credential_id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-sm transition-all shrink-0"
-          >
-            <Download className="w-4 h-4" /> Download Certificate
-          </a>
         </div>
       ) : (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-card p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-slate-900 dark:text-white">{course.certification_name || 'Certificate of Completion'}</h3>
-            <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">{percent}%</span>
+            <h3 className="font-medium text-slate-900 dark:text-white">{course.certification_name || 'Certificate of Completion'}</h3>
+            <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">{percent}%</span>
           </div>
-          <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-5">
-            <div className="h-full bg-gradient-to-r from-indigo-500 to-sky-500 rounded-full transition-all duration-700" style={{ width: `${percent}%` }} />
-          </div>
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Milestones</p>
+          <LifecycleLine percent={percent} className="mb-5" label="Progress toward the certificate" />
+          <p className="text-xs font-medium text-slate-400 mb-3">Milestones</p>
           <div className="space-y-2">
             {modules.map((mod: any, i: number) => {
               const modLessons = mod.lessons || [];
@@ -196,7 +194,7 @@ function CertificationSection({ course, modules, enrollment, isLoggedIn }: { cou
                 <div key={mod.id} className="flex items-center gap-3 text-sm">
                   {done ? <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" /> : <CircleDashed className="w-4 h-4 text-slate-300 dark:text-slate-600 shrink-0" />}
                   <span className={`flex-1 font-semibold ${done ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400'}`}>Module {i + 1}: {mod.title}</span>
-                  <span className="text-xs font-bold text-slate-400">{modCompleted}/{modLessons.length}</span>
+                  <span className="text-xs font-medium text-slate-400">{modCompleted}/{modLessons.length}</span>
                 </div>
               );
             })}
@@ -295,8 +293,8 @@ export function CourseDetailComponent() {
       });
   }, [id, user]);
 
-  if (loading) return <div className="min-h-screen pt-32 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-indigo-500" /></div>;
-  if (error || !course) return <div className="min-h-screen pt-32 text-center"><p className="text-red-500 font-bold">{error}</p></div>;
+  if (loading) return <div className="min-h-screen pt-32 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-slate-500" /></div>;
+  if (error || !course) return <div className="min-h-screen pt-32 text-center"><p className="text-red-500 font-medium">{error}</p></div>;
 
   return (
     <>
@@ -306,37 +304,37 @@ export function CourseDetailComponent() {
       </Helmet>
 
       {/* Hero Header */}
-      <div className="bg-slate-900/95 dark:bg-surface-900/50 backdrop-blur-md text-white py-16 px-6 lg:px-8 border-b border-slate-800">
+      <div className="bg-slate-900/95 dark:bg-surface-900/50 text-white py-16 px-6 lg:px-8 border-b border-slate-800">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-12 items-center">
           <div className="flex-1">
-            <button onClick={() => navigate('/courses')} className="flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-white transition-colors mb-6">
+            <button onClick={() => navigate('/courses')} className="flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-white transition-colors mb-6">
               <ArrowLeft className="w-4 h-4" /> Back to Catalog
             </button>
             <div className="flex gap-3 mb-4">
-              <span className="px-3 py-1 text-xs font-black uppercase tracking-wider rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              <span className="px-3 py-1 text-xs font-semibold rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                 {course.category}
               </span>
-              <span className="px-3 py-1 text-xs font-black uppercase tracking-wider rounded-md bg-slate-800 text-slate-300 border border-slate-700">
+              <span className="px-3 py-1 text-xs font-semibold rounded-md bg-slate-800 text-slate-300 border border-slate-700">
                 {course.level}
               </span>
             </div>
-            <h1 className="text-3xl md:text-5xl font-black mb-4 leading-tight">{course.title}</h1>
+            <h1 className="text-3xl md:text-5xl font-semibold mb-4 leading-tight">{course.title}</h1>
             <p className="text-lg text-slate-300 mb-8 max-w-2xl leading-relaxed">
               {course.description}
             </p>
             <div className="flex flex-wrap items-center gap-6 text-sm font-semibold text-slate-400">
-              <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-indigo-400" /> {course.duration}</div>
+              <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-slate-400" /> {course.duration}</div>
               {course.review_count > 0 ? (
                 <div className="flex items-center gap-2">
                   <StarRow value={course.avg_rating} />
-                  <span className="text-white font-bold">{course.avg_rating.toFixed(1)}</span>
+                  <span className="text-white font-medium">{course.avg_rating.toFixed(1)}</span>
                   <span>({course.review_count} review{course.review_count === 1 ? '' : 's'})</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-2"><Star className="w-4 h-4 text-slate-400" /> No reviews yet</div>
               )}
               {course.enrollment_count > 0 && (
-                <div className="flex items-center gap-2"><Users className="w-4 h-4 text-indigo-400" /> {course.enrollment_count.toLocaleString()} enrolled</div>
+                <div className="flex items-center gap-2"><Users className="w-4 h-4 text-slate-400" /> {course.enrollment_count.toLocaleString()} enrolled</div>
               )}
             </div>
           </div>
@@ -345,7 +343,7 @@ export function CourseDetailComponent() {
           <div className="w-full md:w-96 bg-white dark:bg-slate-900 rounded-card p-6 md:p-8 shadow-floating border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white">
             {enrollment ? (
               <>
-                <h3 className="text-2xl font-black mb-3">{enrollment.progress_percent ?? 0}% complete</h3>
+                <h3 className="text-2xl font-semibold mb-3">{enrollment.progress_percent ?? 0}% complete</h3>
                 <div
                   role="progressbar"
                   aria-label="Course progress"
@@ -354,19 +352,19 @@ export function CourseDetailComponent() {
                   aria-valuenow={enrollment.progress_percent ?? 0}
                   className="h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden mb-3"
                 >
-                  <div className="h-full rounded-full bg-indigo-600 transition-all duration-500" style={{ width: `${enrollment.progress_percent ?? 0}%` }} />
+                  <div className="h-full rounded-full bg-indigo-600 transition-colors duration-500" style={{ width: `${enrollment.progress_percent ?? 0}%` }} />
                 </div>
                 <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-6">You're enrolled in this course</p>
               </>
             ) : (
               <>
-                <h3 className="text-2xl font-black mb-2">${(course.price_usd / 100).toLocaleString()}</h3>
+                <h3 className="text-2xl font-semibold mb-2">${(course.price_usd / 100).toLocaleString()}</h3>
                 <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-6">Full lifetime access to this course</p>
               </>
             )}
             
             <HapticButton
-              className="w-full py-4 rounded-control bg-indigo-600 hover:bg-indigo-700 text-white font-bold tracking-tight shadow-raised flex items-center justify-center gap-2 transition-all mb-4 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-4 rounded-control bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-raised flex items-center justify-center gap-2 transition-colors mb-4 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={!enrollment && !!hardBlocked}
               onClick={async () => {
                 if (!user) {
@@ -409,8 +407,8 @@ export function CourseDetailComponent() {
               <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-emerald-500" /> Graded assignments &amp; instructor feedback</div>
             </div>
             {(course.enrollment_count > 0 || course.review_count > 0) && (
-              <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-bold text-slate-500">
-                {course.enrollment_count > 0 && <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5 text-indigo-500" /> {course.enrollment_count.toLocaleString()} students</span>}
+              <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-medium text-slate-500">
+                {course.enrollment_count > 0 && <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5 text-slate-500" /> {course.enrollment_count.toLocaleString()} students</span>}
                 {course.review_count > 0 && <span className="flex items-center gap-1.5"><Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" /> {course.avg_rating.toFixed(1)} rating</span>}
               </div>
             )}
@@ -423,7 +421,7 @@ export function CourseDetailComponent() {
           
           {/* About Course */}
           <section>
-            <h2 className="text-2xl font-black mb-4 text-slate-900 dark:text-white">About this Course</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-slate-900 dark:text-white">About this Course</h2>
             <div className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-400">
               {course.long_description || course.description}
             </div>
@@ -431,23 +429,23 @@ export function CourseDetailComponent() {
 
           {/* Curriculum */}
           <section>
-            <h2 className="text-2xl font-black mb-4 text-slate-900 dark:text-white">Curriculum</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-slate-900 dark:text-white">Curriculum</h2>
             {modules.length > 0 && (
               <div className="flex flex-wrap gap-3 mb-6">
-                <div className="flex items-center gap-2 px-3.5 py-2 rounded-control bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-900/40">
+                <div className="flex items-center gap-2 px-3.5 py-2 rounded-control bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800">
                   <Layers className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">{modules.length}</span>
+                  <span className="text-sm font-medium text-slate-900 dark:text-white">{modules.length}</span>
                   <span className="text-xs font-semibold text-slate-500">Module{modules.length === 1 ? '' : 's'}</span>
                 </div>
-                <div className="flex items-center gap-2 px-3.5 py-2 rounded-control bg-sky-50 dark:bg-sky-500/10 border border-sky-100 dark:border-sky-900/40">
+                <div className="flex items-center gap-2 px-3.5 py-2 rounded-control bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800">
                   <PlayCircle className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">{modules.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0)}</span>
+                  <span className="text-sm font-medium text-slate-900 dark:text-white">{modules.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0)}</span>
                   <span className="text-xs font-semibold text-slate-500">Lessons</span>
                 </div>
                 {modules.some((m: any) => m.lessons?.some((l: any) => l.is_preview)) && (
                   <div className="flex items-center gap-2 px-3.5 py-2 rounded-control bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-900/40">
                     <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    <span className="text-sm font-bold text-slate-900 dark:text-white">{modules.reduce((acc: number, m: any) => acc + (m.lessons?.filter((l: any) => l.is_preview).length || 0), 0)}</span>
+                    <span className="text-sm font-medium text-slate-900 dark:text-white">{modules.reduce((acc: number, m: any) => acc + (m.lessons?.filter((l: any) => l.is_preview).length || 0), 0)}</span>
                     <span className="text-xs font-semibold text-slate-500">Free Previews</span>
                   </div>
                 )}
@@ -455,10 +453,10 @@ export function CourseDetailComponent() {
             )}
             <div className="space-y-4">
               {modules.map((mod: any, i: number) => (
-                <div key={mod.id} className="bg-white/80 dark:bg-surface-900/40 backdrop-blur-sm shadow-rest border border-slate-200/50 dark:border-slate-800/50 rounded-card overflow-hidden">
+                <div key={mod.id} className="bg-white dark:bg-slate-900 shadow-rest border border-slate-200/50 dark:border-slate-800/50 rounded-card overflow-hidden">
                   <div className="px-6 py-4 bg-slate-50/50 dark:bg-slate-900/30 border-b border-slate-200/50 dark:border-slate-800/50">
-                    <div className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 mb-1">Module {i + 1}</div>
-                    <h3 className="font-bold text-slate-900 dark:text-white">{mod.title}</h3>
+                    <div className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-1">Module {i + 1}</div>
+                    <h3 className="font-medium text-slate-900 dark:text-white">{mod.title}</h3>
                   </div>
                   <div className="divide-y divide-slate-100 dark:divide-slate-800">
                     {mod.lessons?.map((lesson: any) => {
@@ -489,7 +487,7 @@ export function CourseDetailComponent() {
                               <button
                                 type="button"
                                 onClick={() => handlePreviewLesson(lesson.id)}
-                                className="text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900 px-2 py-0.5 rounded-full cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                                className="text-indigo-600 dark:text-indigo-400 border border-slate-200 dark:border-slate-800 px-2 py-0.5 rounded-full cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
                               >
                                 Preview
                               </button>
@@ -502,7 +500,7 @@ export function CourseDetailComponent() {
                       );
                     })}
                     {!mod.lessons?.length && (
-                      <div className="px-6 py-4 text-sm text-slate-500 italic">Lessons coming soon.</div>
+                      <div className="px-6 py-4 text-sm text-slate-500">Lessons coming soon.</div>
                     )}
                   </div>
                 </div>
@@ -522,14 +520,14 @@ export function CourseDetailComponent() {
         {/* Sidebar Info */}
         <div className="space-y-8">
           {course.instructor_name && (
-            <div className="bg-white/80 dark:bg-surface-900/40 backdrop-blur-md shadow-rest border border-slate-200/50 dark:border-slate-800/50 rounded-card p-6">
-              <h3 className="text-lg font-black mb-4 text-slate-900 dark:text-white">Instructor</h3>
+            <div className="bg-white/80 dark:bg-surface-900/40 shadow-rest border border-slate-200/50 dark:border-slate-800/50 rounded-card p-6">
+              <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-white">Instructor</h3>
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-lg">
+                <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-medium text-lg">
                   {course.instructor_name.charAt(0)}
                 </div>
                 <div>
-                  <div className="font-bold text-slate-900 dark:text-white">{course.instructor_name}</div>
+                  <div className="font-medium text-slate-900 dark:text-white">{course.instructor_name}</div>
                   <div className="text-xs text-slate-500">SpotCLM Certified Expert</div>
                 </div>
               </div>
@@ -566,20 +564,20 @@ export function CourseDetailComponent() {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-slate-900 p-6 text-left align-middle shadow-xl transition-all border border-slate-200 dark:border-slate-800">
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-card bg-white dark:bg-slate-900 p-6 text-left align-middle shadow-raised transition-colors border border-slate-200 dark:border-slate-800">
                   <Dialog.Title
                     as="h3"
-                    className="text-lg font-black leading-6 text-slate-900 dark:text-white"
+                    className="text-lg font-semibold leading-6 text-slate-900 dark:text-white"
                   >
                     Confirm Enrollment
                   </Dialog.Title>
                   <div className="mt-4">
-                    <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl mb-4 border border-slate-200 dark:border-slate-700">
-                      <h4 className="font-bold text-slate-900 dark:text-white text-sm mb-1">{course.title}</h4>
+                    <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-control mb-4 border border-slate-200 dark:border-slate-700">
+                      <h4 className="font-medium text-slate-900 dark:text-white text-sm mb-1">{course.title}</h4>
                       <p className="text-xs text-slate-500 mb-2">Instructor: {course.instructor_name || 'SpotCLM Expert'}</p>
                       <div className="flex justify-between items-center text-sm font-semibold">
                         <span className="text-slate-600 dark:text-slate-400">Total Due Today:</span>
-                        <span className="text-emerald-600 dark:text-emerald-400 font-black">Free (Sandbox)</span>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Free (Sandbox)</span>
                       </div>
                     </div>
                     <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">
@@ -590,7 +588,7 @@ export function CourseDetailComponent() {
                   <div className="mt-6 flex justify-end gap-3">
                     <button
                       type="button"
-                      className="inline-flex justify-center rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 transition-colors"
+                      className="inline-flex justify-center rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 transition-colors"
                       onClick={() => setShowEnrollModal(false)}
                       disabled={isEnrolling}
                     >
@@ -598,7 +596,7 @@ export function CourseDetailComponent() {
                     </button>
                     <HapticButton
                       type="button"
-                      className="inline-flex justify-center rounded-lg border border-transparent bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 transition-colors disabled:opacity-50 flex items-center gap-2"
+                      className="inline-flex justify-center rounded-lg border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 transition-colors disabled:opacity-50 flex items-center gap-2"
                       onClick={handleEnrollConfirm}
                       disabled={isEnrolling}
                     >
