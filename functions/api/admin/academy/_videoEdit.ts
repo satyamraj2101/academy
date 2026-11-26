@@ -5,7 +5,10 @@ export const VIDEO_EDIT_JOB = 'lesson_video_edit';
 export const COURSE_JOB_TYPES = ['course_from_prompt', 'course_from_document', 'course_from_transcript'] as const;
 export const MAX_VIDEO_REQUEST = 1500;
 
-export interface VideoEditPayload { courseId: string; lessonId: string; videoId: string; instruction: string }
+export const MAX_SCRIPT_BYTES = 200_000;
+export const MAX_SCENES = 10;
+
+export interface VideoEditPayload { courseId: string; lessonId: string; videoId: string; instruction: string; script?: { title?: string; scenes: Record<string, unknown>[] } }
 
 const id = (v: unknown) => (typeof v === 'string' && /^[\w-]{1,80}$/.test(v) ? v : '');
 
@@ -18,7 +21,16 @@ export function validateVideoEdit(payload: any): { ok: true; payload: VideoEditP
   if (!courseId || !lessonId || !videoId) return { ok: false, error: 'courseId, lessonId and videoId are required' };
   const instruction = typeof payload?.instruction === 'string' ? payload.instruction.trim() : '';
   if (instruction.length > MAX_VIDEO_REQUEST) return { ok: false, error: `Keep the request under ${MAX_VIDEO_REQUEST} characters.` };
-  return { ok: true, payload: { courseId, lessonId, videoId, instruction } };
+  // An edited script (the scenes the admin changed by hand). The runner validates every scene; here it only has to be a sane size and shape.
+  let script: VideoEditPayload['script'];
+  if (payload?.script !== undefined) {
+    const sc = payload.script;
+    const scenes = sc?.scenes;
+    if (!sc || typeof sc !== 'object' || !Array.isArray(scenes) || scenes.length < 1 || scenes.length > MAX_SCENES || scenes.some((x: unknown) => !x || typeof x !== 'object' || Array.isArray(x))) return { ok: false, error: `The edited script must have 1 to ${MAX_SCENES} scenes.` };
+    if (JSON.stringify(sc).length > MAX_SCRIPT_BYTES) return { ok: false, error: 'The edited script is too large.' };
+    script = { ...(typeof sc.title === 'string' ? { title: sc.title.slice(0, 120) } : {}), scenes };
+  }
+  return { ok: true, payload: { courseId, lessonId, videoId, instruction, ...(script ? { script } : {}) } };
 }
 
 /** Which job types a caller may ask to claim. Anything unknown is dropped; an empty result means "any" (the old behaviour). */

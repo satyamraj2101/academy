@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Loader2, CheckCircle2, Settings2, Library, X } from 'lucide-react';
+import { Plus, Trash2, Loader2, CheckCircle2, Settings2, Library, X, Pencil } from 'lucide-react';
 import { adminFetch } from '../../hooks/useD1Query';
 import { toast } from '../../../lib/toast';
+import { QuizAiPanel } from './QuizAiPanel';
 
 interface QuizTemplate {
   id: string;
@@ -26,7 +27,10 @@ interface Question {
   question_type?: 'mcq' | 'true_false' | 'multi_select' | 'short_answer';
   options: string; // JSON string
   correct_answer: string;
+  quiz_id?: string;
+  explanation?: string | null;
   points: number;
+  sort_order?: number;
 }
 
 interface QuizBlockEditorProps {
@@ -194,8 +198,9 @@ export function QuizBlockEditor({ courseId, value, onChange }: QuizBlockEditorPr
           </div>
 
           <div className="p-4 space-y-3">
+            <QuizAiPanel quizId={selectedQuizId} questions={questions} onChanged={() => fetchQuestions(selectedQuizId)} />
             {questions.map((q, i) => (
-              <QuestionRow key={q.id} index={i} question={q} onDeleted={() => fetchQuestions(selectedQuizId)} />
+              <QuestionRow key={q.id} index={i} question={q} onChanged={() => fetchQuestions(selectedQuizId)} />
             ))}
 
             {questions.length === 0 && !addingQuestion && (
@@ -260,7 +265,8 @@ const QUESTION_TYPE_LABELS: Record<string, string> = {
   short_answer: 'Short Answer (graded manually)',
 };
 
-function QuestionRow({ index, question, onDeleted }: { index: number; question: Question; onDeleted: () => void }) {
+function QuestionRow({ index, question, onChanged }: { index: number; question: Question; onChanged: () => void }) {
+  const [editing, setEditing] = useState(false);
   const options: string[] = (() => { try { return JSON.parse(question.options || '[]'); } catch { return []; } })();
   const type = question.question_type || 'mcq';
   const correctSet: string[] = type === 'multi_select'
@@ -271,11 +277,15 @@ function QuestionRow({ index, question, onDeleted }: { index: number; question: 
     try {
       await adminFetch(`/academy/quiz-questions?id=${question.id}`, { method: 'DELETE' });
       toast.success('Question deleted');
-      onDeleted();
+      onChanged();
     } catch (e: any) {
       toast.error(e.message || 'Failed to delete question');
     }
   };
+
+  if (editing) {
+    return <QuestionForm quizId={question.quiz_id || ''} existing={question} onDone={() => { setEditing(false); onChanged(); }} onCancel={() => setEditing(false)} />;
+  }
 
   return (
     <div className="bg-white border border-slate-200 rounded-lg p-3">
@@ -284,10 +294,16 @@ function QuestionRow({ index, question, onDeleted }: { index: number; question: 
           <p className="text-sm font-semibold text-slate-800">{index + 1}. {question.question_text}</p>
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{QUESTION_TYPE_LABELS[type]}</span>
         </div>
-        <button onClick={handleDelete} className="text-slate-400 hover:text-rose-500 p-1 shrink-0">
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
+        <div className="flex items-center gap-1 shrink-0">
+          <button onClick={() => setEditing(true)} title="Edit this question" aria-label={`Edit question ${index + 1}`} className="text-slate-400 hover:text-indigo-600 p-1.5 min-h-[32px] min-w-[32px] inline-flex items-center justify-center">
+            <Pencil className="w-3.5 h-3.5" />
+          </button>
+          <button onClick={handleDelete} title="Delete this question" aria-label={`Delete question ${index + 1}`} className="text-slate-400 hover:text-rose-500 p-1.5 min-h-[32px] min-w-[32px] inline-flex items-center justify-center">
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
+      {question.explanation && <p className="mt-1 text-xs text-slate-500">Why: {question.explanation}</p>}
       {type === 'short_answer' ? (
         <p className="mt-2 text-xs text-slate-400 italic">Student answers are routed to the Grading Desk for manual scoring.</p>
       ) : (
@@ -305,14 +321,31 @@ function QuestionRow({ index, question, onDeleted }: { index: number; question: 
 
 type QType = 'mcq' | 'true_false' | 'multi_select' | 'short_answer';
 
-function QuestionForm({ quizId, onDone, onCancel }: { quizId: string; onDone: () => void; onCancel: () => void }) {
-  const [qType, setQType] = useState<QType>('mcq');
-  const [text, setText] = useState('');
-  const [options, setOptions] = useState(['', '', '', '']);
-  const [correctIndex, setCorrectIndex] = useState(0);
-  const [correctIndices, setCorrectIndices] = useState<Set<number>>(new Set());
-  const [trueFalseAnswer, setTrueFalseAnswer] = useState<'True' | 'False'>('True');
-  const [points, setPoints] = useState(1);
+function QuestionForm({ quizId, existing, onDone, onCancel }: { quizId: string; existing?: Question; onDone: () => void; onCancel: () => void }) {
+  // When editing, start from what is stored.
+  const start = (() => {
+    if (!existing) return null;
+    let opts: string[] = [];
+    try { opts = JSON.parse(existing.options || '[]'); } catch { /* none */ }
+    const type = (existing.question_type || 'mcq') as QType;
+    let multi: string[] = [];
+    if (type === 'multi_select') { try { multi = JSON.parse(existing.correct_answer || '[]'); } catch { /* none */ } }
+    const padded = [...opts, ...Array(Math.max(0, 4 - opts.length)).fill('')];
+    return {
+      type, opts: type === 'true_false' || type === 'short_answer' ? ['', '', '', ''] : padded,
+      correct: Math.max(0, opts.indexOf(existing.correct_answer)),
+      multi: new Set(multi.map(a => opts.indexOf(a)).filter(i => i >= 0)),
+      tf: (existing.correct_answer === 'False' ? 'False' : 'True') as 'True' | 'False',
+    };
+  })();
+  const [qType, setQType] = useState<QType>(start?.type ?? 'mcq');
+  const [text, setText] = useState(existing?.question_text ?? '');
+  const [options, setOptions] = useState<string[]>(start?.opts ?? ['', '', '', '']);
+  const [correctIndex, setCorrectIndex] = useState(start?.correct ?? 0);
+  const [correctIndices, setCorrectIndices] = useState<Set<number>>(start?.multi ?? new Set());
+  const [trueFalseAnswer, setTrueFalseAnswer] = useState<'True' | 'False'>(start?.tf ?? 'True');
+  const [points, setPoints] = useState(existing?.points ?? 1);
+  const [explanation, setExplanation] = useState(existing?.explanation ?? '');
   const [saving, setSaving] = useState(false);
 
   const toggleMultiCorrect = (i: number) => {
@@ -329,7 +362,7 @@ function QuestionForm({ quizId, onDone, onCancel }: { quizId: string; onDone: ()
       return;
     }
 
-    let payload: any = { quiz_id: quizId, question_text: text.trim(), question_type: qType, points };
+    let payload: any = { quiz_id: quizId, question_text: text.trim(), question_type: qType, points, explanation: explanation.trim() || null };
 
     if (qType === 'mcq') {
       const cleanOptions = options.map(o => o.trim()).filter(Boolean);
@@ -349,10 +382,11 @@ function QuestionForm({ quizId, onDone, onCancel }: { quizId: string; onDone: ()
 
     setSaving(true);
     try {
-      await adminFetch('/academy/quiz-questions', { method: 'POST', body: JSON.stringify(payload) });
+      if (existing) await adminFetch('/academy/quiz-questions', { method: 'PUT', body: JSON.stringify({ ...payload, id: existing.id, sort_order: existing.sort_order ?? 0 }) });
+      else await adminFetch('/academy/quiz-questions', { method: 'POST', body: JSON.stringify(payload) });
       onDone();
     } catch (e: any) {
-      toast.error(e.message || 'Failed to add question');
+      toast.error(e.message || (existing ? 'Failed to save question' : 'Failed to add question'));
     } finally {
       setSaving(false);
     }
@@ -427,6 +461,13 @@ function QuestionForm({ quizId, onDone, onCancel }: { quizId: string; onDone: ()
         <p className="text-[11px] text-slate-500">No answer options needed. Student responses are routed to the Grading Desk for manual scoring.</p>
       )}
 
+      <input
+        value={explanation}
+        onChange={e => setExplanation(e.target.value)}
+        placeholder="Why this is the answer (shown after answering, optional)"
+        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"
+      />
+
       <div className="flex items-center gap-2">
         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Points</label>
         <input
@@ -441,7 +482,7 @@ function QuestionForm({ quizId, onDone, onCancel }: { quizId: string; onDone: ()
       <div className="flex justify-end gap-2 pt-1">
         <button onClick={onCancel} className="px-3 py-1.5 text-slate-500 hover:text-slate-800 font-medium text-sm transition-colors">Cancel</button>
         <button onClick={handleSave} disabled={saving} className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg font-bold text-sm transition-all flex items-center gap-2">
-          {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />} Save Question
+          {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />} {existing ? 'Save changes' : 'Save Question'}
         </button>
       </div>
     </div>

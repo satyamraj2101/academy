@@ -1,7 +1,7 @@
 // The prompt improver: takes what an admin typed ("make a course about clm") and suggests a clearer, more complete version.
 // Pure functions only (no network, no database), so the rules are unit-tested. The endpoint in improve-prompt.ts runs the model.
 
-export const KINDS = ['course_brief', 'lesson_topic', 'quiz_topic', 'assignment', 'video_note', 'general'] as const;
+export const KINDS = ['course_brief', 'lesson_topic', 'quiz_topic', 'assignment', 'video_note', 'edit_request', 'general'] as const;
 export type Kind = (typeof KINDS)[number];
 
 export const MAX_TEXT = 4000;
@@ -16,6 +16,7 @@ const GUIDE: Record<Kind, string> = {
   quiz_topic: 'a request to write quiz questions. A good request names the topic, the level and what each question should check.',
   assignment: 'a request to write a graded assignment. A good request names the skill being practised, the deliverable and how it will be judged.',
   video_note: 'a reviewer note asking for a change in a training video scene. A good note says what is wrong, where, and what it should say or show instead.',
+  edit_request: 'a change request for text or a video that ALREADY EXISTS, given to an AI editor. It must stay a request to change existing content (shorten, simplify, add an example, fix a part, change a question). A good one says which part to change and how. Never turn it into a request to write new content or a new lesson, and never add a topic, audience or level that the author did not mention.',
   general: 'an instruction to an AI writing assistant for training content. A good instruction is specific, states the audience and gives the outcome.',
 };
 

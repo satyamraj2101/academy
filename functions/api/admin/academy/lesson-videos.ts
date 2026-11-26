@@ -5,6 +5,27 @@ interface Env { DB?: D1Database }
 
 export const onRequestOptions: PagesFunction = async () => corsOptionsResponse();
 
+// PATCH { lessonId, videoId, scriptSrc } attaches the saved script to a video that was made before scripts were kept, so it can be
+// edited scene by scene. Nothing else about the video changes.
+export const onRequestPatch: PagesFunction<Env> = async ({ request, env }) => {
+  const auth = await verifyAdminRequest(request, env);
+  if ('error' in auth) return auth.error;
+  const { admin, db } = auth.context;
+  if (!hasPermission(admin, 'academy')) return errorResponse('Forbidden — insufficient permissions', 403);
+  let body: any;
+  try { body = await request.json(); } catch { return errorResponse('Invalid JSON body', 400); }
+  const lessonId = String(body?.lessonId || ''), videoId = String(body?.videoId || '');
+  if (!lessonId || !videoId) return errorResponse('lessonId and videoId are required', 400);
+  const { results } = await db.prepare("SELECT id, content FROM academy_lesson_sections WHERE lesson_id = ? AND section_type = 'interactive_video'").bind(lessonId).all();
+  const row = ((results || []) as any[]).find(r => { try { return JSON.parse(r.content).videoId === videoId; } catch { return false; } });
+  if (!row) return errorResponse('Video not found in this lesson', 404);
+  const built = buildVideoContent({ ...JSON.parse(row.content), scriptSrc: body?.scriptSrc }, videoId);
+  if (!built.content) return errorResponse(built.error || 'Invalid script address', 400);
+  await db.prepare('UPDATE academy_lesson_sections SET content = ? WHERE id = ?').bind(JSON.stringify(built.content), row.id).run();
+  await logAdminAction(db, admin.email, 'academy.lesson_video.attach_script', 'lesson', lessonId, { videoId }, request);
+  return corsResponse({ success: true });
+};
+
 // POST { lessonId, video: { src, title, duration, stations, chapters, checkpoints }, replaceVideoId? }
 // Appends an "interactive_video" section to the lesson (or swaps one for a new render). The section is mandatory: students
 // must watch it and answer its questions before Mark Complete unlocks. Uses a single INSERT, so unlike the lesson editor's

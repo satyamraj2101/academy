@@ -8,7 +8,7 @@
 // request needs; otherwise it writes a new script from the lesson text and the request.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { claimJob, patchJob } from '../api.mjs';
-import { fetchLesson, lessonToScript, INTRO_SCENE } from '../video/lesson-to-script.mjs';
+import { fetchLesson, lessonToScript, lessonSource, finalize, isWelcomeScene, INTRO_SCENE } from '../video/lesson-to-script.mjs';
 
 export const JOB_TYPE = 'lesson_video_edit';
 
@@ -38,12 +38,34 @@ async function fetchBaseScript(video) {
   } catch { return null; } // an unreadable saved script is not fatal: write a new one from the lesson
 }
 
+/**
+ * A script the admin edited by hand: checked with the same rules as an AI script, with the fixed welcome scene kept out of the
+ * checks and put back first. Throws a plain-language message when something cannot be rendered.
+ */
+export function checkEditedScript(edited, found, title) {
+  const scenes = Array.isArray(edited?.scenes) ? edited.scenes : [];
+  const welcome = isWelcomeScene(scenes[0]);
+  const body = welcome ? scenes.slice(1) : scenes;
+  const out = finalize({ title: edited.title || title, scenes: body }, lessonSource(found.lesson), found);
+  if (!out.script) throw new Error(`The edited scenes cannot be used yet: ${out.problems.join('; ')}`);
+  if (welcome) {
+    for (const sc of out.script.scenes) if (sc.id === INTRO_SCENE.id) sc.id = 'opening';
+    out.script.scenes.unshift({ ...INTRO_SCENE });
+    out.script.campus = [...new Set(out.script.scenes.map(s => s.station).filter(Boolean))];
+  }
+  return { script: out.script, warnings: out.warnings };
+}
+
 export async function buildEditedScript(job, onProgress) {
-  const { courseId, lessonId, videoId, instruction } = job.payload || {};
+  const { courseId, lessonId, videoId, instruction, script: edited } = job.payload || {};
   if (!courseId || !lessonId || !videoId) throw new Error('The job is missing the course, lesson or video.');
   const found = await fetchLesson(courseId, lessonId);
   const video = findVideo(found.lesson, videoId);
   if (!video) throw new Error('That video is no longer in the lesson (it may have been replaced or removed). Open the lesson again.');
+  if (edited) { // the admin changed the scenes by hand: no AI step, just check and render
+    const { script, warnings } = checkEditedScript(edited, found, video.title);
+    return { script, info: { title: script.title, scenes: script.scenes.length, warnings, ai: 'manual edit', usedSavedScript: true } };
+  }
   const base = await fetchBaseScript(video);
   const intro = video.chapters?.[0]?.title === INTRO_SCENE.slide.title; // the welcome scene is the first chapter
   const r = await lessonToScript(found, { intro, instruction: String(instruction || '').trim(), base, onProgress });

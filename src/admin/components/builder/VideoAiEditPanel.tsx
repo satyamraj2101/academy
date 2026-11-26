@@ -3,6 +3,7 @@ import { CheckCircle2, Clapperboard, Loader2, Sparkles, TriangleAlert } from 'lu
 import { adminFetch } from '../../hooks/useD1Query';
 import { toast } from '../../../lib/toast';
 import { PromptImprover } from '../PromptImprover';
+import { VideoScenesEditor, type Script } from './VideoScenesEditor';
 
 interface Job {
   id: string;
@@ -16,6 +17,8 @@ interface Props {
   courseId: string;
   lessonId: string;
   videoId: string;
+  /** Where the video's saved script lives (videos made or rebuilt after scripts were kept); enables editing scenes by hand. */
+  scriptSrc?: string | null;
   /** Called with the new video's data once the rebuilt video is live, so the editor shows it (and a later Save keeps it). */
   onRebuilt: (newVideoJson: string) => void;
 }
@@ -27,7 +30,8 @@ const POLL_MS = 4000;
  * "Change this video with AI": the admin says what to change, a cloud worker rewrites the script (keeping the scenes that do
  * not need to change), renders only what changed and swaps the new video in. Progress is shown here until it is live.
  */
-export function VideoAiEditPanel({ courseId, lessonId, videoId, onRebuilt }: Props) {
+export function VideoAiEditPanel({ courseId, lessonId, videoId, scriptSrc, onRebuilt }: Props) {
+  const [showScenes, setShowScenes] = useState(false);
   const [request, setRequest] = useState('');
   const [job, setJob] = useState<Job | null>(null);
   const [sending, setSending] = useState(false);
@@ -79,13 +83,13 @@ export function VideoAiEditPanel({ courseId, lessonId, videoId, onRebuilt }: Pro
     return () => { clearInterval(tick); clearInterval(poll); setSeconds(0); };
   }, [active, job?.id, finish]);
 
-  const start = async () => {
+  const start = async (script?: Script) => {
     setSending(true);
     try {
-      const res = await adminFetch('/academy/ai-jobs', { method: 'POST', body: JSON.stringify({ type: 'lesson_video_edit', payload: { courseId, lessonId, videoId, instruction: request.trim() } }) }) as { id: string; started?: boolean };
+      const res = await adminFetch('/academy/ai-jobs', { method: 'POST', body: JSON.stringify({ type: 'lesson_video_edit', payload: { courseId, lessonId, videoId, instruction: script ? '' : request.trim(), ...(script ? { script } : {}) } }) }) as { id: string; started?: boolean };
       finished.current = '';
       setJob({ id: res.id, status: 'queued', progress: { step: res.started ? 'Starting the cloud worker' : 'Waiting for the cloud worker' } });
-      setRequest('');
+      setRequest(''); setShowScenes(false);
     } catch (e: any) {
       toast.error('Could not start', e.message || 'Try again in a moment.');
     } finally {
@@ -114,13 +118,25 @@ export function VideoAiEditPanel({ courseId, lessonId, videoId, onRebuilt }: Pro
               placeholder="For example: change the quiz question to be about renewals, and make the second scene shorter"
               className="flex-1 min-h-[44px] rounded-lg border border-sky-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-sky-400 resize-y"
             />
-            <button type="button" onClick={start} disabled={sending}
+            <button type="button" onClick={() => start()} disabled={sending}
               className="sm:self-start min-h-[44px] inline-flex items-center justify-center gap-1.5 px-4 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-sm font-bold disabled:opacity-50">
               {sending ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : <Sparkles className="w-4 h-4" aria-hidden="true" />}
               {request.trim() ? 'Change video' : 'Rebuild video'}
             </button>
           </div>
-          <PromptImprover kind="video_note" text={request} onApply={v => { if (typeof v.improved === 'string') setRequest(v.improved); }} />
+          <PromptImprover kind="edit_request" text={request} onApply={v => { if (typeof v.improved === 'string') setRequest(v.improved); }} />
+          <div className="mt-3 border-t border-sky-200 pt-3">
+            {scriptSrc ? (
+              <>
+                <button type="button" onClick={() => setShowScenes(v => !v)} aria-expanded={showScenes} className="min-h-[40px] text-sm font-bold text-sky-800 hover:text-sky-950 underline underline-offset-2">
+                  {showScenes ? 'Hide the scenes' : 'Edit the scenes yourself'}
+                </button>
+                {showScenes && <VideoScenesEditor scriptSrc={scriptSrc} busy={sending} onSubmit={s => void start(s)} />}
+              </>
+            ) : (
+              <p className="text-xs text-slate-500">To edit the scenes by hand, click <b>Rebuild video</b> once. After that the scenes can be edited here.</p>
+            )}
+          </div>
           {job?.status === 'failed' && (
             <p className="mt-2 flex items-start gap-1.5 text-xs text-rose-700" role="alert"><TriangleAlert className="w-3.5 h-3.5 mt-0.5 shrink-0" aria-hidden="true" /> The last try failed: {job.error || 'Something went wrong.'}</p>
           )}

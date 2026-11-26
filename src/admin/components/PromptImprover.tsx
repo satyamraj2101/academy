@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Check, Loader2, Sparkles, Undo2, X } from 'lucide-react';
 import { adminFetch } from '../hooks/useD1Query';
 
-export type ImproveKind = 'course_brief' | 'lesson_topic' | 'quiz_topic' | 'assignment' | 'video_note' | 'general';
+export type ImproveKind = 'course_brief' | 'lesson_topic' | 'quiz_topic' | 'assignment' | 'video_note' | 'edit_request' | 'general';
 
 /** What the parent should write back into its form. Either one text, or the brief's fields. */
 export interface Applied { improved?: string; improvedFields?: Record<string, string> }

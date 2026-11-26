@@ -29,6 +29,14 @@ describe('buildEditMessages', () => {
   });
 });
 
+describe('assignment text', () => {
+  it('knows what it is editing', () => {
+    expect(validateEditInput({ content: LESSON, instruction: 'shorter', what: 'assignment' }).ok && (validateEditInput({ content: LESSON, instruction: 'shorter', what: 'assignment' }) as any).what).toBe('assignment');
+    expect((validateEditInput({ content: LESSON, instruction: 'shorter', what: 'evil' }) as any).what).toBe('lesson');
+    expect(buildEditMessages(LESSON, 'x', 'assignment')[0].content).toMatch(/assignment brief/);
+  });
+});
+
 describe('parseEdit', () => {
   const reply = (body: string, changes = '- Added an example') => `CHANGES:\n${changes}\n---REVISED---\n${body}`;
 

@@ -133,7 +133,7 @@ export function MarkdownAiEditor({ value, onChange, placeholder }: MarkdownAiEdi
             {isEditing ? 'Changing…' : 'Change it'}
           </button>
         </div>
-        <PromptImprover kind="lesson_topic" text={instruction} onApply={v => { if (typeof v.improved === 'string') setInstruction(v.improved); }} />
+        <PromptImprover kind="edit_request" text={instruction} onApply={v => { if (typeof v.improved === 'string') setInstruction(v.improved); }} />
         {beforeAi !== null && !aiFeedback && (
           <p className="mt-2 text-xs font-semibold text-emerald-700 flex flex-wrap items-center gap-2">
             <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" /> AI change applied.

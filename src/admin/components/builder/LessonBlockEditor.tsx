@@ -208,6 +208,7 @@ export function LessonBlockEditor({ blocks, onChange, courseId, lessonId }: Less
               courseId={courseId}
               lessonId={lessonId}
               videoId={v.videoId}
+              scriptSrc={v.scriptSrc}
               onRebuilt={(json) => updateBlock(block.id, json)}
             />
           </div>

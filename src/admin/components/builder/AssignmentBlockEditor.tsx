@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Loader2, Save, Library, X } from 'lucide-react';
 import { adminFetch } from '../../hooks/useD1Query';
 import { toast } from '../../../lib/toast';
+import { AiTextChange } from './AiTextChange';
 
 interface AssignmentBlockEditorProps {
   lessonId: string;
@@ -123,6 +124,7 @@ export function AssignmentBlockEditor({ lessonId, value, onChange }: AssignmentB
           className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-indigo-500"
         />
       </div>
+      <AiTextChange what="assignment" label="Ask AI to change this assignment" value={promptText} onApply={setPromptText} placeholder="For example: make it about a supplier contract, ask for a one-page summary, make the task easier" />
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Submission Type</label>

@@ -22,6 +22,29 @@ describe('validateVideoEdit', () => {
   });
 });
 
+describe('validateVideoEdit with an edited script', () => {
+  const base = { courseId: 'c', lessonId: 'l', videoId: 'v' };
+  const scene = { id: 'a', spoken: 'x', slide: { layout: 'hook', title: 'T' } };
+  it('keeps the scenes and a bounded title', () => {
+    const r = validateVideoEdit({ ...base, script: { title: 'T'.repeat(500), scenes: [scene] } });
+    expect(r.ok && r.payload.script?.scenes).toEqual([scene]);
+    expect(r.ok && r.payload.script?.title?.length).toBe(120);
+  });
+  it('drops unknown keys on the script itself', () => {
+    const r = validateVideoEdit({ ...base, script: { scenes: [scene], evil: 'x' } });
+    expect(r.ok && Object.keys(r.payload.script!)).toEqual(['scenes']);
+  });
+  it('rejects a script with no scenes, too many scenes or odd scenes', () => {
+    expect(validateVideoEdit({ ...base, script: { scenes: [] } }).ok).toBe(false);
+    expect(validateVideoEdit({ ...base, script: { scenes: Array(11).fill(scene) } }).ok).toBe(false);
+    expect(validateVideoEdit({ ...base, script: { scenes: ['x'] } }).ok).toBe(false);
+    expect(validateVideoEdit({ ...base, script: 'x' }).ok).toBe(false);
+  });
+  it('rejects a script that is too large', () => {
+    expect(validateVideoEdit({ ...base, script: { scenes: [{ ...scene, spoken: 'x'.repeat(250_000) }] } }).ok).toBe(false);
+  });
+});
+
 describe('claimTypes', () => {
   it('keeps known job types and drops the rest', () => {
     expect(claimTypes([VIDEO_EDIT_JOB, 'rm -rf', 7, 'course_from_prompt'])).toEqual([VIDEO_EDIT_JOB, 'course_from_prompt']);
