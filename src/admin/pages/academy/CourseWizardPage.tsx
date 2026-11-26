@@ -5,6 +5,7 @@ import { adminFetch } from '../../hooks/useD1Query';
 import { useGeminiModels } from '../../hooks/useGeminiModels';
 import { toast } from '../../../lib/toast';
 import { PromptImprover, type Applied } from '../../components/PromptImprover';
+import { CloudCourseBuild, RecentBuilds } from '../../components/builder/CloudCourseBuild';
 
 interface OutlineLesson { title: string; summary: string }
 interface OutlineQuizQuestion { question_text: string; options: string[]; correct_answer: string; explanation?: string }
@@ -26,7 +27,7 @@ export default function CourseWizardPage() {
   const navigate = useNavigate();
   const { models, selectedModel, setSelectedModel } = useGeminiModels();
 
-  const [step, setStep] = useState<'brief' | 'preview'>('brief');
+  const [step, setStep] = useState<'brief' | 'preview' | 'build'>('brief');
   const [generating, setGenerating] = useState(false);
   const [creating, setCreating] = useState(false);
   const [outline, setOutline] = useState<Outline | null>(null);
@@ -44,7 +45,41 @@ export default function CourseWizardPage() {
   const [bannerUrl, setBannerUrl] = useState('');
   const [thumbnailUrl, setThumbnailUrl] = useState('');
 
+  // Building the whole course in the cloud (lessons, quizzes, assignments and optionally videos), instead of only an outline.
+  const [source, setSource] = useState<'topic' | 'document' | 'transcript'>('topic');
+  const [sourceText, setSourceText] = useState('');
+  const [sourceFile, setSourceFile] = useState<{ url: string; name: string } | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [withVideos, setWithVideos] = useState(true);
+  const [queueing, setQueueing] = useState(false);
+  const [buildJobId, setBuildJobId] = useState<string | null>(null);
+
   const canGenerate = topic.trim() && audience.trim() && goal.trim();
+  const hasSource = !!sourceText.trim() || !!sourceFile;
+  const canBuild = source === 'topic' ? !!topic.trim() : hasSource;
+
+  const uploadSource = async (file: File) => {
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await adminFetch('/academy/upload', { method: 'POST', body: fd }) as { url: string };
+      setSourceFile({ url: res.url.startsWith('http') ? res.url : window.location.origin + res.url, name: file.name });
+    } catch (e: any) { toast.error('Upload failed', e.message); } finally { setUploading(false); }
+  };
+
+  const buildInCloud = async () => {
+    if (!canBuild) { toast.error(source === 'topic' ? 'Write a topic first.' : 'Add the document or paste its text first.'); return; }
+    setQueueing(true);
+    try {
+      const payload: Record<string, unknown> = { topic, audience, level, goal, duration, tone, numModules, price_usd: Number(priceUsd) || 0, price_inr: Number(priceInr) || 0 };
+      if (source !== 'topic') { if (sourceText.trim()) payload.text = sourceText; else if (sourceFile) { payload.source_url = sourceFile.url; payload.name = sourceFile.name; } }
+      const type = source === 'topic' ? 'course_from_prompt' : source === 'document' ? 'course_from_document' : 'course_from_transcript';
+      const res = await adminFetch('/academy/ai-jobs', { method: 'POST', body: JSON.stringify({ type, payload }) }) as { id: string };
+      setBuildJobId(res.id);
+      setStep('build');
+    } catch (e: any) { toast.error('Could not start the build', e.message); } finally { setQueueing(false); }
+  };
 
   // The improver hands back the brief's fields; the level and tone boxes only accept their listed choices.
   const applyBrief = (r: Applied) => {
@@ -302,7 +337,60 @@ export default function CourseWizardPage() {
             {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             {generating ? 'Designing your course...' : 'Generate Course Outline'}
           </button>
+
+          <div className="border-t border-slate-200 pt-5 space-y-4">
+            <div>
+              <h2 className="text-base font-medium text-slate-900">Or build the whole course in the cloud</h2>
+              <p className="text-xs text-slate-500 mt-0.5">The AI writes every lesson, quiz and assignment (a second model checks each lesson), and can make a video for each lesson. It takes about 10 to 30 minutes and saves a draft you can review.</p>
+            </div>
+
+            <fieldset>
+              <legend className="block text-xs font-medium text-slate-500 mb-2">Start from</legend>
+              <div className="flex flex-wrap gap-2">
+                {([['topic', 'The topic above'], ['document', 'A document'], ['transcript', 'A transcript']] as const).map(([v, label]) => (
+                  <label key={v} className={`min-h-[40px] inline-flex items-center gap-2 px-3 rounded-lg border text-sm cursor-pointer ${source === v ? 'border-indigo-600 bg-slate-50 text-slate-900' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+                    <input type="radio" name="source" value={v} checked={source === v} onChange={() => setSource(v)} className="sr-only" /> {label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            {source !== 'topic' && (
+              <div className="space-y-2">
+                <label className="inline-flex items-center gap-2 min-h-[40px] px-3 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-sm text-slate-700 cursor-pointer">
+                  {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                  {sourceFile ? `File: ${sourceFile.name}` : 'Choose a file (PDF, DOCX, PPTX, TXT, MD, SRT or VTT)'}
+                  <input type="file" className="sr-only" accept=".pdf,.docx,.pptx,.txt,.md,.srt,.vtt" disabled={uploading} onChange={e => { const f = e.target.files?.[0]; if (f) uploadSource(f); e.target.value = ''; }} />
+                </label>
+                <textarea
+                  value={sourceText} onChange={e => setSourceText(e.target.value)} rows={5} aria-label="Or paste the text"
+                  placeholder={source === 'document' ? 'Or paste the document text here' : 'Or paste the transcript here'}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-indigo-500"
+                />
+                <p className="text-xs text-slate-500">The course is built from this text; the topic above is used as its focus.</p>
+              </div>
+            )}
+
+            <label className="flex items-start gap-2 text-sm text-slate-700 cursor-pointer">
+              <input type="checkbox" checked={withVideos} onChange={e => setWithVideos(e.target.checked)} className="mt-1" />
+              <span>Also make a video for each lesson. <span className="text-slate-500">This uses the free AI limits, so a long course may take longer.</span></span>
+            </label>
+
+            <button
+              onClick={buildInCloud}
+              disabled={queueing || uploading || !canBuild}
+              className="w-full flex items-center justify-center gap-2 py-3 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-xl font-medium text-sm transition-colors"
+            >
+              {queueing ? <Loader2 className="w-4 h-4 animate-spin" /> : null} Build the full course
+            </button>
+          </div>
         </div>
+      )}
+
+      {step === 'brief' && <RecentBuilds onOpen={(id) => { setBuildJobId(id); setStep('build'); }} />}
+
+      {step === 'build' && buildJobId && (
+        <CloudCourseBuild jobId={buildJobId} withVideos={withVideos} onBack={() => { setStep('brief'); setBuildJobId(null); }} />
       )}
 
       {step === 'preview' && outline && (

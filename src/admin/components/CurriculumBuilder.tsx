@@ -5,6 +5,9 @@ import { LessonBlockEditor, LessonBlock } from './builder/LessonBlockEditor';
 import { adminFetch } from '../hooks/useD1Query';
 import { toast } from '../../lib/toast';
 import { exportCourseZip } from '../utils/exportCourseZip';
+import { CourseVideosBar } from './builder/CourseVideosBar';
+import { ReviewBadge, LessonReviewControl, type Review } from './builder/LessonReview';
+import { LessonHistory } from './builder/LessonHistory';
 
 interface Section {
   id: string;
@@ -231,6 +234,7 @@ export function CurriculumBuilder({ courseId, courseTitle }: { courseId: string;
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
   const [lessonBlocks, setLessonBlocks] = useState<LessonBlock[]>([]);
   const [savingLesson, setSavingLesson] = useState(false);
+  const [reviews, setReviews] = useState<Record<string, Review>>({});
 
   const [showAddModule, setShowAddModule] = useState(false);
   const [addLessonForModule, setAddLessonForModule] = useState<string | null>(null);
@@ -249,6 +253,7 @@ export function CurriculumBuilder({ courseId, courseTitle }: { courseId: string;
     setLoading(true);
     try {
       const data = await adminFetch(`/academy/courses/${courseId}/structure`) as { success: boolean; structure: Module[] };
+      adminFetch(`/academy/lesson-reviews?courseId=${encodeURIComponent(courseId)}`).then(rows => setReviews(Object.fromEntries((rows as Review[]).map(r => [r.lesson_id, r])))).catch(() => { /* reviews are optional */ });
       if (data.success && data.structure) {
         setModules(data.structure);
         setExpandedModules(prev => {
@@ -513,7 +518,9 @@ export function CurriculumBuilder({ courseId, courseTitle }: { courseId: string;
             <h3 className="text-lg font-medium text-slate-800 truncate">Editing Lesson: {editingLesson.title}</h3>
             <p className="text-sm text-slate-500 hidden sm:block">Build your lesson content using blocks.</p>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <LessonReviewControl lessonId={editingLesson.id} review={reviews[editingLesson.id]} onChange={r => setReviews(prev => ({ ...prev, [r.lesson_id]: r }))} />
+            <LessonHistory lessonId={editingLesson.id} onRestored={(sections) => { setLessonBlocks(sections.map(s => ({ id: s.id || crypto.randomUUID(), type: s.section_type as any, content: s.content }))); fetchModules(); }} />
             <button onClick={() => setEditingLesson(null)} disabled={savingLesson} className="px-4 py-2.5 sm:py-2 text-slate-500 hover:text-slate-800 font-medium text-sm transition-colors disabled:opacity-50">
               Cancel
             </button>
@@ -556,6 +563,8 @@ export function CurriculumBuilder({ courseId, courseTitle }: { courseId: string;
           </button>
         </div>
       </div>
+
+      <CourseVideosBar courseId={courseId} modules={modules} onDone={fetchModules} />
 
       <div className="space-y-4">
         {modules.map((module, mIndex) => (
@@ -641,6 +650,7 @@ export function CurriculumBuilder({ courseId, courseTitle }: { courseId: string;
                         <Clock className="w-3 h-3" /> {lesson.drip_days ? `Day ${lesson.drip_days}` : lesson.unlock_date}
                       </span>
                     )}
+                    <ReviewBadge review={reviews[lesson.id]} />
                     {lesson.sections && lesson.sections.length > 0 && (
                       <span className="hidden sm:flex items-center gap-1 text-[11px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full shrink-0">
                         <Layers className="w-3 h-3" /> {lesson.sections.length} block{lesson.sections.length === 1 ? '' : 's'}

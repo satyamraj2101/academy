@@ -1,3 +1,4 @@
+import { PublishChecklist } from '../../components/builder/PublishChecklist';
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Save, Loader2, ArrowLeft, FileText, CloudUpload, Cloud, AlertCircle, Sparkles, LayoutList, Image, GraduationCap, Library, SlidersHorizontal, MoreHorizontal, X, ExternalLink } from 'lucide-react';
@@ -68,6 +69,7 @@ export default function CourseBuilderPage() {
   });
   
   const [saving, setSaving] = useState(false);
+  const [showPublishCheck, setShowPublishCheck] = useState(false);
   const [activeTab, setActiveTab] = useState<'details' | 'branding' | 'curriculum' | 'ai' | 'grading' | 'assets' | 'settings'>('details');
 
   const gradingPolicy = parseGradingPolicy(course.grading_policy_json);
@@ -217,7 +219,7 @@ export default function CourseBuilderPage() {
             <span className="hidden sm:inline">Save Draft</span><span className="sm:hidden">Save</span>
           </button>
           <button
-            onClick={() => handleSave(true)}
+            onClick={() => (isNew ? handleSave(true) : setShowPublishCheck(true))}
             disabled={saving || !course.title}
             className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-xs sm:text-sm shadow-sm transition-colors disabled:opacity-50"
           >
@@ -605,6 +607,18 @@ export default function CourseBuilderPage() {
             ))}
           </div>
         </div>
+      )}
+
+      {showPublishCheck && course.id && (
+        <PublishChecklist
+          courseId={course.id}
+          onClose={() => setShowPublishCheck(false)}
+          onPublish={async (unmet) => {
+            setShowPublishCheck(false);
+            if (unmet.length) await adminFetch('/academy/course-checklist', { method: 'POST', body: JSON.stringify({ courseId: course.id, unmet }) }).catch(() => { /* the log is best effort */ });
+            handleSave(true);
+          }}
+        />
       )}
 
       {showLeaveWarning && (

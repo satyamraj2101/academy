@@ -45,6 +45,21 @@ describe('validateVideoEdit with an edited script', () => {
   });
 });
 
+describe('validateVideoEdit when creating a first video', () => {
+  const base = { courseId: 'c', lessonId: 'l' };
+  it('needs no video id', () => {
+    const r = validateVideoEdit({ ...base, create: true, instruction: ' make it short ' });
+    expect(r.ok && r.payload).toEqual({ courseId: 'c', lessonId: 'l', videoId: '', create: true, instruction: 'make it short' });
+  });
+  it('still needs the course and lesson, and a video id when not creating', () => {
+    expect(validateVideoEdit({ create: true, lessonId: 'l' }).ok).toBe(false);
+    expect(validateVideoEdit({ ...base }).ok).toBe(false);
+  });
+  it('does not accept a hand-written script for a new video', () => {
+    expect(validateVideoEdit({ ...base, create: true, script: { scenes: [{ id: 'a' }] } }).ok).toBe(false);
+  });
+});
+
 describe('claimTypes', () => {
   it('keeps known job types and drops the rest', () => {
     expect(claimTypes([VIDEO_EDIT_JOB, 'rm -rf', 7, 'course_from_prompt'])).toEqual([VIDEO_EDIT_JOB, 'course_from_prompt']);

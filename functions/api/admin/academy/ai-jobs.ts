@@ -23,6 +23,15 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const params = new URL(request.url).searchParams;
   const id = params.get('id');
   // GET /ai-jobs?lessonId=<id> -> the latest video-edit jobs for that lesson, so the editor can show one that is still running
+  // GET /ai-jobs?courseId=<id> -> the latest video jobs of a course (with the lesson each is for), to show bulk progress
+  const courseIdFilter = params.get('courseId');
+  if (courseIdFilter) {
+    const { results } = await db.prepare(`
+      SELECT id, status, progress, error, created_at, finished_at, json_extract(payload, '$.lessonId') AS lesson_id FROM academy_ai_jobs
+      WHERE type = ? AND json_extract(payload, '$.courseId') = ? ORDER BY created_at DESC LIMIT 100
+    `).bind(VIDEO_EDIT_JOB, courseIdFilter).all();
+    return corsResponse((results || []).map(parseJob));
+  }
   const lessonId = params.get('lessonId');
   if (lessonId) {
     const { results } = await db.prepare(`
@@ -60,12 +69,13 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, waitUnti
   if (body.type === VIDEO_EDIT_JOB) {
     const v = validateVideoEdit(body.payload);
     if ('error' in v) return errorResponse(v.error, 400);
-    const { courseId, lessonId, videoId } = v.payload;
+    const { courseId, lessonId, videoId, create } = v.payload;
     const lesson = await db.prepare('SELECT l.id FROM academy_lessons l JOIN academy_modules m ON m.id = l.module_id WHERE l.id = ? AND m.course_id = ?').bind(lessonId, courseId).first();
     if (!lesson) return errorResponse('Lesson not found in this course', 404);
     const { results } = await db.prepare("SELECT content FROM academy_lesson_sections WHERE lesson_id = ? AND section_type = 'interactive_video'").bind(lessonId).all();
     const hasVideo = ((results || []) as any[]).some(r => { try { return JSON.parse(r.content).videoId === videoId; } catch { return false; } });
-    if (!hasVideo) return errorResponse('That video is not in this lesson any more. Reload the lesson and try again.', 404);
+    if (create && ((results || []) as any[]).length > 0) return errorResponse('This lesson already has a video. Use "Change video" to redo it.', 409);
+    if (!create && !hasVideo) return errorResponse('That video is not in this lesson any more. Reload the lesson and try again.', 404);
     const busy = await db.prepare("SELECT id FROM academy_ai_jobs WHERE type = ? AND status IN ('queued','running') AND json_extract(payload, '$.lessonId') = ?").bind(VIDEO_EDIT_JOB, lessonId).first();
     if (busy) return errorResponse('This video is already being rebuilt. Wait for it to finish.', 409);
     jobPayload = v.payload;

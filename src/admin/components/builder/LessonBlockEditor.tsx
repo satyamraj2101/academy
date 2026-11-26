@@ -5,6 +5,7 @@ import { QuizBlockEditor } from './QuizBlockEditor';
 import { AssignmentBlockEditor } from './AssignmentBlockEditor';
 import { AssetManagerModal } from './AssetManagerModal';
 import { VideoAiEditPanel } from './VideoAiEditPanel';
+import { VideoCreatePanel } from './VideoCreatePanel';
 import { adminFetch } from '../../hooks/useD1Query';
 import { toast } from '../../../lib/toast';
 
@@ -271,6 +272,14 @@ export function LessonBlockEditor({ blocks, onChange, courseId, lessonId }: Less
           </div>
         ))}
       </div>
+
+      {!blocks.some(b => b.type === 'interactive_video') && blocks.some(b => b.type === 'markdown' && b.content.replace(/\s+/g, ' ').trim().length >= 120) && (
+        <VideoCreatePanel
+          courseId={courseId}
+          lessonId={lessonId}
+          onCreated={(json) => onChange([...blocks, { id: crypto.randomUUID(), type: 'interactive_video', content: json }])}
+        />
+      )}
 
       <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-slate-200">
         <span className="text-sm font-medium text-slate-500 mr-2">Add Block:</span>

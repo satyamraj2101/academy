@@ -8,7 +8,7 @@ export const MAX_VIDEO_REQUEST = 1500;
 export const MAX_SCRIPT_BYTES = 200_000;
 export const MAX_SCENES = 10;
 
-export interface VideoEditPayload { courseId: string; lessonId: string; videoId: string; instruction: string; script?: { title?: string; scenes: Record<string, unknown>[] } }
+export interface VideoEditPayload { courseId: string; lessonId: string; /** The video being changed; empty when the job creates the lesson's first video. */ videoId: string; create?: boolean; instruction: string; script?: { title?: string; scenes: Record<string, unknown>[] } }
 
 const id = (v: unknown) => (typeof v === 'string' && /^[\w-]{1,80}$/.test(v) ? v : '');
 
@@ -17,8 +17,10 @@ const id = (v: unknown) => (typeof v === 'string' && /^[\w-]{1,80}$/.test(v) ? v
  * Only the four known fields are kept, so nothing else can ride along into the job queue.
  */
 export function validateVideoEdit(payload: any): { ok: true; payload: VideoEditPayload } | { ok: false; error: string } {
-  const courseId = id(payload?.courseId), lessonId = id(payload?.lessonId), videoId = id(payload?.videoId);
-  if (!courseId || !lessonId || !videoId) return { ok: false, error: 'courseId, lessonId and videoId are required' };
+  const create = payload?.create === true;
+  const courseId = id(payload?.courseId), lessonId = id(payload?.lessonId), videoId = create ? '' : id(payload?.videoId);
+  if (!courseId || !lessonId || (!create && !videoId)) return { ok: false, error: create ? 'courseId and lessonId are required' : 'courseId, lessonId and videoId are required' };
+  if (create && payload?.script !== undefined) return { ok: false, error: 'A new video is written by the AI from the lesson, not from a script.' };
   const instruction = typeof payload?.instruction === 'string' ? payload.instruction.trim() : '';
   if (instruction.length > MAX_VIDEO_REQUEST) return { ok: false, error: `Keep the request under ${MAX_VIDEO_REQUEST} characters.` };
   // An edited script (the scenes the admin changed by hand). The runner validates every scene; here it only has to be a sane size and shape.
@@ -30,7 +32,7 @@ export function validateVideoEdit(payload: any): { ok: true; payload: VideoEditP
     if (JSON.stringify(sc).length > MAX_SCRIPT_BYTES) return { ok: false, error: 'The edited script is too large.' };
     script = { ...(typeof sc.title === 'string' ? { title: sc.title.slice(0, 120) } : {}), scenes };
   }
-  return { ok: true, payload: { courseId, lessonId, videoId, instruction, ...(script ? { script } : {}) } };
+  return { ok: true, payload: { courseId, lessonId, videoId, ...(create ? { create: true } : {}), instruction, ...(script ? { script } : {}) } };
 }
 
 /** Which job types a caller may ask to claim. Anything unknown is dropped; an empty result means "any" (the old behaviour). */

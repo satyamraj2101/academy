@@ -1,4 +1,5 @@
 import { verifyAdminRequest, corsResponse, corsOptionsResponse, errorResponse, hasPermission, logAdminAction } from '../../../middleware';
+import { replaceSections } from '../../_lessonVersions';
 
 interface Env {
   DB?: D1Database;
@@ -30,18 +31,8 @@ export const onRequestPut: PagesFunction<Env> = async ({ request, env, params })
     const data = await request.json() as { sections: Array<{ section_type: string; content: string; is_mandatory?: boolean }> };
     const sections = data.sections || [];
 
-    const now = new Date().toISOString();
-    const statements = [
-      db.prepare('DELETE FROM academy_lesson_sections WHERE lesson_id = ?').bind(lessonId),
-      ...sections.map((s, i) =>
-        db.prepare(`
-          INSERT INTO academy_lesson_sections (id, lesson_id, section_type, sort_order, content, is_mandatory, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?)
-        `).bind(crypto.randomUUID(), lessonId, s.section_type, i + 1, s.content || '', s.is_mandatory ? 1 : 0, now)
-      ),
-    ];
-
-    await db.batch(statements);
+    // One place writes sections (and keeps the previous blocks as a version first).
+    await replaceSections(db, lessonId, sections, admin.email, 'save');
 
     await logAdminAction(db, admin.email, 'academy.lesson.sections.replace', 'lesson', lessonId, { count: sections.length }, request);
 

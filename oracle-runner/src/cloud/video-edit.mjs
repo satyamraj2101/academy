@@ -7,7 +7,7 @@
 // The job payload is { courseId, lessonId, videoId, instruction }. If the video kept its script, the AI changes only what the
 // request needs; otherwise it writes a new script from the lesson text and the request.
 import { readFileSync, writeFileSync } from 'node:fs';
-import { claimJob, patchJob } from '../api.mjs';
+import { api, claimJob, patchJob } from '../api.mjs';
 import { fetchLesson, lessonToScript, lessonSource, finalize, isWelcomeScene, INTRO_SCENE } from '../video/lesson-to-script.mjs';
 
 export const JOB_TYPE = 'lesson_video_edit';
@@ -18,6 +18,12 @@ export function findVideo(lesson, videoId) {
     if (s.section_type !== 'interactive_video') continue;
     try { const v = JSON.parse(s.content); if (v?.videoId === videoId) return v; } catch { /* not this one */ }
   }
+  return null;
+}
+
+/** The welcome scene belongs to the very first lesson of a course. `structure` is the course structure from the Academy. */
+export function firstLessonId(structure) {
+  for (const m of structure || []) { const l = (m.lessons || [])[0]; if (l) return l.id; }
   return null;
 }
 
@@ -57,9 +63,15 @@ export function checkEditedScript(edited, found, title) {
 }
 
 export async function buildEditedScript(job, onProgress) {
-  const { courseId, lessonId, videoId, instruction, script: edited } = job.payload || {};
-  if (!courseId || !lessonId || !videoId) throw new Error('The job is missing the course, lesson or video.');
+  const { courseId, lessonId, videoId, instruction, script: edited, create } = job.payload || {};
+  if (!courseId || !lessonId || (!create && !videoId)) throw new Error('The job is missing the course, lesson or video.');
   const found = await fetchLesson(courseId, lessonId);
+  if (create) { // the lesson's first video: written by the AI from the lesson text
+    if ((found.lesson.sections || []).some(s => s.section_type === 'interactive_video')) throw new Error('This lesson already has a video. Use "Change video" to redo it.');
+    const structure = (await api(`/academy/courses/${encodeURIComponent(courseId)}/structure`)).structure;
+    const r = await lessonToScript(found, { intro: firstLessonId(structure) === lessonId, instruction: String(instruction || '').trim(), onProgress });
+    return { script: r.script, info: { title: r.script.title, scenes: r.script.scenes.length, warnings: r.warnings, ai: `${r.ai.provider}:${r.ai.model}`, usedSavedScript: false, created: true } };
+  }
   const video = findVideo(found.lesson, videoId);
   if (!video) throw new Error('That video is no longer in the lesson (it may have been replaced or removed). Open the lesson again.');
   if (edited) { // the admin changed the scenes by hand: no AI step, just check and render

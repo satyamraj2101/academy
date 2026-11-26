@@ -217,9 +217,9 @@ def _run_video_edit(job: dict) -> dict:
         info = json.loads(_node(["src/cloud/video-edit.mjs", "script", job_file, script_file]).strip().splitlines()[-1])
         step("Rendering the scenes")
         with open(script_file) as f:
-            summary = _build_from_script(f.read(), p["lessonId"], True, p["videoId"], info)
+            summary = _build_from_script(f.read(), p["lessonId"], True, p.get("videoId") or "", info)
         with open(result_file, "w") as f:
-            json.dump({**summary, "lessonId": p["lessonId"], "oldVideoId": p["videoId"], "ai": info.get("ai"), "usedSavedScript": info.get("usedSavedScript")}, f)
+            json.dump({**summary, "lessonId": p["lessonId"], "oldVideoId": p.get("videoId") or None, "ai": info.get("ai"), "usedSavedScript": info.get("usedSavedScript")}, f)
         _node(["src/cloud/video-edit.mjs", "finish", jid, "done", result_file])
         return {"job": jid, "ok": True}
     except Exception as e:  # report to the admin instead of leaving the job running until its lease runs out

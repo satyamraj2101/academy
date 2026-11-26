@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { checkEditedScript, findVideo, explain } from '../src/cloud/video-edit.mjs';
+import { checkEditedScript, findVideo, explain, firstLessonId } from '../src/cloud/video-edit.mjs';
 import { INTRO_SCENE } from '../src/video/lesson-to-script.mjs';
 
 const HTML = '<h3>Panels</h3><p>Before launching a template, analyze its specifications using the slide-out panel. The panel has a status bar that shows the configured actions and an overview of approvals.</p>';
@@ -35,4 +35,11 @@ test('the video is found by its id inside the lesson sections', () => {
 test('failures are explained in plain words', () => {
   assert.match(explain({ code: 'AI_EXHAUSTED', retryAt: '2026-11-27T00:00:00Z' }), /free AI limits.*Try again after/);
   assert.equal(explain(new Error('boom')), 'boom');
+});
+
+test('the welcome scene goes to the first lesson of the first module only', () => {
+  const structure = [{ lessons: [{ id: 'l1' }, { id: 'l2' }] }, { lessons: [{ id: 'l3' }] }];
+  assert.equal(firstLessonId(structure), 'l1');
+  assert.equal(firstLessonId([{ lessons: [] }, { lessons: [{ id: 'x' }] }]), 'x');
+  assert.equal(firstLessonId([]), null);
 });
