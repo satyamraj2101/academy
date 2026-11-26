@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { resetSharedQuota } from '../src/shared-quota.mjs';
 import { routeFor, complete, stripFences, reviewEnabled, resetAiState, parseDuration, estimateTokens, quotaSnapshot } from '../src/ai.mjs';
 
 const realFetch = globalThis.fetch;
@@ -8,7 +9,7 @@ const gemini = (text) => reply(200, { candidates: [{ content: { parts: [{ text }
 const anthropic = (text) => reply(200, { content: [{ type: 'text', text }] });
 const baseEnv = { AI_RETRY_BASE_MS: '1' };
 
-test.afterEach(() => { globalThis.fetch = realFetch; resetAiState(); });
+test.afterEach(() => { globalThis.fetch = realFetch; resetAiState(); resetSharedQuota(); });
 
 test('routes skip providers without keys and respect order', () => {
   const env = { AI_DRAFT: 'gemini:g1,anthropic:a1,openai:o1', GEMINI_API_KEY: 'k', OPENAI_API_KEY: 'k' };
@@ -151,4 +152,63 @@ test('providers that failed for this call and others that are limited is a faile
   globalThis.fetch = async (url) => (String(url).includes('generativelanguage') ? withHeaders(429, { error: 'quota' }, { 'retry-after': '3600' }) : reply(400, 'bad request'));
   const env = { ...baseEnv, AI_MAX_WAIT_MS: '1000', AI_DRAFT: 'anthropic:a1,gemini:g1', ANTHROPIC_API_KEY: 'k', GEMINI_API_KEY: 'k' };
   await assert.rejects(complete('draft', 'x', { env }), (e) => e.code !== 'AI_EXHAUSTED' && /anthropic:a1/.test(e.message));
+});
+
+// ---- shared quota: workers see each other ----
+const academyEnv = { ACADEMY_ADMIN_BASE_URL: 'https://academy.test/api/admin', ACADEMY_SERVICE_API_KEY: 'sk_test' };
+const fakeAcademy = (quota = {}) => {
+  const posts = [];
+  const handler = async (url, init) => {
+    const u = String(url);
+    if (!u.startsWith('https://academy.test')) return null;
+    if (init?.method === 'POST') { posts.push(JSON.parse(init.body)); return reply(200, { success: true }); }
+    return reply(200, { quota });
+  };
+  return { posts, handler };
+};
+
+test('a cooldown another worker recorded sends the call to the next provider without touching the limited one', async () => {
+  const until = new Date(Date.now() + 3600_000).toISOString();
+  const academy = fakeAcademy({ 'gemini:g1': { calls: 5, tokens: 0, cooldownUntil: until, reason: 'daily limit (provider)' } });
+  const hit = [];
+  globalThis.fetch = async (url, init) => { const a = await academy.handler(url, init); if (a) return a; hit.push(String(url)); return anthropic('from anthropic'); };
+  const env = { ...baseEnv, ...academyEnv, AI_DRAFT: 'gemini:g1,anthropic:a1', GEMINI_API_KEY: 'k', ANTHROPIC_API_KEY: 'k' };
+  const r = await complete('draft', 'hi', { env });
+  assert.equal(r.provider, 'anthropic');
+  assert.equal(hit.filter(u => u.includes('generativelanguage')).length, 0);
+});
+
+test("today's calls by other workers count toward a provider's daily limit", async () => {
+  const academy = fakeAcademy({ 'gemini:g1': { calls: 150, tokens: 0, cooldownUntil: null, reason: null } });
+  globalThis.fetch = async (url, init) => (await academy.handler(url, init)) || anthropic('from anthropic');
+  const env = { ...baseEnv, ...academyEnv, AI_DRAFT: 'gemini:g1,anthropic:a1', GEMINI_API_KEY: 'k', ANTHROPIC_API_KEY: 'k' }; // gemini's default limit is 150 a day
+  assert.equal((await complete('draft', 'hi', { env })).provider, 'anthropic');
+});
+
+test('each call is reported, and a rate limit is shared as a cooldown', async () => {
+  const academy = fakeAcademy();
+  globalThis.fetch = async (url, init) => {
+    const a = await academy.handler(url, init); if (a) return a;
+    return String(url).includes('generativelanguage') ? reply(429, { error: { message: 'You exceeded your current quota' } }) : anthropic('ok');
+  };
+  const env = { ...baseEnv, ...academyEnv, AI_DRAFT: 'gemini:g1,anthropic:a1', GEMINI_API_KEY: 'k', ANTHROPIC_API_KEY: 'k' };
+  await complete('draft', 'hi', { env });
+  await new Promise(r => setTimeout(r, 20)); // the reports are sent without waiting for them
+  assert.ok(academy.posts.some(p => p.key === 'gemini:g1' && p.calls === 1), 'the call was counted');
+  assert.ok(academy.posts.some(p => p.key === 'gemini:g1' && p.cooldownUntil), 'the cooldown was shared');
+  assert.ok(academy.posts.some(p => p.key === 'anthropic:a1' && p.calls === 1));
+});
+
+test('if the shared counter cannot be reached the call still works', async () => {
+  globalThis.fetch = async (url) => { if (String(url).startsWith('https://academy.test')) throw new Error('offline'); return anthropic('fine'); };
+  const env = { ...baseEnv, ...academyEnv, AI_DRAFT: 'anthropic:a1', ANTHROPIC_API_KEY: 'k' };
+  assert.equal((await complete('draft', 'hi', { env })).text, 'fine');
+});
+
+test('sharing can be switched off', async () => {
+  let academyCalls = 0;
+  globalThis.fetch = async (url) => { if (String(url).startsWith('https://academy.test')) academyCalls++; return anthropic('ok'); };
+  const env = { ...baseEnv, ...academyEnv, AI_SHARED_QUOTA: 'off', AI_DRAFT: 'anthropic:a1', ANTHROPIC_API_KEY: 'k' };
+  await complete('draft', 'hi', { env });
+  assert.equal(academyCalls, 0);
 });

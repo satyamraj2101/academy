@@ -235,7 +235,7 @@ export default function CheckoutPage() {
           </div>
           <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-2">You are enrolled</h2>
           <p className="text-slate-600 dark:text-slate-400 mb-8">You now have full access to {course.title}. Redirecting you to the course player...</p>
-          <Loader2 className="w-6 h-6 animate-spin text-emerald-500 mx-auto" />
+          <Loader2 className="w-6 h-6 animate-spin text-slate-500 mx-auto" />
         </div>
       </div>
     );
@@ -249,14 +249,14 @@ export default function CheckoutPage() {
 
       <div className="max-w-4xl mx-auto px-6">
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors mb-8">
-          <ArrowLeft className="w-4 h-4" /> Back to Course Details
+          <ArrowLeft className="w-4 h-4" /> Back to the course
         </button>
         
         <div className="grid md:grid-cols-2 gap-8 md:gap-12">
           
-          {/* Order Summary */}
+          {/* Order summary */}
           <div>
-            <h1 className="text-3xl font-semibold text-slate-900 dark:text-white mb-6">Order Summary</h1>
+            <h1 className="text-3xl font-semibold text-slate-900 dark:text-white mb-6">Order summary</h1>
             
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-card p-6 shadow-sm mb-6">
               <div className="flex gap-4">
@@ -282,7 +282,7 @@ export default function CheckoutPage() {
                 )}
                 <div className="flex justify-between items-center text-lg font-semibold mt-6">
                   <span className="text-slate-900 dark:text-white">Total</span>
-                  <span className="text-indigo-600 dark:text-indigo-400">
+                  <span className="tabular text-slate-900 dark:text-white">
                     {currency === 'INR' ? `₹${((course.price_inr - creditsToApplyCents) / 100).toFixed(0)}` : priceFormatted}
                   </span>
                 </div>
@@ -299,21 +299,21 @@ export default function CheckoutPage() {
             )}
 
             <div className="flex items-center gap-2 text-sm text-slate-500">
-              <ShieldCheck className="w-5 h-5 text-emerald-500" />
+              <ShieldCheck className="w-5 h-5 text-slate-500" />
               <span>30-day money-back guarantee</span>
             </div>
           </div>
 
-          {/* Payment Details */}
+          {/* Payment details */}
           <div>
-            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-6">Payment Details</h2>
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white mb-6">Payment details</h2>
             
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-card p-6 shadow-sm">
               
               {!checkoutSession ? (
                 <>
                   <div className="mb-6">
-                    <label className="block text-xs font-medium text-slate-400 mb-3">Select Currency</label>
+                    <label className="block text-xs font-medium text-slate-400 mb-3">Currency</label>
                     <div className="flex bg-slate-100 dark:bg-slate-800/50 rounded-lg p-1">
                       <button 
                         onClick={() => setCurrency('USD')}
@@ -331,7 +331,7 @@ export default function CheckoutPage() {
                   </div>
 
                   <div className="mb-8">
-                    <label className="block text-xs font-medium text-slate-400 mb-2">Coupon Code (Optional)</label>
+                    <label className="block text-xs font-medium text-slate-400 mb-2">Coupon code (optional)</label>
                     <div className="flex gap-2">
                       <input
                         type="text"
@@ -359,7 +359,7 @@ export default function CheckoutPage() {
                     {processing ? <Loader2 className="w-6 h-6 animate-spin" /> : (
                       <>
                         <CreditCard className="w-5 h-5" />
-                        Proceed to Payment
+                        Continue to payment
                       </>
                     )}
                   </HapticButton>

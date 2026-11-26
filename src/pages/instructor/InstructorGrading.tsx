@@ -62,13 +62,13 @@ export function InstructorGradingComponent() {
     <div className="pt-24 pb-16 min-h-screen bg-surface-50 dark:bg-surface-950">
       <Helmet><title>Grading | Instructor</title></Helmet>
       <div className="max-w-4xl mx-auto px-6">
-        <button onClick={() => navigate('/instructor')} className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-800 mb-6">
+        <button onClick={() => navigate('/instructor')} className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800 mb-6">
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
-        <h1 className="text-2xl font-black text-slate-900 dark:text-white mb-6">Grading Queue</h1>
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white mb-6">Grading Queue</h1>
 
         {loading ? (
-          <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-indigo-500" /></div>
+          <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-slate-500" /></div>
         ) : submissions.length === 0 ? (
           <div className="text-center py-16">
             <CheckCircle className="w-10 h-10 text-slate-200 mx-auto mb-3" />
@@ -81,31 +81,31 @@ export function InstructorGradingComponent() {
                 <button
                   key={s.id}
                   onClick={() => setSelectedId(s.id)}
-                  className={`w-full text-left p-3 rounded-lg border transition-colors ${selectedId === s.id ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-300' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}
+                  className={`w-full text-left p-3 rounded-lg border transition-colors ${selectedId === s.id ? 'bg-slate-100 dark:bg-slate-800 border-indigo-300' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}
                 >
-                  <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{s.user_name}</p>
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{s.user_name}</p>
                   <p className="text-xs text-slate-400 truncate">{s.prompt_text}</p>
-                  <span className="text-[10px] font-bold uppercase text-indigo-500">{s.kind === 'quiz_short_answer' ? 'Quiz' : 'Assignment'}</span>
+                  <span className="text-[10px] font-medium  text-slate-500">{s.kind === 'quiz_short_answer' ? 'Quiz' : 'Assignment'}</span>
                 </button>
               ))}
             </div>
             <div className="md:col-span-2">
               {selected ? (
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-control p-5 space-y-4">
                   <div>
                     <p className="text-xs text-slate-400">{selected.user_name} ({selected.user_email})</p>
-                    <h3 className="font-bold text-slate-900 dark:text-white">{selected.prompt_text}</h3>
+                    <h3 className="font-medium text-slate-900 dark:text-white">{selected.prompt_text}</h3>
                   </div>
                   <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
                     {selected.submission_text || 'No text submitted.'}
                   </div>
                   <div className="flex items-center gap-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase">Score</label>
+                    <label className="text-xs font-medium text-slate-500 ">Score</label>
                     <input type="number" value={score} onChange={e => setScore(e.target.value)} className="w-20 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-sm" />
                     <span className="text-xs text-slate-400">/ {selected.max_score || 100}</span>
                   </div>
                   <textarea value={feedback} onChange={e => setFeedback(e.target.value)} rows={3} placeholder="Feedback (optional)" className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm" />
-                  <HapticButton onClick={grade} disabled={grading} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg font-bold text-sm">
+                  <HapticButton onClick={grade} disabled={grading} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg font-medium text-sm">
                     {grading ? 'Saving...' : 'Submit Grade'}
                   </HapticButton>
                 </div>

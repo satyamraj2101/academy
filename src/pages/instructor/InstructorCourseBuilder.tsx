@@ -115,7 +115,7 @@ export function InstructorCourseBuilderComponent() {
     }
   };
 
-  if (loading || !course) return <div className="min-h-screen pt-32 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-indigo-500" /></div>;
+  if (loading || !course) return <div className="min-h-screen pt-32 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-slate-500" /></div>;
 
   if (editingLesson) {
     return (
@@ -132,11 +132,11 @@ export function InstructorCourseBuilderComponent() {
       <Helmet><title>{course.title} | Instructor</title></Helmet>
       <div className="max-w-4xl mx-auto px-6">
         <div className="flex items-center justify-between mb-6">
-          <button onClick={() => navigate('/instructor')} className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-slate-800">
+          <button onClick={() => navigate('/instructor')} className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800">
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
           <div className="flex items-center gap-2">
-            <button onClick={duplicateCourse} className="flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-bold">
+            <button onClick={duplicateCourse} className="flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium">
               <Copy className="w-4 h-4" /> Duplicate
             </button>
           </div>
@@ -147,7 +147,7 @@ export function InstructorCourseBuilderComponent() {
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`px-5 py-3 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${tab === t ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500'}`}
+              className={`px-5 py-3 text-sm font-medium   border-b-2 transition-colors ${tab === t ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500'}`}
             >
               {t}
             </button>
@@ -157,43 +157,43 @@ export function InstructorCourseBuilderComponent() {
         {tab === 'details' && (
           <div className="space-y-5 max-w-xl">
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Title</label>
+              <label className="block text-xs font-medium text-slate-500   mb-2">Title</label>
               <input value={course.title} onChange={e => setCourse({ ...course, title: e.target.value })} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-sm" />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Description</label>
+              <label className="block text-xs font-medium text-slate-500   mb-2">Description</label>
               <textarea rows={3} value={course.description} onChange={e => setCourse({ ...course, description: e.target.value })} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-sm" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Level</label>
+                <label className="block text-xs font-medium text-slate-500   mb-2">Level</label>
                 <select value={course.level} onChange={e => setCourse({ ...course, level: e.target.value })} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-sm">
                   {['Beginner', 'Intermediate', 'Advanced', 'Expert'].map(l => <option key={l}>{l}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Duration</label>
+                <label className="block text-xs font-medium text-slate-500   mb-2">Duration</label>
                 <input value={course.duration} onChange={e => setCourse({ ...course, duration: e.target.value })} placeholder="e.g. 4 weeks" className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-sm" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Category</label>
+                <label className="block text-xs font-medium text-slate-500   mb-2">Category</label>
                 <input value={course.category} onChange={e => setCourse({ ...course, category: e.target.value })} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-sm" />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Price (USD)</label>
+                <label className="block text-xs font-medium text-slate-500   mb-2">Price (USD)</label>
                 <input type="number" value={course.price_usd / 100} onChange={e => setCourse({ ...course, price_usd: Math.round(parseFloat(e.target.value || '0') * 100) })} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-sm" />
               </div>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Status</label>
+              <label className="block text-xs font-medium text-slate-500   mb-2">Status</label>
               <select value={course.status} onChange={e => setCourse({ ...course, status: e.target.value })} className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2.5 text-sm">
                 <option value="draft">Draft</option>
                 <option value="published">Published</option>
               </select>
             </div>
-            <HapticButton onClick={saveDetails} disabled={saving} className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg font-bold text-sm">
+            <HapticButton onClick={saveDetails} disabled={saving} className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg font-medium text-sm">
               {saving ? 'Saving...' : 'Save Details'}
             </HapticButton>
           </div>
@@ -202,17 +202,17 @@ export function InstructorCourseBuilderComponent() {
         {tab === 'curriculum' && (
           <div className="space-y-4">
             <div className="flex justify-end">
-              <button onClick={addModule} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-sm">
+              <button onClick={addModule} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-sm">
                 <Plus className="w-4 h-4" /> Add Module
               </button>
             </div>
             {modules.map((m, mi) => (
-              <div key={m.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+              <div key={m.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-control overflow-hidden">
                 <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
                   <button onClick={() => setExpanded(p => ({ ...p, [m.id]: !p[m.id] }))} className="text-slate-500">
                     {expanded[m.id] ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
                   </button>
-                  <h4 className="font-bold text-slate-800 dark:text-slate-200 flex-1">Module {mi + 1}: {m.title}</h4>
+                  <h4 className="font-medium text-slate-800 dark:text-slate-200 flex-1">Module {mi + 1}: {m.title}</h4>
                   <button onClick={() => deleteModule(m.id)} className="text-slate-400 hover:text-rose-500"><Trash2 className="w-4 h-4" /></button>
                 </div>
                 {expanded[m.id] && (
@@ -221,11 +221,11 @@ export function InstructorCourseBuilderComponent() {
                       <div key={l.id} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/40 rounded-lg border border-slate-200 dark:border-slate-800">
                         <GripVertical className="w-4 h-4 text-slate-300" />
                         <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex-1">{li + 1}. {l.title}</span>
-                        <button onClick={() => setEditingLesson(l)} className="text-xs font-bold text-indigo-600 hover:text-indigo-800 px-2 py-1">Edit Content</button>
+                        <button onClick={() => setEditingLesson(l)} className="text-xs font-medium text-indigo-600 hover:text-indigo-800 px-2 py-1">Edit Content</button>
                         <button onClick={() => deleteLesson(l.id)} className="text-slate-400 hover:text-rose-500"><Trash2 className="w-4 h-4" /></button>
                       </div>
                     ))}
-                    <button onClick={() => addLesson(m.id)} className="w-full py-2.5 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 hover:text-indigo-600 hover:border-indigo-300 text-sm font-bold flex items-center justify-center gap-2">
+                    <button onClick={() => addLesson(m.id)} className="w-full py-2.5 border border-dashed border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 hover:text-indigo-600 hover:border-indigo-300 text-sm font-medium flex items-center justify-center gap-2">
                       <Plus className="w-4 h-4" /> Add Lesson
                     </button>
                   </div>
@@ -233,9 +233,9 @@ export function InstructorCourseBuilderComponent() {
               </div>
             ))}
             {modules.length === 0 && (
-              <div className="text-center py-16 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
+              <div className="text-center py-16 border border-dashed border-slate-200 dark:border-slate-800 rounded-card">
                 <p className="text-slate-500 mb-4">No modules yet.</p>
-                <button onClick={addModule} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-sm">Add First Module</button>
+                <button onClick={addModule} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-sm">Add First Module</button>
               </div>
             )}
           </div>
@@ -276,11 +276,11 @@ function InstructorLessonEditor({ lesson, courseId, onClose }: { lesson: Lesson;
   return (
     <div className="pt-24 pb-16 min-h-screen bg-surface-50 dark:bg-surface-950">
       <div className="max-w-3xl mx-auto px-6 space-y-6">
-        <div className="flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-          <h3 className="font-bold text-slate-800 dark:text-slate-200">Editing: {lesson.title}</h3>
+        <div className="flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-control p-4">
+          <h3 className="font-medium text-slate-800 dark:text-slate-200">Editing: {lesson.title}</h3>
           <div className="flex gap-2">
             <button onClick={onClose} className="px-4 py-2 text-slate-500 hover:text-slate-800 font-medium text-sm">Cancel</button>
-            <HapticButton onClick={save} disabled={saving} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg font-bold text-sm">
+            <HapticButton onClick={save} disabled={saving} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg font-medium text-sm">
               {saving ? 'Saving...' : 'Save Content'}
             </HapticButton>
           </div>
@@ -303,9 +303,9 @@ function InstructorLessonEditor({ lesson, courseId, onClose }: { lesson: Lesson;
 
         <div className="space-y-4">
           {blocks.map(block => (
-            <div key={block.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+            <div key={block.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-control p-4">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">{block.type}</span>
+                <span className="text-xs font-medium   text-slate-400">{block.type}</span>
                 <button onClick={() => removeBlock(block.id)} className="text-slate-400 hover:text-rose-500"><Trash2 className="w-4 h-4" /></button>
               </div>
               {block.type === 'markdown' && (
@@ -401,7 +401,7 @@ function InstructorQuizBlock({ courseId, value, onChange }: { courseId: string; 
           {quizzes.map(q => <option key={q.id} value={q.id}>{q.title}</option>)}
         </select>
         <input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="New quiz title" className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm" />
-        <button onClick={createQuiz} className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold shrink-0">Create</button>
+        <button onClick={createQuiz} className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium shrink-0">Create</button>
       </div>
       {selectedId && (
         <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 space-y-2">
@@ -414,7 +414,7 @@ function InstructorQuizBlock({ courseId, value, onChange }: { courseId: string; 
                 <input value={opt} onChange={e => setQOptions(o => o.map((v, idx) => idx === i ? e.target.value : v))} placeholder={`Option ${i + 1}`} className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1 text-xs" />
               </div>
             ))}
-            <button onClick={addQuestion} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold">Add Question</button>
+            <button onClick={addQuestion} className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium">Add Question</button>
           </div>
         </div>
       )}
@@ -448,7 +448,7 @@ function InstructorAssignmentBlock({ lessonId, value, onChange }: { lessonId: st
           <option value="both">Text + File</option>
         </select>
         <input type="number" value={maxScore} onChange={e => setMaxScore(Number(e.target.value))} className="w-24 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-sm" />
-        <button onClick={save} className="px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-bold">Save Assignment</button>
+        <button onClick={save} className="px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-medium">Save Assignment</button>
       </div>
     </div>
   );

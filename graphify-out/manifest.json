@@ -835,9 +835,9 @@
     "semantic_hash": "85b719daed3c41d730c51ee6d710914c"
   },
   "src/App.tsx": {
-    "mtime": 1795680298.0090568,
-    "seen": 1795700247.198553,
-    "ast_hash": "4f0d0eed396995926f3d4a5a9404f8ad",
+    "mtime": 1795700559.8029022,
+    "seen": 1795705185.2479453,
+    "ast_hash": "c7e2fc4ea2c653bbd90f25f3845c58be",
     "semantic_hash": ""
   },
   "src/academy-data.ts": {
@@ -1310,9 +1310,9 @@
     "semantic_hash": ""
   },
   "src/pages/academy/Checkout.tsx": {
-    "mtime": 1795680739.321478,
-    "seen": 1795700247.19873,
-    "ast_hash": "7734d4f6d9fa4205cc6b0147426bc54d",
+    "mtime": 1795704575.6502998,
+    "seen": 1795705185.248118,
+    "ast_hash": "3fa2995dc9b2f3ac896e3f10cbeeae65",
     "semantic_hash": ""
   },
   "src/pages/academy/CourseDetail.tsx": {
@@ -1322,9 +1322,9 @@
     "semantic_hash": ""
   },
   "src/pages/academy/CoursePlayer.tsx": {
-    "mtime": 1795680739.3244977,
-    "seen": 1795700247.1987333,
-    "ast_hash": "161a92062bdffd0146cf56fd5b91d65a",
+    "mtime": 1795700446.2252514,
+    "seen": 1795705185.2481215,
+    "ast_hash": "0a00436914bfd0ebdae629b3b217f5f6",
     "semantic_hash": ""
   },
   "src/pages/academy/Courses.tsx": {
@@ -1388,28 +1388,28 @@
     "semantic_hash": ""
   },
   "src/pages/academy/Support.tsx": {
-    "mtime": 1795680298.0019927,
-    "seen": 1795700247.1987522,
-    "ast_hash": "c54e994d311daaede05eb54d6babd1b7",
+    "mtime": 1795704390.2629764,
+    "seen": 1795705185.2481432,
+    "ast_hash": "3e635b367201131c38826a7368bede0b",
     "semantic_hash": ""
   },
   "src/pages/instructor/InstructorCourseBuilder.tsx": {
-    "mtime": 1784468288.713212,
-    "seen": 1795557236.7477436,
-    "ast_hash": "7e9027113e79e6295e573af6171760bc",
-    "semantic_hash": "7e9027113e79e6295e573af6171760bc"
+    "mtime": 1795704511.9915025,
+    "seen": 1795705185.2481446,
+    "ast_hash": "60a56b70c5022dccca25d2014a4f9c15",
+    "semantic_hash": ""
   },
   "src/pages/instructor/InstructorDashboard.tsx": {
-    "mtime": 1784468214.861907,
-    "seen": 1795557236.7479093,
-    "ast_hash": "09958a70d78997cf5878c7350a4f581a",
-    "semantic_hash": "09958a70d78997cf5878c7350a4f581a"
+    "mtime": 1795704512.0007997,
+    "seen": 1795705185.248146,
+    "ast_hash": "9c2f4a4ddc83725704a180b39214178b",
+    "semantic_hash": ""
   },
   "src/pages/instructor/InstructorGrading.tsx": {
-    "mtime": 1784468311.81253,
-    "seen": 1795557236.7480757,
-    "ast_hash": "8f2deb8c7bd14aa7e5a6b82ef9081f3e",
-    "semantic_hash": "8f2deb8c7bd14aa7e5a6b82ef9081f3e"
+    "mtime": 1795704512.0060852,
+    "seen": 1795705185.2481477,
+    "ast_hash": "722a486dec4138b4d3cac0a17a6437f9",
+    "semantic_hash": ""
   },
   "src/pages/shared.tsx": {
     "mtime": 1795680486.2558303,
@@ -2360,9 +2360,9 @@
     "semantic_hash": ""
   },
   "oracle-runner/cloud/modal_app.py": {
-    "mtime": 1795679150.8705382,
-    "seen": 1795679304.3417556,
-    "ast_hash": "70e3683b517b6557e76ab375377b7246",
+    "mtime": 1795704781.221304,
+    "seen": 1795705185.247848,
+    "ast_hash": "5880db5cc5fd1f89e211b855410700b3",
     "semantic_hash": ""
   },
   "oracle-runner/cloud/modal_smoke.py": {
@@ -2396,9 +2396,9 @@
     "semantic_hash": ""
   },
   "oracle-runner/src/ai.mjs": {
-    "mtime": 1795675510.3725278,
-    "seen": 1795677190.832462,
-    "ast_hash": "ace24ea905deab046163fbbe3d1850ef",
+    "mtime": 1795704634.2872422,
+    "seen": 1795705185.247861,
+    "ast_hash": "70f0320d02ae7eb46b4e8ea60b0063a2",
     "semantic_hash": ""
   },
   "oracle-runner/src/api.mjs": {
@@ -2564,9 +2564,9 @@
     "semantic_hash": ""
   },
   "oracle-runner/test/ai.test.mjs": {
-    "mtime": 1795675102.6931887,
-    "seen": 1795677190.8325098,
-    "ast_hash": "e71930281009781f4930cc062a0f63f1",
+    "mtime": 1795704652.3836756,
+    "seen": 1795705185.2479167,
+    "ast_hash": "7b53943d26b8587552e48d8c732834a0",
     "semantic_hash": ""
   },
   "oracle-runner/test/edits.test.mjs": {
@@ -2618,9 +2618,9 @@
     "semantic_hash": ""
   },
   "src/components/video/InteractiveVideoPlayer.tsx": {
-    "mtime": 1795635000.8809617,
-    "seen": 1795677190.832687,
-    "ast_hash": "5bf3cabfd841e6b45fa0378a5580534b",
+    "mtime": 1795700668.757606,
+    "seen": 1795705185.248086,
+    "ast_hash": "16ac9b19115a76063360b9b5a5746109",
     "semantic_hash": ""
   },
   "src/lib/interactiveVideo.ts": {
@@ -2636,9 +2636,9 @@
     "semantic_hash": ""
   },
   "src/pages/academy/LessonPath.tsx": {
-    "mtime": 1795680297.9640625,
-    "seen": 1795700247.198741,
-    "ast_hash": "c97437bdbfbb804b42abd6756dae84ab",
+    "mtime": 1795700446.4407535,
+    "seen": 1795705185.2481303,
+    "ast_hash": "f3cc834b8341e90d2ac39f0ab8514edb",
     "semantic_hash": ""
   },
   "src/test/improvePrompt.test.ts": {
@@ -2765,6 +2765,48 @@
     "mtime": 1795679915.0404122,
     "seen": 1795700247.198677,
     "ast_hash": "334d9cd146ea0a25eb8fb12939b1a3fd",
+    "semantic_hash": ""
+  },
+  "functions/api/admin/academy/_aiQuota.ts": {
+    "mtime": 1795704604.4365501,
+    "seen": 1795705185.2476165,
+    "ast_hash": "850b3a2c47dafcb3a78b2bc87648ecf9",
+    "semantic_hash": ""
+  },
+  "functions/api/admin/academy/ai-quota.ts": {
+    "mtime": 1795704611.6763897,
+    "seen": 1795705185.247638,
+    "ast_hash": "d342928a89d9701bcef9417bf4f8b290",
+    "semantic_hash": ""
+  },
+  "migrations/0033_ai_quota.sql": {
+    "mtime": 1795704598.7989037,
+    "seen": 1795705185.2478437,
+    "ast_hash": "71f6073a9e92e13135d4ac910377d2fc",
+    "semantic_hash": ""
+  },
+  "oracle-runner/cloud/cache_prune.py": {
+    "mtime": 1795704763.5738928,
+    "seen": 1795705185.2478456,
+    "ast_hash": "9fc2e2f461649f351cfb6a2573fa988f",
+    "semantic_hash": ""
+  },
+  "oracle-runner/cloud/test_cache_prune.py": {
+    "mtime": 1795704769.2383044,
+    "seen": 1795705185.2478518,
+    "ast_hash": "f893f0d0d807f757d7edbd66f326651e",
+    "semantic_hash": ""
+  },
+  "oracle-runner/src/shared-quota.mjs": {
+    "mtime": 1795704622.9773948,
+    "seen": 1795705185.2478862,
+    "ast_hash": "4fe0fbb3b28844841db817376ed94e02",
+    "semantic_hash": ""
+  },
+  "src/test/aiQuota.test.ts": {
+    "mtime": 1795704664.0691452,
+    "seen": 1795705185.2481527,
+    "ast_hash": "d92bcd27225adcf08bf3350235601e50",
     "semantic_hash": ""
   },
   "mcp-server/package-lock.json": {

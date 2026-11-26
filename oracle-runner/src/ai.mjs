@@ -13,6 +13,8 @@
 //   - when every provider is cooling the call waits for the earliest one (up to AI_MAX_WAIT_MS); beyond that it throws
 //     AI_EXHAUSTED with `retryAt`, so a job can pause and resume instead of failing.
 // This pacing is per process. Many cloud workers each pace themselves and learn from 429s; a shared counter is the next step.
+import { sharedQuota } from './shared-quota.mjs';
+
 const ROLE_DEFAULTS = {
   draft: 'gemini:gemini-2.5-flash',
   review: '',
@@ -151,6 +153,22 @@ const windowMs = (env) => Number(env.AI_WINDOW_MS) || 60_000;
 // Rough size of a call: the prompt, plus the reply we expect (about as long as the prompt for a review, 2-3k for a lesson).
 export const estimateTokens = (prompt, maxOut) => Math.ceil(prompt.length / 4) + (maxOut ?? Math.min(4000, Math.max(1800, Math.ceil(prompt.length / 6))));
 
+/** Brings in what other workers have used today and any cooldown they recorded, so this worker does not repeat their mistakes. */
+async function foldInShared(route, env, now) {
+  const shared = sharedQuota(env);
+  if (!shared) return;
+  const keys = route.map(e => `${e.provider}:${e.model}`);
+  const state = await shared.hydrate(keys);
+  const today = new Date(now).toISOString().slice(0, 10);
+  for (const e of route) {
+    const u = slot(e), st = state[`${e.provider}:${e.model}`];
+    if (!st) continue;
+    if (u.day !== today) { u.day = today; u.dayCount = 0; }
+    u.dayCount = Math.max(u.dayCount, st.calls);
+    if (st.cooldownUntil > u.cooldownUntil) { u.cooldownUntil = st.cooldownUntil; u.cooldownReason = st.reason || 'cooling (another worker)'; }
+  }
+}
+
 /** Can this entry take the call right now? Returns { ok } or { ok:false, waitMs } (wait this long) or { ok:false, skip } (never, for this call). */
 function readiness(entry, est, env, now) {
   const lim = limitsFor(entry.provider, env), u = slot(entry), win = windowMs(env);
@@ -177,6 +195,8 @@ function readiness(entry, est, env, now) {
 async function attempt(entry, args, env, est, retries) {
   const u = slot(entry), now = Date.now();
   u.starts.push(now); u.tokens.push([now, est]); u.dayCount++; u.active++;
+  const shared = sharedQuota(env), sharedKey = `${entry.provider}:${entry.model}`;
+  shared?.record(sharedKey, est);
   let last;
   try {
     for (let n = 0; n < retries; n++) {
@@ -193,6 +213,7 @@ async function attempt(entry, args, env, est, retries) {
   } finally { u.active--; }
   if (last?.status === 429) {
     u.cooldownUntil = Date.now() + (last.retryAfterMs ?? 60_000); u.cooldownReason = last.daily ? 'daily limit (provider)' : 'rate limited (provider)';
+    shared?.cool(sharedKey, u.cooldownUntil, u.cooldownReason);
     console.error(`[ai] ${entry.provider}:${entry.model} is rate limited, cooling for ${Math.round((last.retryAfterMs ?? 60_000) / 1000)}s${last.daily ? ' (daily)' : ''}: ${last.detail || ''}`);
   }
   throw last;
@@ -207,6 +228,7 @@ export async function complete(role, prompt, { json = false, env = process.env, 
   for (;;) {
     const now = Date.now();
     let soonest = Infinity, soonestWhy = '';
+    await foldInShared(route, env, now);
     for (const entry of route) {
       const key = `${entry.provider}:${entry.model}`;
       if (failed.has(key)) continue;

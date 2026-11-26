@@ -42,6 +42,7 @@ image = (
         "cd /app && node -e \"import('kokoro-js').then(async m => { await m.KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', { dtype: 'q8', device: 'cpu' }); console.log('voice model ready'); })\""
     )
     .pip_install("fastapi")  # only for the small web endpoint that wakes the worker; late in the image so the heavy layers stay cached
+    .add_local_file(RUNNER / "cloud" / "cache_prune.py", "/root/cache_prune.py", copy=True)
     .add_local_dir(RUNNER / "src", "/app/src", copy=True)
     .add_local_dir(RUNNER / "assets", "/app/assets", copy=True)
 )
@@ -84,11 +85,12 @@ def render_item(payload: dict) -> dict:
         d = os.path.join("/cache", info["key"])
         with open(os.path.join(d, "meta.json")) as m, open(os.path.join(d, "segment.mp4"), "rb") as s:
             out = {"key": info["key"], "meta": m.read(), "segment": s.read(), "stats": info.get("stats"), "cached": bool(info.get("cached"))}
-        if not out["cached"]:
-            try:
-                scene_cache.commit()  # keep it for the next change to this video
-            except Exception:
-                pass
+        try:
+            if out["cached"]:
+                os.utime(os.path.join(d, "meta.json"), None)  # a scene still in use must not look old to the weekly clean-up
+            scene_cache.commit()  # keep a new scene for the next change to this video, or record that an old one was used again
+        except Exception:
+            pass
         return out
 
 
@@ -161,6 +163,20 @@ def write_scripts(course_id: str, lesson_ids: list, intro_lesson: str = "") -> d
 def build_from_script(lesson_id: str, script_text: str, info: dict, publish: bool = True, replace_video_id: str = "") -> dict:
     """Render, join and publish a lesson whose script is already written (no AI call here)."""
     return _build_from_script(script_text, lesson_id, publish, replace_video_id, info)
+
+
+@app.function(schedule=modal.Period(days=7), volumes={"/cache": scene_cache}, timeout=900)
+def prune_scene_cache(max_age_days: int = 45, max_gb: float = 4.0) -> dict:
+    """Weekly housekeeping: removes scenes nobody has used for max_age_days, and the oldest ones beyond max_gb (see cache_prune.py)."""
+    import cache_prune
+    try:
+        scene_cache.reload()
+    except Exception:
+        pass
+    result = cache_prune.prune("/cache", max_age_days=max_age_days, max_bytes=int(max_gb * 1024**3))
+    scene_cache.commit()
+    print(f"scene cache: kept {result['kept']}, removed {result['removed']}, freed {result['freed_bytes'] // 1048576} MB, {result['left_bytes'] // 1048576} MB left")
+    return result
 
 
 @app.function(cpu=1, memory=2048, timeout=3600)
@@ -251,6 +267,12 @@ def _local_node(args):
     if r.returncode != 0:
         raise RuntimeError((r.stderr or r.stdout)[-1500:])
     return r.stdout
+
+
+@app.local_entrypoint()
+def prune():
+    """modal run cloud/modal_app.py::prune   -> runs the scene cache clean-up now."""
+    print(prune_scene_cache.remote())
 
 
 @app.local_entrypoint()

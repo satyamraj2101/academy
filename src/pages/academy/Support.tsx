@@ -30,48 +30,42 @@ export function SupportComponent({ onOpenProposalModal }: { onOpenProposalModal:
 
       <div className="max-w-4xl mx-auto px-6">
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-semibold mb-4">How can we help?</h1>
+          <h1 className="text-4xl md:text-5xl font-medium mb-4 text-slate-900 dark:text-white">How can we help</h1>
           <div className="relative max-w-xl mx-auto mt-8">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Search for answers..."
-              className="w-full pl-12 pr-4 py-4 rounded-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm text-lg outline-none focus:border-indigo-500"
+              placeholder="Search answers"
+              className="w-full pl-12 pr-4 py-4 rounded-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-base outline-none focus:border-indigo-600"
             />
           </div>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 mb-16">
           <div className="bg-white dark:bg-slate-900 p-6 rounded-card border border-slate-200 dark:border-slate-800 text-center flex flex-col items-center">
-            <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-control flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-4">
-              <FileText className="w-6 h-6" />
-            </div>
-            <h3 className="font-medium mb-2">Knowledge Base</h3>
-            <p className="text-sm text-slate-500 mb-4 flex-1">Read our comprehensive guides and documentation.</p>
-            <HapticButton onClick={scrollToFaqs} className="text-indigo-600 text-sm font-medium">Browse FAQs &rarr;</HapticButton>
+            <FileText className="w-6 h-6 text-slate-500 mb-4" strokeWidth={1.5} aria-hidden="true" />
+            <h3 className="font-medium mb-2 text-slate-900 dark:text-white">Knowledge base</h3>
+            <p className="text-sm text-slate-500 mb-4 flex-1">Guides and answers to common questions.</p>
+            <HapticButton onClick={scrollToFaqs} className="min-h-[44px] text-sm font-medium text-slate-900 dark:text-white hover:underline">Browse FAQs &rarr;</HapticButton>
           </div>
           <div className="bg-white dark:bg-slate-900 p-6 rounded-card border border-slate-200 dark:border-slate-800 text-center flex flex-col items-center">
-            <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-control flex items-center justify-center text-sky-600 dark:text-sky-400 mb-4">
-              <MessageCircle className="w-6 h-6" />
-            </div>
-            <h3 className="font-medium mb-2">Community Forum</h3>
+            <MessageCircle className="w-6 h-6 text-slate-500 mb-4" strokeWidth={1.5} aria-hidden="true" />
+            <h3 className="font-medium mb-2 text-slate-900 dark:text-white">Community forum</h3>
             <p className="text-sm text-slate-500 mb-4 flex-1">Ask questions and learn from other CLM professionals.</p>
-            <HapticButton disabled title="Coming soon" className="text-slate-400 text-sm font-medium cursor-not-allowed">Coming Soon</HapticButton>
+            <HapticButton disabled title="Coming soon" className="text-slate-400 text-sm font-medium cursor-not-allowed">Coming soon</HapticButton>
           </div>
           <div className="bg-white dark:bg-slate-900 p-6 rounded-card border border-slate-200 dark:border-slate-800 text-center flex flex-col items-center">
-            <div className="w-12 h-12 bg-rose-50 dark:bg-rose-900/30 rounded-control flex items-center justify-center text-rose-600 dark:text-rose-400 mb-4">
-              <Mail className="w-6 h-6" />
-            </div>
-            <h3 className="font-medium mb-2">Contact Support</h3>
+            <Mail className="w-6 h-6 text-slate-500 mb-4" strokeWidth={1.5} aria-hidden="true" />
+            <h3 className="font-medium mb-2 text-slate-900 dark:text-white">Contact support</h3>
             <p className="text-sm text-slate-500 mb-4 flex-1">Can't find what you need? Send us a ticket.</p>
-            <a href={`mailto:${SUPPORT_EMAIL}`} className="text-rose-600 text-sm font-medium hover:underline">Email Us &rarr;</a>
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="inline-flex items-center min-h-[44px] text-sm font-medium text-slate-900 dark:text-white hover:underline">Email us &rarr;</a>
           </div>
         </div>
 
         <div ref={faqSectionRef} className="bg-white dark:bg-slate-900 rounded-card border border-slate-200 dark:border-slate-800 p-8 md:p-12 scroll-mt-24">
-          <h2 className="text-2xl font-semibold mb-8">Frequently Asked Questions</h2>
+          <h2 className="text-2xl font-medium mb-8 text-slate-900 dark:text-white">Frequently asked questions</h2>
           <div className="space-y-4">
             {filteredFaqs.map((faq) => {
               const i = faqs.indexOf(faq);
@@ -93,7 +87,7 @@ export function SupportComponent({ onOpenProposalModal }: { onOpenProposalModal:
               );
             })}
             {filteredFaqs.length === 0 && (
-              <p className="text-center text-slate-400 py-8">No FAQs match "{search}" — try a different search, or <a href={`mailto:${SUPPORT_EMAIL}`} className="text-indigo-600 hover:underline">email us</a> directly.</p>
+              <p className="text-center text-slate-400 py-8">No answers match "{search}". Try a different search, or <a href={`mailto:${SUPPORT_EMAIL}`} className="text-indigo-600 hover:underline">email us</a> directly.</p>
             )}
           </div>
         </div>
