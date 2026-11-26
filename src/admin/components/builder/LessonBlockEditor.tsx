@@ -4,6 +4,7 @@ import { MarkdownAiEditor } from './MarkdownAiEditor';
 import { QuizBlockEditor } from './QuizBlockEditor';
 import { AssignmentBlockEditor } from './AssignmentBlockEditor';
 import { AssetManagerModal } from './AssetManagerModal';
+import { VideoAiEditPanel } from './VideoAiEditPanel';
 import { adminFetch } from '../../hooks/useD1Query';
 import { toast } from '../../../lib/toast';
 
@@ -201,7 +202,14 @@ export function LessonBlockEditor({ blocks, onChange, courseId, lessonId }: Less
               <span>{v.checkpoints?.length ?? 0} question{(v.checkpoints?.length ?? 0) === 1 ? '' : 's'}</span>
             </div>
             <video src={v.src} controls preload="metadata" className="w-full max-w-xl rounded-lg bg-black aspect-video" />
-            <p className="text-xs text-slate-500">Made in the Video Studio. Students must watch at least 90% and answer the questions to complete the lesson. To change it, publish a new render from the Studio (it replaces this one).</p>
+            <p className="text-xs text-slate-500">Students must watch at least 90% and answer the questions to complete the lesson.</p>
+            <VideoAiEditPanel
+              key={v.videoId}
+              courseId={courseId}
+              lessonId={lessonId}
+              videoId={v.videoId}
+              onRebuilt={(json) => updateBlock(block.id, json)}
+            />
           </div>
         );
       }

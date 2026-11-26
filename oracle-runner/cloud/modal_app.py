@@ -10,11 +10,13 @@ hash, so a re-run only renders what changed.
 
 Secrets live in the Modal secret "academy-cloud" (Academy URL + service key + Access token + AI keys). Nothing here is printed.
 """
+import hmac
 import json
 import os
 import pathlib
 import subprocess
 import tempfile
+import threading
 
 import modal
 
@@ -39,6 +41,7 @@ image = (
     .run_commands(
         "cd /app && node -e \"import('kokoro-js').then(async m => { await m.KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX', { dtype: 'q8', device: 'cpu' }); console.log('voice model ready'); })\""
     )
+    .pip_install("fastapi")  # only for the small web endpoint that wakes the worker; late in the image so the heavy layers stay cached
     .add_local_dir(RUNNER / "src", "/app/src", copy=True)
     .add_local_dir(RUNNER / "assets", "/app/assets", copy=True)
 )
@@ -47,17 +50,17 @@ work = modal.Volume.from_name("academy-work", create_if_missing=True)  # scripts
 app = modal.App("academy-video", image=image, secrets=[modal.Secret.from_name("academy-cloud")])
 
 
-def _node(args, cwd="/app", check=True, stream=False):
+def _node(args, cwd="/app", check=True, stream=False, env=None):
     """Runs a Node step and returns its stdout. Only the tail of stderr is kept if it fails (it can hold URLs, never secrets).
     With stream=True the step's progress messages go straight to the container log (visible live in `modal app logs` and the
     Modal dashboard) instead of being held back until it finishes; the scripts only log lesson titles and timings."""
     if stream:
-        p = subprocess.Popen(["node", *args], cwd=cwd, stdout=subprocess.PIPE, text=True)  # stderr is inherited
+        p = subprocess.Popen(["node", *args], cwd=cwd, stdout=subprocess.PIPE, text=True, env=env)  # stderr is inherited
         out = p.communicate()[0]
         if check and p.returncode != 0:
             raise RuntimeError(f"node {' '.join(args[:2])} failed with exit code {p.returncode}")
         return out
-    r = subprocess.run(["node", *args], cwd=cwd, capture_output=True, text=True)
+    r = subprocess.run(["node", *args], cwd=cwd, capture_output=True, text=True, env=env)
     if check and r.returncode != 0:
         raise RuntimeError(f"node {' '.join(args[:2])} failed: {(r.stderr or r.stdout)[-1500:]}")
     return r.stdout
@@ -106,7 +109,7 @@ def _build_from_script(script_text: str, lesson_id: str, publish: bool, replace_
     }
     if publish:
         name = f"{lesson_id}-cloud"
-        pub = json.loads(_node(["src/cloud/publish.mjs", out, lesson_id, name, *([replace_video_id] if replace_video_id else [])]).strip().splitlines()[-1])
+        pub = json.loads(_node(["src/cloud/publish.mjs", out, lesson_id, name, *([replace_video_id] if replace_video_id else [])], env={**os.environ, "VIDEO_SCRIPT_FILE": script}).strip().splitlines()[-1])  # the script is kept with the video so the AI can edit it later
         summary["published"] = {"videoId": pub.get("videoId"), "sectionId": pub.get("sectionId")}
     return summary
 
@@ -153,6 +156,81 @@ def run_jobs() -> str:
     r = subprocess.run(["node", "src/index.mjs", "--once"], cwd="/app", capture_output=True, text=True)
     tail = "" if r.returncode == 0 else "\n[stderr]\n" + r.stderr[-2000:]
     return (r.stdout or "")[-8000:] + tail
+
+
+def _reason(e: Exception) -> str:
+    """The last meaningful line of a failure, for an admin to read (the video-edit step prints its plain-language reason last)."""
+    lines = [l.strip() for l in str(e).splitlines() if l.strip()]
+    return (lines[-1] if lines else "The video could not be rebuilt.")[:400]
+
+
+def _run_video_edit(job: dict) -> dict:
+    """One 'change this video with AI' job: revise the script, render only what changed, replace the video, report to the admin."""
+    jid, p = job["id"], job["payload"]
+    state = {"step": "Starting"}
+    stop = threading.Event()
+
+    def step(text: str):
+        state["step"] = text
+        _node(["src/cloud/video-edit.mjs", "progress", jid, text], check=False)
+
+    def beat():  # keeps the job's lease alive through the long steps
+        while not stop.wait(60):
+            _node(["src/cloud/video-edit.mjs", "progress", jid, state["step"]], check=False)
+
+    threading.Thread(target=beat, daemon=True).start()
+    d = tempfile.mkdtemp()
+    job_file, script_file, result_file = (os.path.join(d, n) for n in ("job.json", "script.json", "result.json"))
+    try:
+        with open(job_file, "w") as f:
+            json.dump(job, f)
+        step("Writing the new script")
+        info = json.loads(_node(["src/cloud/video-edit.mjs", "script", job_file, script_file]).strip().splitlines()[-1])
+        step("Rendering the scenes")
+        with open(script_file) as f:
+            summary = _build_from_script(f.read(), p["lessonId"], True, p["videoId"], info)
+        with open(result_file, "w") as f:
+            json.dump({**summary, "lessonId": p["lessonId"], "oldVideoId": p["videoId"], "ai": info.get("ai"), "usedSavedScript": info.get("usedSavedScript")}, f)
+        _node(["src/cloud/video-edit.mjs", "finish", jid, "done", result_file])
+        return {"job": jid, "ok": True}
+    except Exception as e:  # report to the admin instead of leaving the job running until its lease runs out
+        _node(["src/cloud/video-edit.mjs", "finish", jid, "failed", _reason(e)], check=False)
+        return {"job": jid, "ok": False, "error": _reason(e)}
+    finally:
+        stop.set()
+
+
+@app.function(cpu=1, memory=2048, timeout=3600, max_containers=2)
+def drain_video_jobs() -> str:
+    """Works through the queued lesson-video edit jobs one after another, then stops (so nothing sits idle and costs credit)."""
+    out = []
+    while True:
+        job = json.loads(_node(["src/cloud/video-edit.mjs", "claim"]).strip().splitlines()[-1])["job"]
+        if not job:
+            break
+        out.append(_run_video_edit(job))
+    return json.dumps(out)
+
+
+@app.function(max_containers=2)
+@modal.asgi_app()
+def web():
+    """POST /kick wakes the workers: the Academy calls it right after queueing a job, with a shared token. It starts the video
+    and course workers in the background and returns at once; both exit by themselves when the queue is empty."""
+    from fastapi import FastAPI, Header, HTTPException
+
+    api = FastAPI()
+
+    @api.post("/kick")
+    def kick(authorization: str = Header(default="")):
+        token = os.environ.get("MODAL_JOBS_TOKEN", "")
+        if not token or not hmac.compare_digest(authorization.encode(), f"Bearer {token}".encode()):
+            raise HTTPException(status_code=401, detail="unauthorized")
+        drain_video_jobs.spawn()
+        run_jobs.spawn()
+        return {"started": True}
+
+    return api
 
 
 def _local_node(args):

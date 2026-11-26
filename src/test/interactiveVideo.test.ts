@@ -32,6 +32,12 @@ describe('buildVideoContent', () => {
     const cp = { sceneId: 'q', question: 'Q', options: ['a', 'b'], answer: 0, pauseAt: 1, revealAt: 2 };
     expect(build({ checkpoints: [cp, cp] }).error).toMatch(/unique/);
   });
+  it('keeps the saved script address only when it is a safe source', () => {
+    expect(build({ scriptSrc: '/api/assets/s.json' }).content?.scriptSrc).toBe('/api/assets/s.json');
+    expect(build().content).not.toHaveProperty('scriptSrc');
+    expect(build({ scriptSrc: 'javascript:alert(1)' }).error).toMatch(/scriptSrc must be/);
+    expect(build({ scriptSrc: '/api/assets/../x.json' }).error).toMatch(/scriptSrc must be/);
+  });
   it('bounds text lengths', () => {
     const { content } = build({ title: 'x'.repeat(1000) });
     expect(content?.title.length).toBe(160);

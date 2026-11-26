@@ -54,7 +54,21 @@ export async function fetchLesson(courseId, lessonId) {
 
 const stationList = Object.entries(STATIONS).map(([id, s]) => `${id} (${s.name})`).join(', ');
 
-function buildPrompt({ course, module, lesson, source, feedback }) {
+// A change request from the course team. When the video already has a script, the AI sees it and must keep every scene the request
+// does not touch, so only those scenes are rendered again (scenes are cached by their content).
+function editBlock(instruction, base) {
+  return `
+EDIT REQUEST FROM THE COURSE TEAM. Follow it. The team wrote it, so facts it states may be used in addition to the lesson text; every other rule above still applies:
+<request>
+${instruction}
+</request>
+${base ? `
+CURRENT SCRIPT, the video as it is now. Change only what the request needs. Keep every other scene exactly as it is (same id, same words, same slide) and return the full script:
+${JSON.stringify(base)}
+` : ''}`;
+}
+
+function buildPrompt({ course, module, lesson, source, feedback, instruction, base }) {
   return `You are the scriptwriter for SpotCLM Academy's lesson videos: a friendly robot instructor, Soomy, teaches while his small mop-bot friend Indoo reacts. Turn the LESSON TEXT below into a short video script.
 
 ${SHAPE}
@@ -79,7 +93,7 @@ LESSON: ${lesson.title}
 
 LESSON TEXT:
 ${source.text}
-${feedback ? `\nYOUR PREVIOUS ANSWER WAS REJECTED. Fix these problems and return the full corrected JSON:\n${feedback}\n` : ''}`;
+${instruction ? editBlock(instruction, base) : ''}${feedback ? `\nYOUR PREVIOUS ANSWER WAS REJECTED. Fix these problems and return the full corrected JSON:\n${feedback}\n` : ''}`;
 }
 
 // Numbers the model introduced that the lesson never mentions. Writers should not invent statistics.
@@ -164,7 +178,15 @@ export const INTRO_SCENE = {
   slide: { layout: 'hook', kicker: 'Welcome to SpotCLM Academy', title: 'Meet Soomy and Indoo', subtitle: 'Your guides through every course', subAt: 'wherever i go' },
 };
 
-export async function lessonToScript({ course, module, lesson }, { intro = false, env = process.env, onProgress } = {}) {
+// `instruction` is a change request from the course team; `base` is the script the video was rendered from (when it was kept).
+// The welcome scene is not shown to the AI: it is the same fixed scene in every course and is put back after.
+// The fixed welcome scene is told apart by what it shows, never by its id: the AI also likes to call its own first scene "intro".
+export const isWelcomeScene = (sc) => sc?.slide?.title === INTRO_SCENE.slide.title || String(sc?.spoken || '').startsWith("Hi, I'm Soomy, your instructor");
+
+export async function lessonToScript({ course, module, lesson }, { intro = false, instruction = '', base = null, env = process.env, onProgress } = {}) {
+  const hadIntro = isWelcomeScene(base?.scenes?.[0]);
+  if (hadIntro) { intro = true; base = { ...base, scenes: base.scenes.slice(1) }; }
+  if (base) base = { title: base.title, scenes: base.scenes };
   const source = lessonSource(lesson);
   if (source.text.length < 120) throw new Error(`"${lesson.title}" has too little text (${source.text.length} characters) to make a video from. Write the lesson first.`);
   const meta = { course, lesson };
@@ -173,7 +195,7 @@ export async function lessonToScript({ course, module, lesson }, { intro = false
     onProgress?.(attempt === 1 ? 'Writing the script' : `Fixing the script (try ${attempt}): ${feedback.split('\n')[0].replace(/^- /, '').slice(0, 110)}`);
     let raw;
     try {
-      const { text, provider, model } = await complete('draft', buildPrompt({ course, module, lesson, source, feedback }), { json: true, env });
+      const { text, provider, model } = await complete('draft', buildPrompt({ course, module, lesson, source, feedback, instruction, base }), { json: true, env });
       raw = JSON.parse(text);
       last = { provider, model };
     } catch (e) {
@@ -182,7 +204,10 @@ export async function lessonToScript({ course, module, lesson }, { intro = false
     }
     const out = finalize(raw, source, meta);
     if (out.script) {
-      if (intro) out.script.scenes.unshift({ ...INTRO_SCENE });
+      if (intro) {
+        for (const sc of out.script.scenes) if (sc.id === INTRO_SCENE.id) sc.id = 'opening'; // keep scene ids unique
+        out.script.scenes.unshift({ ...INTRO_SCENE });
+      }
       out.script.campus = [...new Set(out.script.scenes.map(s => s.station).filter(Boolean))];
       return { script: out.script, warnings: out.warnings, source, ai: last, attempts: attempt };
     }

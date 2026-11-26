@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { htmlToText, lessonSource, finalize, ungroundedNumbers, lessonToScript, INTRO_SCENE } from '../src/video/lesson-to-script.mjs';
+import { htmlToText, lessonSource, finalize, ungroundedNumbers, lessonToScript, INTRO_SCENE, isWelcomeScene } from '../src/video/lesson-to-script.mjs';
 
 const HTML = '<h3>Analyzing a Template</h3><p>Before launching a template, analyze its specifications using the slide-out panel.</p><ul><li><b>Status &amp; Actions:</b> A status bar showing configured actions.</li><li><b>Approvals:</b> Overview of manual vs. final approvals.</li></ul><script>evil()</script>';
 const lesson = { id: 'les-x', title: 'Panels', content_type: 'text', content_body: HTML, sections: [] };
@@ -131,4 +131,39 @@ test('on-screen text says CLM (the spaced spelling is only for the voice) and li
   assert.equal(sc.hint, 'Think about CLM.');
   assert.equal(sc.slide.steps[0].at, 'draft the C L M contract', 'timing phrases keep matching the spoken text');
   assert.match(sc.spoken, /C L M contract/);
+});
+
+test('an edit request goes to the AI with the current script, and the welcome scene is kept out of its view but put back', async () => {
+  const real = globalThis.fetch, prompts = [];
+  const current = { ...good(), scenes: [{ ...INTRO_SCENE }, ...good().scenes] };
+  globalThis.fetch = async (_u, init) => {
+    prompts.push(JSON.parse(init.body).contents[0].parts[0].text);
+    return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify(good()) }] } }] }), { status: 200 });
+  };
+  try {
+    const r = await lessonToScript(ctx, { instruction: 'Make the recap shorter', base: current, env: { AI_DRAFT: 'gemini:m', GEMINI_API_KEY: 'k', AI_RETRY_BASE_MS: '1' } });
+    assert.match(prompts[0], /EDIT REQUEST FROM THE COURSE TEAM/);
+    assert.match(prompts[0], /<request>\nMake the recap shorter\n<\/request>/);
+    assert.match(prompts[0], /CURRENT SCRIPT/);
+    assert.doesNotMatch(prompts[0], /Hi, I'm Soomy/);        // the fixed welcome scene is not shown to the AI
+    assert.equal(r.script.scenes[0].id, 'intro');             // but it is still the first scene of the new video
+    assert.deepEqual(r.script.scenes.map(x => x.id).filter((id, i, all) => all.indexOf(id) !== i), []); // and no two scenes share an id
+  } finally { globalThis.fetch = real; }
+});
+test('without an edit request the prompt is unchanged', async () => {
+  const real = globalThis.fetch, prompts = [];
+  globalThis.fetch = async (_u, init) => {
+    prompts.push(JSON.parse(init.body).contents[0].parts[0].text);
+    return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify(good()) }] } }] }), { status: 200 });
+  };
+  try {
+    await lessonToScript(ctx, { env: { AI_DRAFT: 'gemini:m', GEMINI_API_KEY: 'k', AI_RETRY_BASE_MS: '1' } });
+    assert.doesNotMatch(prompts[0], /EDIT REQUEST|CURRENT SCRIPT/);
+  } finally { globalThis.fetch = real; }
+});
+
+test('the welcome scene is recognised by what it shows, not by its id', () => {
+  assert.equal(isWelcomeScene(INTRO_SCENE), true);
+  assert.equal(isWelcomeScene({ id: 'intro', spoken: 'A normal opening.', slide: { layout: 'hook', title: 'Why CLM' } }), false);
+  assert.equal(isWelcomeScene(undefined), false);
 });

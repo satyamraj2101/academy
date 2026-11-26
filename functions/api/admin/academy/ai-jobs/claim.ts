@@ -1,4 +1,5 @@
 import { verifyAdminRequest, corsResponse, corsOptionsResponse, errorResponse } from '../../middleware';
+import { claimTypes } from '../_videoEdit';
 
 interface Env { DB?: D1Database }
 
@@ -25,16 +26,23 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     WHERE status = 'running' AND locked_until < ? AND attempts >= ?
   `).bind(nowIso, nowIso, MAX_ATTEMPTS).run();
 
+  // A worker may ask for only some kinds of job ({ types: [...] }) so the course writer and the video builder never take each
+  // other's work. No list means any kind.
+  let asked: unknown;
+  try { asked = ((await request.json()) as any)?.types; } catch { /* empty body: any kind */ }
+  const types = claimTypes(asked);
+  const typeFilter = types.length ? ` AND type IN (${types.map(() => '?').join(',')})` : '';
+
   const job = await db.prepare(`
     UPDATE academy_ai_jobs
     SET status = 'running', attempts = attempts + 1, locked_until = ?, started_at = COALESCE(started_at, ?)
     WHERE id = (
       SELECT id FROM academy_ai_jobs
-      WHERE status = 'queued' OR (status = 'running' AND locked_until < ? AND attempts < ?)
+      WHERE (status = 'queued' OR (status = 'running' AND locked_until < ? AND attempts < ?))${typeFilter}
       ORDER BY created_at LIMIT 1
     )
     RETURNING *
-  `).bind(lease, nowIso, nowIso, MAX_ATTEMPTS).first() as any;
+  `).bind(lease, nowIso, nowIso, MAX_ATTEMPTS, ...types).first() as any;
 
   if (!job) return corsResponse({ job: null });
   const j = (s: string | null) => { try { return s ? JSON.parse(s) : null; } catch { return null; } };

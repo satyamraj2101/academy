@@ -1,5 +1,6 @@
 import { verifyAdminRequest, corsResponse, corsOptionsResponse, errorResponse, hasPermission } from '../middleware';
 import { buildMessages, parseImprovement, validateInput } from './_improvePrompt';
+import { takeSlot } from './_aiUsage';
 
 // Runs on Cloudflare Workers AI (the free daily allowance), not on Gemini, so suggesting improvements never uses the quota
 // that writes the courses.
@@ -15,17 +16,6 @@ const MODELS = ['@cf/meta/llama-3.1-8b-instruct-fast', '@cf/meta/llama-3.1-8b-in
 // Each call costs a few neurons; the free allowance is 10,000 a day. This keeps well inside it even if the account were on a paid plan.
 const DAILY_CAP = 400;
 const KIND = 'improve_prompt';
-
-/** Counts this call against today's cap. Returns false (and counts nothing) when the cap is already reached. */
-async function takeSlot(db: D1Database): Promise<boolean> {
-  const day = new Date().toISOString().slice(0, 10);
-  const row = await db.prepare(
-    `INSERT INTO academy_ai_usage (day, kind, calls) VALUES (?, ?, 1)
-     ON CONFLICT(day, kind) DO UPDATE SET calls = calls + 1 WHERE calls < ?
-     RETURNING calls`,
-  ).bind(day, KIND, DAILY_CAP).first();
-  return !!row;
-}
 
 // POST { kind?, text } or { fields: { topic, audience, level, goal, duration, tone } }
 //  -> { improved, improvedFields?, changes[], missing[], score, model }   or { unavailable: "reason", improved: <original> }
@@ -44,7 +34,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   if (!env.AI) return unavailable('The AI helper is not connected on this server.');
   try {
-    if (!(await takeSlot(auth.context.db))) return unavailable('Today\'s free suggestions are used up. They reset at midnight UTC.');
+    if (!(await takeSlot(auth.context.db, KIND, DAILY_CAP))) return unavailable('Today\'s free suggestions are used up. They reset at midnight UTC.');
   } catch {
     return unavailable('Suggestions are paused (usage counter unavailable).');
   }

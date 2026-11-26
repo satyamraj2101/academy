@@ -26,5 +26,8 @@ const chapters = JSON.parse(readFileSync(join(dir, 'chapters.json'), 'utf8'));
 if (!existsSync(join(dir, 'video.mp4'))) throw new Error('video.mp4 is missing: render before publishing');
 const src = await uploadAsset(join(dir, 'video.mp4'), `${name}.mp4`, 'video/mp4');
 const captionsSrc = existsSync(join(dir, 'captions.vtt')) ? await uploadAsset(join(dir, 'captions.vtt'), `${name}.vtt`, 'text/vtt') : null;
-const result = await api('/academy/lesson-videos', { method: 'POST', body: { lessonId, replaceVideoId: replaceVideoId || undefined, video: { src, captionsSrc, title: chapters.title || name, duration: chapters.duration, stations: chapters.stations || [], chapters: chapters.chapters, checkpoints: chapters.checkpoints } } });
+// The script the video was rendered from, kept next to it so the AI can later change single scenes instead of starting over.
+const scriptPath = process.env.VIDEO_SCRIPT_FILE;
+const scriptSrc = scriptPath && existsSync(scriptPath) ? await uploadAsset(scriptPath, `${name}.script.json`, 'application/json') : null;
+const result = await api('/academy/lesson-videos', { method: 'POST', body: { lessonId, replaceVideoId: replaceVideoId || undefined, video: { src, captionsSrc, scriptSrc, title: chapters.title || name, duration: chapters.duration, stations: chapters.stations || [], chapters: chapters.chapters, checkpoints: chapters.checkpoints } } });
 console.log(JSON.stringify({ ...result, src }));

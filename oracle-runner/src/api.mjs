@@ -37,5 +37,6 @@ export async function api(path, { method = 'GET', body } = {}) {
   return data;
 }
 
-export const claimJob = () => api('/academy/ai-jobs/claim', { method: 'POST', body: {} }).then(r => r.job);
+// `types` limits the claim to some kinds of job, so a course writer and a video builder never take each other's work.
+export const claimJob = (types) => api('/academy/ai-jobs/claim', { method: 'POST', body: types?.length ? { types } : {} }).then(r => r.job);
 export const patchJob = (id, patch) => api(`/academy/ai-jobs/${id}`, { method: 'PATCH', body: patch });

@@ -6,6 +6,8 @@ const POLL_MS = Number(process.env.POLL_INTERVAL_MS) || 10_000;
 const HEARTBEAT_MS = 60_000;
 // --once: work through whatever is queued, then exit (how the cloud runs it, so nothing sits idle and costs credit).
 const ONCE = process.argv.includes('--once');
+// This runner writes courses. Lesson-video edits are rendered by the cloud video worker (cloud/video-edit.mjs).
+const COURSE_JOBS = ['course_from_prompt', 'course_from_document', 'course_from_transcript'];
 let stopping = false;
 for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { stopping = true; console.log(`${sig} — finishing current job then exiting`); });
 
@@ -47,7 +49,7 @@ log('runner started, polling', process.env.ACADEMY_ADMIN_BASE_URL);
 let pollErrors = 0;
 while (!stopping) {
   try {
-    const job = await claimJob();
+    const job = await claimJob(COURSE_JOBS);
     pollErrors = 0;
     if (job) { await handle(job); continue; }
     if (ONCE) break; // queue is empty

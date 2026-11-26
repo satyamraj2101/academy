@@ -27,6 +27,8 @@ export interface VideoContent {
   title: string;
   src: string;
   captionsSrc?: string | null;
+  /** The script this video was rendered from (Soomy/Indoo scenes). Lets the AI edit the video scene by scene instead of starting over. */
+  scriptSrc?: string | null;
   duration: number;
   stations: { id: string; name: string }[];
   chapters: VideoChapter[];
@@ -50,6 +52,8 @@ export function buildVideoContent(input: any, videoId: string): { content?: Vide
   if (!safeSrc(src)) return { error: 'src must be an /api/assets/ path or an https URL' };
   const captionsSrc = input.captionsSrc ? str(input.captionsSrc, 500) : null;
   if (captionsSrc && !safeSrc(captionsSrc)) return { error: 'captionsSrc must be an /api/assets/ path or an https URL' };
+  const scriptSrc = input.scriptSrc ? str(input.scriptSrc, 500) : null;
+  if (scriptSrc && !safeSrc(scriptSrc)) return { error: 'scriptSrc must be an /api/assets/ path or an https URL' };
   const duration = Number(input.duration);
   if (!isNum(duration) || duration < 1 || duration > MAX_DURATION) return { error: 'duration must be between 1 second and 4 hours' };
   if (!Array.isArray(input.chapters) || input.chapters.length < 1 || input.chapters.length > 80) return { error: 'chapters must have 1 to 80 entries' };
@@ -71,7 +75,7 @@ export function buildVideoContent(input: any, videoId: string): { content?: Vide
   }
   if (new Set(checkpoints.map(c => c.sceneId)).size !== checkpoints.length) return { error: 'checkpoint sceneIds must be unique' };
   const stations = (Array.isArray(input.stations) ? input.stations : []).slice(0, 20).map((s: any) => ({ id: str(s?.id, 40), name: str(s?.name, 60) })).filter((s: any) => s.id && s.name);
-  return { content: { v: 1, videoId, title: str(input.title, 160) || 'Lesson video', src, captionsSrc, duration, stations, chapters, checkpoints } };
+  return { content: { v: 1, videoId, title: str(input.title, 160) || 'Lesson video', src, captionsSrc, ...(scriptSrc ? { scriptSrc } : {}), duration, stations, chapters, checkpoints } };
 }
 
 export function parseVideoContent(json: string): VideoContent | null {
