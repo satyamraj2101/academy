@@ -125,7 +125,11 @@ def jobs():
 
 
 @app.local_entrypoint()
-def main(course: str, lesson: str = "", intro: bool = False, dry_run: bool = False, no_publish: bool = False, replace: bool = False):
+def main(course: str, lesson: str = "", intro: bool = False, dry_run: bool = False, no_publish: bool = False, replace: bool = False, replace_video: str = ""):
+    if lesson and replace_video and not dry_run:
+        # Rebuild one lesson and swap it in for an existing video (keeps one video per lesson).
+        print(json.dumps(build_lesson.remote(course, lesson, intro, not no_publish, replace_video)))
+        return
     if lesson:
         lessons = [{"id": lesson, "title": lesson, "hasVideo": False}]
     else:

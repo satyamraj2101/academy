@@ -61,3 +61,53 @@ test('the ship ride shows the destination, the route and the SpotCLM ship', () =
     assert.ok(svg.includes('Next stop') && svg.includes('Review table') && svg.includes('Front desk') && svg.includes('lkShip'));
   }
 });
+
+// ---- text that is longer than the hand-made samples: it must fit the card instead of running off it
+import { fitTitle, layoutBullets, wrap } from '../src/video/scene.mjs';
+
+test('a short title keeps full size and a long one shrinks to fit', () => {
+  assert.deepEqual(fitTitle('Why CLM'), { text: 'Why CLM', fs: 44 });
+  const mid = fitTitle('Defining Contract Lifecycle Management');
+  assert.ok(mid.fs < 44 && mid.fs >= 30);
+  assert.equal(mid.text, 'Defining Contract Lifecycle Management');
+});
+
+test('a title too long even at the smallest size is cut at a word with an ellipsis', () => {
+  const t = fitTitle('Integrating CLM with Enterprise Systems for Holistic Management and Reporting Across Teams');
+  assert.equal(t.fs, 30);
+  assert.ok(t.text.endsWith('\u2026'));
+  assert.ok(t.text.length * 30 * 0.58 <= 760);
+  assert.ok(!/\s\u2026$/.test(t.text));
+});
+
+test('bullets are laid out at the largest size at which they all fit the card', () => {
+  const short = layoutBullets([{ text: 'One short point' }, { text: 'Another' }]);
+  assert.equal(short.fs, 34);
+  const long = layoutBullets(Array.from({ length: 4 }, () => ({ text: 'A contract is a legally binding agreement outlining rights, responsibilities and obligations of the parties.' })));
+  assert.ok(long.fs < 34);
+  const bottom = 214 + long.per.reduce((n, lines) => n + lines.length * long.lh + long.gap, 0) - long.gap;
+  assert.ok(bottom <= 560, `bullets end at ${bottom}`);
+});
+
+test('a wall of text at the smallest size is cut to fit the card, each cut bullet ending with an ellipsis', () => {
+  const huge = layoutBullets(Array.from({ length: 6 }, () => ({ text: 'word '.repeat(60) })));
+  assert.equal(huge.fs, 22);
+  const bottom = 214 + huge.per.reduce((n, lines) => n + lines.length * huge.lh + huge.gap, 0) - huge.gap;
+  assert.ok(bottom <= 560, `bullets end at ${bottom}`);
+  assert.ok(huge.per.every(lines => lines[lines.length - 1].endsWith('\u2026')));
+});
+
+test('a long step label with a slash still fits its box (the slash is a place to break)', () => {
+  const label = 'Amendments & Renewals/Termination'.replace(/\/(?=\S)/g, '/ ');
+  const lines = wrap(label, 15, 120);
+  assert.ok(lines.length <= 3);
+  assert.ok(lines.every(l => l.length * 15 * 0.6 <= 125));
+});
+
+import { fitList } from '../src/video/scene.mjs';
+test('a recap list stops above the Next button', () => {
+  const three = Array.from({ length: 3 }, () => ({ text: 'It enhances efficiency, reduces risk, saves costs and unlocks new revenue for the business.' }));
+  const L = fitList(three, { sizes: [32, 29, 26, 24, 22], width: 670, top: 226, bottom: 448 });
+  const end = 226 + L.per.reduce((n, lines) => n + lines.length * L.lh + L.gap, 0) - L.gap;
+  assert.ok(end <= 448, `list ends at ${end}`);
+});

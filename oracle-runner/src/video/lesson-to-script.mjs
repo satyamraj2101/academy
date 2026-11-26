@@ -70,6 +70,7 @@ HARD RULES
 8. "sfx": at most one per scene; "at" is the last 3-4 words of a sentence in "spoken" (so the chirp lands in the pause after it). Sounds: happy, curious, oops, celebrate, notice, nudge.
 9. "station": choose from ${stationList}. Start at "frontdesk". Keep related scenes at the same station and change station only when the topic really changes (each change adds a ship ride). Use at most 3 different stations. "gesture": point, raise or present. "hint": one friendly nudge, never the full answer.
 10. Give every scene a stable lowercase "id" (letters and digits, e.g. "intro", "steps", "check").
+11. ON-SCREEN TEXT MUST BE SHORT so it fits the slide: slide "title" at most 40 characters; each bullet, takeaway or compare item at most 80 characters (a short phrase, not a sentence copied from the lesson); each step "text" at most 24 characters (two or three words) with the detail in its "desc" (at most 90 characters); at most 4 bullets per scene. Say the full detail in "spoken" instead.
 Return ONLY JSON: {"title": "short video title", "scenes": [ ... ]}
 
 COURSE: ${course.title}
