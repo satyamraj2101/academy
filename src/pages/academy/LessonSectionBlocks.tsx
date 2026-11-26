@@ -149,13 +149,13 @@ export function QuizSection({ content }: { content: string }) {
       <div className="flex items-start gap-4">
         <div className="p-3 rounded-control bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 shrink-0"><ClipboardCheck className="w-6 h-6" /></div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-1">Knowledge Assessment</p>
+          <p className="text-xs text-slate-500 mb-1">Knowledge assessment</p>
           <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">{quiz?.title || 'Quiz'}</h3>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-slate-500 dark:text-slate-400 mb-5">
             <span>Passing score: {quiz?.passing_score}%</span>
             {attempts.length > 0 && <span>Attempts: {attempts.length}</span>}
             {bestAttempt && (
-              <span className={`flex items-center gap-1 ${bestAttempt.passed ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+              <span className={`flex items-center gap-1 ${bestAttempt.passed ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-600 dark:text-slate-400'}`}>
                 {bestAttempt.passed && <Trophy className="w-3.5 h-3.5" />} Best score: {bestAttempt.score}%
               </span>
             )}
@@ -201,7 +201,7 @@ export function AssignmentSection({ content }: { content: string }) {
   });
 
   if (!assignmentId) return null;
-  if (isLoading) return <div className="py-6 flex justify-center"><Loader2 className="w-5 h-5 animate-spin text-amber-500" /></div>;
+  if (isLoading) return <div className="py-6 flex justify-center"><Loader2 className="w-5 h-5 animate-spin text-slate-500" /></div>;
 
   const assignment = data?.assignment;
   const submission = data?.submission;
@@ -213,7 +213,7 @@ export function AssignmentSection({ content }: { content: string }) {
       <div className="flex items-start gap-4 mb-5">
         <div className="p-3 rounded-control bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 shrink-0"><ClipboardCheck className="w-6 h-6" /></div>
         <div>
-          <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 mb-1">Graded Assignment {assignment?.max_score ? `· ${assignment.max_score} pts` : ''}</p>
+          <p className="text-xs text-slate-500 mb-1">Graded assignment {assignment?.max_score ? `· ${assignment.max_score} pts` : ''}</p>
           <p className="text-slate-800 dark:text-slate-200 font-semibold leading-relaxed">{assignment?.prompt_text}</p>
         </div>
       </div>
@@ -247,7 +247,7 @@ export function AssignmentSection({ content }: { content: string }) {
             onChange={e => setText(e.target.value)}
             rows={5}
             placeholder="Write your response here..."
-            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:border-amber-500"
+            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-600"
           />
         )}
         {needsFile && (
@@ -257,7 +257,7 @@ export function AssignmentSection({ content }: { content: string }) {
               value={fileUrl}
               onChange={e => setFileUrl(e.target.value)}
               placeholder="Paste a link to your file (Drive, Dropbox, etc.)"
-              className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:border-amber-500"
+              className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-600"
             />
           </div>
         )}
@@ -265,7 +265,7 @@ export function AssignmentSection({ content }: { content: string }) {
           <HapticButton
             onClick={() => submitMutation.mutate()}
             disabled={submitMutation.isPending}
-            className="px-5 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-medium text-sm flex items-center gap-2 shadow-sm transition-colors"
+            className="px-5 py-2.5 min-h-[44px] rounded-control bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium text-sm flex items-center gap-2 transition-colors"
           >
             {submitMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : submission ? 'Resubmit' : 'Submit Assignment'}
           </HapticButton>

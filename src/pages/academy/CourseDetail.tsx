@@ -401,10 +401,10 @@ export function CourseDetailComponent() {
             )}
 
             <div className="space-y-3 text-sm font-semibold text-slate-600 dark:text-slate-400">
-              <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-emerald-500" /> Certification of Completion</div>
-              <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-emerald-500" /> 24/7 Access to materials</div>
-              <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-emerald-500" /> Expert-led instruction</div>
-              <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-emerald-500" /> Graded assignments &amp; instructor feedback</div>
+              {course.has_certification ? <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-slate-500" strokeWidth={1.5} /> Certificate of completion</div> : null}
+              <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-slate-500" strokeWidth={1.5} /> 24/7 Access to materials</div>
+              <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-slate-500" strokeWidth={1.5} /> Expert-led instruction</div>
+              <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-slate-500" strokeWidth={1.5} /> Graded assignments &amp; instructor feedback</div>
             </div>
             {(course.enrollment_count > 0 || course.review_count > 0) && (
               <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-medium text-slate-500">

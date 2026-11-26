@@ -180,8 +180,12 @@ export function QuizPlayerComponent() {
               {!result.passed && (
                 <HapticButton
                   onClick={() => {
+                    // A finished attempt cannot be submitted again: go back to the start card so the next try gets a fresh session.
                     setResult(null);
                     setAnswers({});
+                    setSessionId(null);
+                    setExpiresAt(null);
+                    setQuizStarted(false);
                   }}
                   className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-control font-medium"
                 >
