@@ -67,13 +67,12 @@ def render_item(payload: dict) -> dict:
             return {"key": info["key"], "meta": m.read(), "segment": s.read(), "stats": info.get("stats")}
 
 
-@app.function(cpu=1, memory=4096, timeout=3600)
-def build_lesson(course_id: str, lesson_id: str, intro: bool = False, publish: bool = True, replace_video_id: str = "") -> dict:
-    """The whole job for one lesson. Runs the AI step, fans the scenes out, joins them and publishes."""
+def _build_from_script(script_text: str, lesson_id: str, publish: bool, replace_video_id: str, script_info: dict) -> dict:
+    """Everything after the AI step: fan the scenes out, join them, and publish. Runs inside a Modal function."""
     work = tempfile.mkdtemp()
     script, out, cache = (os.path.join(work, n) for n in ("script.json", "out", "cache"))
-
-    s = json.loads(_node(["src/cloud/script.mjs", course_id, lesson_id, script, *(["--intro"] if intro else [])]).strip().splitlines()[-1])
+    with open(script, "w") as f:
+        f.write(script_text)
     plan = json.loads(_node(["src/cloud/plan.mjs", script]).strip().splitlines()[-1])
 
     payloads = [{"item": it["item"], "opts": plan["opts"]} for it in plan["items"]]
@@ -92,7 +91,7 @@ def build_lesson(course_id: str, lesson_id: str, intro: bool = False, publish: b
     with open(os.path.join(out, "chapters.json")) as f:
         chapters = json.load(f)
     summary = {
-        "lesson": lesson_id, "title": s["title"], "scenes": s["scenes"], "script_warnings": s["warnings"], "ai": s["ai"],
+        "lesson": lesson_id, "title": script_info.get("title"), "scenes": script_info.get("scenes"), "script_warnings": script_info.get("warnings"), "ai": script_info.get("ai"),
         "video_seconds": chapters["duration"], "rendered_items": len(results),
         "container_seconds": round(sum((r["stats"] or {}).get("voiceSeconds", 0) + (r["stats"] or {}).get("frameSeconds", 0) + (r["stats"] or {}).get("encodeSeconds", 0) for r in results), 1),
     }
@@ -101,6 +100,38 @@ def build_lesson(course_id: str, lesson_id: str, intro: bool = False, publish: b
         pub = json.loads(_node(["src/cloud/publish.mjs", out, lesson_id, name, *([replace_video_id] if replace_video_id else [])]).strip().splitlines()[-1])
         summary["published"] = {"videoId": pub.get("videoId"), "sectionId": pub.get("sectionId")}
     return summary
+
+
+@app.function(cpu=1, memory=4096, timeout=3600)
+def build_lesson(course_id: str, lesson_id: str, intro: bool = False, publish: bool = True, replace_video_id: str = "") -> dict:
+    """One lesson, start to finish: the AI step, then render, join and publish."""
+    work = tempfile.mkdtemp()
+    script = os.path.join(work, "script.json")
+    s = json.loads(_node(["src/cloud/script.mjs", course_id, lesson_id, script, *(["--intro"] if intro else [])]).strip().splitlines()[-1])
+    with open(script) as f:
+        return _build_from_script(f.read(), lesson_id, publish, replace_video_id, s)
+
+
+@app.function(cpu=1, memory=2048, timeout=4 * 3600)
+def write_scripts(course_id: str, lesson_ids: list, intro_lesson: str = "") -> dict:
+    """The AI step for several lessons, one after another in ONE process, so the AI gateway paces every call against the provider
+    limits in a single place. A lesson that cannot be written because AI capacity ran out is reported with the time to retry."""
+    out_dir = tempfile.mkdtemp()
+    args = ["src/cloud/scripts.mjs", course_id, out_dir, ",".join(lesson_ids), *(["--intro", intro_lesson] if intro_lesson else [])]
+    summary = json.loads(_node(args).strip().splitlines()[-1])
+    scripts = {}
+    for r in summary["results"]:
+        path = os.path.join(out_dir, f"{r['lessonId']}.json")
+        if r.get("ok") and os.path.exists(path):
+            with open(path) as f:
+                scripts[r["lessonId"]] = f.read()
+    return {"results": summary["results"], "scripts": scripts, "quota": summary.get("quota")}
+
+
+@app.function(cpu=1, memory=4096, timeout=3600, max_containers=4)
+def build_from_script(lesson_id: str, script_text: str, info: dict, publish: bool = True, replace_video_id: str = "") -> dict:
+    """Render, join and publish a lesson whose script is already written (no AI call here)."""
+    return _build_from_script(script_text, lesson_id, publish, replace_video_id, info)
 
 
 @app.function(cpu=1, memory=2048, timeout=3600)
@@ -144,6 +175,16 @@ def main(course: str, lesson: str = "", intro: bool = False, dry_run: bool = Fal
             est = len(lessons) * secs * SECONDS_PER_VIDEO_SECOND * USD_PER_CONTAINER_SECOND
             print(f"estimated credit ({label}, {secs}s of video per lesson): about ${est:.2f}")
         return
-    results = list(build_lesson.map([course] * len(lessons), [l["id"] for l in lessons], [intro] * len(lessons), [not no_publish] * len(lessons), return_exceptions=True))
-    for l, r in zip(lessons, results):
-        print(("FAILED " + str(r)[:300]) if isinstance(r, Exception) else json.dumps(r))
+    # Stage 1: every script, written one after another through the AI gateway (so provider limits are respected in one place).
+    ids = [l["id"] for l in lessons]
+    stage1 = write_scripts.remote(course, ids, lesson if intro else "")
+    info = {r["lessonId"]: r for r in stage1["results"]}
+    for r in stage1["results"]:
+        if not r.get("ok"):
+            print("SCRIPT NOT WRITTEN", r["lessonId"], r.get("error"), "| retry after", r.get("retryAt"))
+    ready = [i for i in ids if i in stage1["scripts"]]
+    print(f"{len(ready)} of {len(ids)} scripts written; rendering them in parallel")
+    # Stage 2: render, join and publish, in parallel (no AI call).
+    results = list(build_from_script.map(ready, [stage1["scripts"][i] for i in ready], [info[i] for i in ready], [not no_publish] * len(ready), return_exceptions=True))
+    for lid, r in zip(ready, results):
+        print(("FAILED " + lid + " " + str(r)[:300]) if isinstance(r, Exception) else json.dumps(r))

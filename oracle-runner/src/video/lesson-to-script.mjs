@@ -149,7 +149,7 @@ export function finalize(raw, source, meta) {
   if (bad.length) warnings.push(`numbers not found in the lesson text (check them): ${bad.join(', ')}`);
   const campus = [...new Set(scenes.map(s => s.station).filter(Boolean))];
   return {
-    script: { title: String(raw.title || meta.lesson.title).slice(0, 120), campus, source: { courseId: meta.course.id, courseTitle: meta.course.title, lessonId: meta.lesson.id, lessonTitle: meta.lesson.title, hash: source.hash, at: new Date().toISOString() }, scenes },
+    script: { title: String(raw.title || meta.lesson.title).replace(/\bC L M\b/g, 'CLM').slice(0, 120), campus, source: { courseId: meta.course.id, courseTitle: meta.course.title, lessonId: meta.lesson.id, lessonTitle: meta.lesson.title, hash: source.hash, at: new Date().toISOString() }, scenes },
     warnings,
   };
 }
