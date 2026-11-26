@@ -57,10 +57,10 @@ export function LessonPath({ scrollRef, lessonKey, hasWatch, watchDone, hasRead,
             <button
               onClick={() => anchor(s.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
               aria-current={s.state === 'current' ? 'step' : undefined}
-              className={`inline-flex items-center gap-2 min-h-[48px] px-2 sm:px-3 rounded-lg text-sm transition-colors hover:bg-slate-100 dark:hover:bg-slate-900 ${s.state === 'current' ? 'font-medium text-slate-900 dark:text-white' : s.state === 'done' ? 'font-semibold text-slate-700 dark:text-slate-300' : 'font-semibold text-slate-600 dark:text-slate-400'}`}
+              className={`inline-flex items-center gap-2 min-h-[48px] px-2 sm:px-3 rounded-control text-sm transition-colors hover:bg-slate-100 dark:hover:bg-slate-900 ${s.state === 'current' ? 'font-medium text-slate-900 dark:text-white' : s.state === 'done' ? 'text-slate-700 dark:text-slate-300' : 'text-slate-600 dark:text-slate-400'}`}
             >
               {s.state === 'done' ? (
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                <CheckCircle2 className="w-5 h-5 text-slate-500" strokeWidth={1.5} aria-hidden="true" />
               ) : (
                 <span aria-hidden="true" className={`grid place-items-center w-5 h-5 rounded-full border ${s.state === 'current' ? 'border-indigo-600 dark:border-indigo-400' : 'border-slate-300 dark:border-slate-600'}`}>
                   {s.state === 'current' && <span className="w-2 h-2 rounded-full bg-indigo-600 dark:bg-indigo-400" />}
@@ -71,7 +71,7 @@ export function LessonPath({ scrollRef, lessonKey, hasWatch, watchDone, hasRead,
             </button>
           </li>
         ))}
-        <li className="ml-auto pl-3 shrink-0 hidden sm:block text-xs font-semibold text-slate-600 dark:text-slate-400" aria-live="polite">
+        <li className="ml-auto pl-3 shrink-0 hidden sm:block tabular text-xs text-slate-600 dark:text-slate-400" aria-live="polite">
           {doneCount(steps)} of {steps.length} done
         </li>
       </ol>

@@ -138,6 +138,11 @@ function AppLayout() {
   const isAuthSplit = location.pathname === '/login' || location.pathname === '/signup';
   // The student view has its own theme (see .academy-ui in index.css); the admin app keeps the shared one.
   const isAdminRoute = location.pathname.startsWith('/admin');
+  // Dialogs and menus render in a portal under <body>, outside the wrapper, so the theme class also goes on <body>.
+  useEffect(() => {
+    document.body.classList.toggle('academy-ui', !isAdminRoute);
+    return () => document.body.classList.remove('academy-ui');
+  }, [isAdminRoute]);
 
 
 

@@ -272,7 +272,7 @@ export function InteractiveVideoPlayer({ content, lessonId, initial, tracking, o
           {hint && !quiz && (
             <div role="status" className="absolute left-3 bottom-3 max-w-[min(26rem,85%)] bg-white text-slate-800 rounded-2xl shadow-xl p-3 flex gap-3 items-start text-sm">
               <IndooFace className="w-9 h-9 shrink-0" />
-              <div className="min-w-0"><p className="text-[11px] font-black uppercase tracking-wide text-indigo-700 mb-0.5">Indoo says</p>{hint}</div>
+              <div className="min-w-0"><p className="text-xs font-medium text-slate-500 mb-0.5">Indoo says</p>{hint}</div>
               <button onClick={() => setHint(null)} aria-label="Close hint" className="text-slate-500 hover:text-slate-800 text-xl leading-none min-h-[44px] min-w-[44px] -mt-3 -mr-3">×</button>
             </div>
           )}
@@ -280,7 +280,7 @@ export function InteractiveVideoPlayer({ content, lessonId, initial, tracking, o
             <div className="absolute inset-0 bg-slate-950/80 flex p-3 sm:p-6 overflow-auto" role="dialog" aria-modal="true" aria-labelledby="iv-q">
               {/* m-auto centres the card when it fits and lets it scroll from its top edge when it does not */}
               <div className="m-auto bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-6 w-full max-w-lg shadow-2xl">
-                <p className="text-xs font-black uppercase tracking-wide text-indigo-700 dark:text-indigo-300 mb-1">Quick check</p>
+                <p className="text-xs font-medium text-slate-500 mb-1">Quick check</p>
                 <p id="iv-q" className="text-lg font-bold text-slate-900 dark:text-white mb-4">{quiz.cp.question}</p>
                 <div className="space-y-2" role="group" aria-label="Answer options">
                   {quiz.cp.options.map((opt, i) => {
